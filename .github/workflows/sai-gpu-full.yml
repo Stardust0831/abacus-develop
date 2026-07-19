@@ -1,0 +1,140 @@
+name: SAI GPU Full Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      mp_version:
+        description: "cuSolverMp/cuBLASMp runtime: project (0.9.x) or system (NVHPC 0.7.x)"
+        required: true
+        default: project
+        type: choice
+        options:
+          - project
+          - system
+      run_cusolvermp:
+        description: "Run the O3 RT-TDDFT cuSolverMp smoke case"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sai-gpu-full
+  cancel-in-progress: false
+
+jobs:
+  gpu-full:
+    name: SAI GPU full suite (${{ inputs.mp_version }})
+    runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
+    timeout-minutes: 75
+    environment: sai-gpu
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage checkout on shared SAI filesystem
+        run: |
+          set -euo pipefail
+          export CI_SRC=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-checkouts/${GITHUB_RUN_ID}
+          rm -rf "$CI_SRC"
+          mkdir -p "$CI_SRC"
+          rsync -a --delete --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SRC/"
+          echo "CI_SRC=$CI_SRC" >> "$GITHUB_ENV"
+
+      - name: Submit Slurm GPU validation
+        env:
+          MP_VERSION: ${{ inputs.mp_version }}
+          RUN_CUSOLVERMP: ${{ inputs.run_cusolvermp }}
+        run: |
+          set -euo pipefail
+          script="$RUNNER_TEMP/sai-gpu-${GITHUB_RUN_ID}.sbatch"
+          log="$CI_SRC/sai-gpu-${GITHUB_RUN_ID}.log"
+          cat > "$script" <<'SBATCH'
+          #!/usr/bin/env bash
+          #SBATCH --job-name=abacus-sai-ci
+          #SBATCH --partition=16V100
+          #SBATCH --qos=huge-gpu
+          #SBATCH --nodes=1
+          #SBATCH --ntasks=4
+          #SBATCH --gpus-per-node=4
+          #SBATCH --time=01:00:00
+          #SBATCH --output=__CI_SRC__/sai-gpu-%j.out
+
+          set -euo pipefail
+          : "${CI_SRC:?}"
+          : "${ABACUS:?}"
+          : "${MP_VERSION:?}"
+          export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}
+          export LD_PRELOAD=${LD_PRELOAD:-}
+          source /etc/profile.d/lmod.sh
+          module purge
+          module load nvhpc/26.3-gnu-cuda12-tuned
+          module load openmpi/5.0.10-nvhpc26.3-gnu-cuda12-auto
+          module load fftw/3.3.10 libxc/7.0.0-auto saiblas/2603-gnu-auto
+          module load elpa/2026.02.001-2603-gnu cuda/12.9.1
+          module unload nccl
+          source /opt/sai_config/mps_mapping.d/16V100.bash
+          export NCCL_IB_DISABLE=1
+          export OMP_NUM_THREADS=1
+          export OMPI_MCA_rmaps_base_mapping_policy="$MAP_OPT"
+
+          MPI=/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2
+          NV=/opt/devtools/nvidia/hpc_sdk/Linux_x86_64/26.3
+          CUDA=/opt/devtools/nvidia/cuda-12.9.1
+          MATH="$NV/math_libs/12.9"
+          NCCL="$NV/comm_libs/12.9/nccl-2.29"
+          if [[ "$MP_VERSION" == project ]]; then
+            CUSOLVERMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cu12
+            CUBLASMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cublasmp/cu12
+          else
+            CUSOLVERMP="$MATH/targets/x86_64-linux"
+            CUBLASMP="$MATH/targets/x86_64-linux"
+          fi
+          export LD_LIBRARY_PATH="$MPI/lib:$CUDA/lib64:$CUSOLVERMP/lib:$CUBLASMP/lib:$MATH/lib64:$MATH/targets/x86_64-linux/lib:$NCCL/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib64:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-deepmd-pt-only/lib:/opt/devtools/elpa/elpa-2026.02.001-2603-gnu/nvidia/lib:/opt/devtools/libxc/libxc-7.0.0-avx2/lib:/opt/devtools/saiblas/2603-gnu-avx2/lib:/opt/devtools/fftw/fftw-3.3.10/lib:/opt/apps/conda_env/deepmd-kit-3.1.2/lib:/opt/apps/abacus/abacus-develop-3.9.0.26_nvhpc263gnu/toolchain/install/NEP_CPU-main/lib:${LD_LIBRARY_PATH:-}"
+
+          run_suite() {
+            local suite="$1"
+            (cd "$CI_SRC/tests/$suite" && bash ../integrate/Autotest.sh \
+              -a "$ABACUS" -n 4 -o 1 -f CASES_GPU.txt)
+          }
+
+          for suite in 11_PW_GPU 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU 16_SDFT_GPU; do
+            run_suite "$suite"
+          done
+
+          if [[ "${RUN_CUSOLVERMP:-false}" == true ]]; then
+            tmp=$(mktemp -d /tmp/abacus-sai-cusolvermp.XXXXXX)
+            trap 'rm -rf "$tmp"' EXIT
+            cp -a "$CI_SRC/tests/15_rtTDDFT_GPU" "$tmp/"
+            ln -s "$CI_SRC/tests/integrate" "$tmp/integrate"
+            ln -s "$CI_SRC/tests/PP_ORB" "$tmp/PP_ORB"
+            sed -i 's/^ks_solver[[:space:]]\+cusolver[[:space:]]*$/ks_solver          cusolvermp/' \
+              "$tmp/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT"
+            (cd "$tmp/15_rtTDDFT_GPU" && timeout --signal=TERM --kill-after=30s 10m \
+              bash ../integrate/Autotest.sh -a "$ABACUS" -n 4 -o 1 \
+              -f CASES_GPU.txt -r '^11_NO_O3_TDDFT_GPU$')
+          fi
+          echo "SAI_GPU_VALIDATION_PASSED mp_version=$MP_VERSION"
+          SBATCH
+          sed -i "s|__CI_SRC__|$CI_SRC|g" "$script"
+          export CI_SRC ABACUS=/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/bin/abacus MP_VERSION RUN_CUSOLVERMP
+          sbatch --wait --parsable --export=ALL "$script" | tee "$log"
+          cat "$CI_SRC"/sai-gpu-*.out >> "$log"
+          grep -q 'SAI_GPU_VALIDATION_PASSED' "$log"
+
+      - name: Upload SAI logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sai-gpu-full-${{ github.run_id }}
+          path: |
+            ${{ env.CI_SRC }}/**/log.txt
+            ${{ env.CI_SRC }}/**/result.out
+            ${{ env.CI_SRC }}/sai-gpu-${{ github.run_id }}.log
+          if-no-files-found: warn
+
+      - name: Cleanup shared checkout
+        if: always()
+        run: rm -rf "$CI_SRC"
