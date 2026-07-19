@@ -99,8 +99,19 @@ jobs:
 
           run_suite() {
             local suite="$1"
-            (cd "$CI_SRC/tests/$suite" && bash ../integrate/Autotest.sh \
-              -a "$ABACUS" -n 4 -o 1 -f CASES_GPU.txt)
+            local ranks=4
+            if [[ "$suite" == 11_PW_GPU ]]; then
+              # bpcg/use_k_continuity and out_wfc cases are intentionally
+              # single-rank because their k-point layouts are not MPI-safe.
+              ranks=1
+            fi
+            if [[ "$ranks" == 1 ]]; then
+              (unset OMPI_MCA_rmaps_base_mapping_policy; cd "$CI_SRC/tests/$suite" && \
+                bash ../integrate/Autotest.sh -a "$ABACUS" -n 1 -o 1 -f CASES_GPU.txt)
+            else
+              (cd "$CI_SRC/tests/$suite" && bash ../integrate/Autotest.sh \
+                -a "$ABACUS" -n "$ranks" -o 1 -f CASES_GPU.txt)
+            fi
           }
 
           for suite in 11_PW_GPU 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU 16_SDFT_GPU; do
