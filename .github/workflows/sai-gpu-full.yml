@@ -118,9 +118,10 @@ jobs:
           run_cases 11_PW_GPU 2 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_bpcg$'
           run_cases 11_PW_GPU 1 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_out_wf$'
 
-          for suite in 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU 16_SDFT_GPU; do
+          for suite in 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU; do
             run_cases "$suite" 4 CASES_GPU.txt '^[^#].*_.*$'
           done
+          run_cases 16_SDFT_GPU 2 CASES_GPU.txt '^[^#].*_.*$'
 
           if [[ "${RUN_CUSOLVERMP:-false}" == true ]]; then
             tmp=$(mktemp -d /tmp/abacus-sai-cusolvermp.XXXXXX)
