@@ -38,10 +38,13 @@ jobs:
         run: |
           set -euo pipefail
           export CI_SRC=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-checkouts/${GITHUB_RUN_ID}
+          export RESULT_ROOT=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-results/${GITHUB_RUN_ID}
           rm -rf "$CI_SRC"
-          mkdir -p "$CI_SRC"
+          rm -rf "$RESULT_ROOT"
+          mkdir -p "$CI_SRC" "$RESULT_ROOT"
           rsync -a --delete --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SRC/"
           echo "CI_SRC=$CI_SRC" >> "$GITHUB_ENV"
+          echo "RESULT_ROOT=$RESULT_ROOT" >> "$GITHUB_ENV"
 
       - name: Submit Slurm GPU validation
         env:
@@ -60,7 +63,7 @@ jobs:
           #SBATCH --ntasks=4
           #SBATCH --gpus-per-node=4
           #SBATCH --time=01:00:00
-          #SBATCH --output=__CI_SRC__/sai-gpu-%j.out
+          #SBATCH --output=__RESULT_ROOT__/sai-gpu-%j.out
 
           set -euo pipefail
           : "${CI_SRC:?}"
@@ -118,11 +121,14 @@ jobs:
           fi
           echo "SAI_GPU_VALIDATION_PASSED mp_version=$MP_VERSION"
           SBATCH
-          sed -i "s|__CI_SRC__|$CI_SRC|g" "$script"
-          export CI_SRC ABACUS=/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/bin/abacus MP_VERSION RUN_CUSOLVERMP
+          sed -i "s|__RESULT_ROOT__|$RESULT_ROOT|g" "$script"
+          export CI_SRC RESULT_ROOT ABACUS=/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/bin/abacus MP_VERSION RUN_CUSOLVERMP
+          set +e
           sbatch --wait --parsable --export=ALL "$script" | tee "$log"
-          cat "$CI_SRC"/sai-gpu-*.out >> "$log"
-          grep -q 'SAI_GPU_VALIDATION_PASSED' "$log"
+          status=${PIPESTATUS[0]}
+          set -e
+          cat "$RESULT_ROOT"/sai-gpu-*.out >> "$log" 2>/dev/null || true
+          exit "$status"
 
       - name: Upload SAI logs
         if: always()
@@ -133,6 +139,7 @@ jobs:
             ${{ env.CI_SRC }}/**/log.txt
             ${{ env.CI_SRC }}/**/result.out
             ${{ env.CI_SRC }}/sai-gpu-${{ github.run_id }}.log
+            ${{ env.RESULT_ROOT }}/sai-gpu-*.out
           if-no-files-found: warn
 
       - name: Cleanup shared checkout
