@@ -12,6 +12,7 @@ The project root must contain one environment file per selectable profile:
 
 ```text
 toolchains/project-mp09.env
+toolchains/archive-mp09.env
 toolchains/system-mp072.env
 ```
 
@@ -23,3 +24,6 @@ checkout, verifies the linked libraries with `ldd`, and then submits the
 
 Do not enable automatic `pull_request` execution for this workflow. Keep it
 manual and protect the `sai-gpu` GitHub environment with required reviewers.
+
+The tested 0.9.0/0.9.1 archive binaries reference NCCL APIs that are absent
+from NCCL 2.18.5. Use the matching NCCL 2.29.x runtime for this profile.

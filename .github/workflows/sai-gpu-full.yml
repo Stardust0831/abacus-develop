@@ -10,6 +10,7 @@ on:
         type: choice
         options:
           - project-mp09
+          - archive-mp09
           - system-mp072
       run_full_suite:
         description: "Run the existing GPU suites after the 16-GPU smoke case"
