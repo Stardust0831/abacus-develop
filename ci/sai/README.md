@@ -34,6 +34,8 @@ service environment to relocate the user-owned cache and per-attempt run trees.
 
 Each Slurm submission records its job ID and final accounting state. Cancelling
 the Actions step also cancels the associated pending or running Slurm job.
+The manual `slurm_nodelist` input can pin every job in one run to the same node
+for controlled reproduction. Leave it empty for normal Slurm placement.
 
 Do not enable automatic `pull_request` execution for this workflow. Keep it
 manual and protect the `sai-gpu` GitHub environment with required reviewers.

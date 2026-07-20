@@ -12,8 +12,19 @@ output_pattern=$2
 job_script=$3
 job_id=
 job_active=0
-job_id_file=$(mktemp)
 job_name="gha-${GITHUB_RUN_ID:-manual}-${GITHUB_RUN_ATTEMPT:-0}-$$"
+sbatch_args=()
+nodelist_pattern='^[[:alnum:],._-]+$'
+
+if [[ -n ${SAI_SLURM_NODELIST:-} ]]; then
+    if [[ ! $SAI_SLURM_NODELIST =~ $nodelist_pattern ]]; then
+        printf 'Invalid SAI_SLURM_NODELIST: %q\n' "$SAI_SLURM_NODELIST" >&2
+        exit 2
+    fi
+    sbatch_args+=(--nodelist="$SAI_SLURM_NODELIST")
+fi
+
+job_id_file=$(mktemp)
 
 cancel_job() {
     if [[ -z $job_id && -s $job_id_file ]]; then
@@ -41,7 +52,8 @@ trap cancel_job EXIT
 job_active=1
 sbatch --parsable --export=ALL --job-name="$job_name" \
     --chdir="${CI_SOURCE:?}" \
-    --output="$output_pattern" "$job_script" > "$job_id_file"
+    --output="$output_pattern" "${sbatch_args[@]}" \
+    "$job_script" > "$job_id_file"
 job_id=$(<"$job_id_file")
 rm -f "$job_id_file"
 job_id=${job_id%%;*}

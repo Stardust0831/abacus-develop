@@ -8,6 +8,11 @@ on:
         required: true
         default: true
         type: boolean
+      slurm_nodelist:
+        description: "Optional Slurm node list for controlled reproduction"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -28,6 +33,7 @@ jobs:
       BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
       INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
       RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
+      SAI_SLURM_NODELIST: ${{ inputs.slurm_nodelist }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
