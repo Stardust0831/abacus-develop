@@ -3,19 +3,10 @@ name: SAI GPU Rebuild and cuSolverMp Validation
 on:
   workflow_dispatch:
     inputs:
-      mp_profile:
-        description: "Runner-local cuSolverMp/cuBLASMp toolchain profile"
-        required: true
-        default: project-mp09
-        type: choice
-        options:
-          - project-mp09
-          - archive-mp09
-          - system-mp072
       run_full_suite:
-        description: "Run the existing GPU suites after the 16-GPU smoke case"
+        description: "Run all existing GPU integration suites"
         required: true
-        default: false
+        default: true
         type: boolean
 
 permissions:
@@ -27,39 +18,39 @@ concurrency:
 
 jobs:
   rebuild-and-test:
-    name: SAI rebuild and GPU validation (${{ inputs.mp_profile }})
+    name: SAI official NVIDIA stack rebuild and GPU validation
     runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
-    timeout-minutes: 120
+    timeout-minutes: 210
     environment: sai-gpu
     env:
-      SAI_PROJECT_ROOT: ${{ vars.SAI_PROJECT_ROOT }}
+      MP_PROFILE: archive-mp09
+      RUN_ROOT: ${{ github.workspace }}/.sai-run-uninitialized
+      BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
+      INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
+      RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Create isolated SAI run directory
-        env:
-          MP_PROFILE: ${{ inputs.mp_profile }}
         run: |
           set -euo pipefail
           SAI_PROJECT_ROOT=${SAI_PROJECT_ROOT:-$HOME/agent/abacus_sai_gpu_ci}
-          TOOLCHAIN_FILE=${SAI_TOOLCHAIN_FILE:-$SAI_PROJECT_ROOT/toolchains/${MP_PROFILE}.env}
-          RUN_ROOT=$SAI_PROJECT_ROOT/runs/$GITHUB_RUN_ID
+          mkdir -p "$SAI_PROJECT_ROOT"
+          SAI_PROJECT_ROOT=$(cd "$SAI_PROJECT_ROOT" && pwd -P)
+          RUN_ROOT=$SAI_PROJECT_ROOT/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
           CI_SOURCE=$RUN_ROOT/source
           BUILD_ROOT=$RUN_ROOT/build
           INSTALL_ROOT=$RUN_ROOT/install
           RESULT_ROOT=$RUN_ROOT/results
 
-          [[ -r "$TOOLCHAIN_FILE" ]] || {
-            echo "Missing runner-local toolchain profile: $TOOLCHAIN_FILE" >&2
-            exit 1
-          }
           [[ ! -e "$RUN_ROOT" ]] || {
             echo "Refusing to reuse an existing run directory: $RUN_ROOT" >&2
             exit 1
           }
           mkdir -p "$CI_SOURCE" "$BUILD_ROOT" "$INSTALL_ROOT" "$RESULT_ROOT"
           rsync -a --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SOURCE/"
+          TOOLCHAIN_FILE=$CI_SOURCE/ci/sai/toolchains/archive-mp09.env.example
 
           {
             echo "SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT"
@@ -71,40 +62,63 @@ jobs:
             echo "RESULT_ROOT=$RESULT_ROOT"
           } >> "$GITHUB_ENV"
 
+      - name: Prepare official NVIDIA MP archives
+        run: |
+          set -euo pipefail
+          export SAI_NVIDIA_MP_ROOT=$RUN_ROOT/vendor/nvidia-mp-0.9-archive
+          bash ci/sai/prepare_nvidia_mp.sh
+
       - name: Build current checkout on Slurm
         run: |
           set -euo pipefail
           log="$RESULT_ROOT/sai-build-submit.log"
           export CI_SOURCE BUILD_ROOT INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE
-          set +e
-          sbatch --wait --parsable --export=ALL \
-            --output="$RESULT_ROOT/sai-build-%j.out" \
-            "$CI_SOURCE/ci/sai/build_gpu.sbatch" | tee "$log"
-          status=${PIPESTATUS[0]}
-          set -e
-          exit "$status"
+          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
+            "$RESULT_ROOT/sai-build-%j.out" \
+            "$CI_SOURCE/ci/sai/build_gpu.sbatch"
+
+      - name: Run existing GPU integration suites
+        if: inputs.run_full_suite
+        id: gpu_full
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          log="$RESULT_ROOT/sai-gpu-full-submit.log"
+          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
+          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
+            "$RESULT_ROOT/sai-gpu-full-%j.out" \
+            "$CI_SOURCE/ci/sai/test_gpu_full.sbatch"
 
       - name: Submit 16-GPU cuSolverMp validation
-        env:
-          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
-          MP_PROFILE: ${{ inputs.mp_profile }}
+        id: cusolvermp
+        continue-on-error: true
         run: |
           set -euo pipefail
           log="$RESULT_ROOT/sai-cusolvermp-submit.log"
-          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE RUN_FULL_SUITE MP_PROFILE
-          set +e
-          sbatch --wait --parsable --export=ALL \
-            --output="$RESULT_ROOT/sai-cusolvermp-%j.out" \
-            "$CI_SOURCE/ci/sai/test_gpu.sbatch" | tee "$log"
-          status=${PIPESTATUS[0]}
-          set -e
-          exit "$status"
+          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
+          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
+            "$RESULT_ROOT/sai-cusolvermp-%j.out" \
+            "$CI_SOURCE/ci/sai/test_gpu.sbatch"
+
+      - name: Report validation failures
+        if: always()
+        env:
+          GPU_FULL_OUTCOME: ${{ steps.gpu_full.outcome }}
+          CUSOLVERMP_OUTCOME: ${{ steps.cusolvermp.outcome }}
+        run: |
+          set -euo pipefail
+          echo "GPU full suite: $GPU_FULL_OUTCOME"
+          echo "16-GPU cuSolverMp: $CUSOLVERMP_OUTCOME"
+          if [[ "${{ inputs.run_full_suite }}" == true && "$GPU_FULL_OUTCOME" != success ]]; then
+            exit 1
+          fi
+          [[ "$CUSOLVERMP_OUTCOME" == success ]]
 
       - name: Upload SAI logs
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: sai-gpu-rebuild-${{ github.run_id }}
+          name: sai-official-gpu-rebuild-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ env.BUILD_ROOT }}/toolchain-summary.txt
             ${{ env.BUILD_ROOT }}/CMakeCache.txt
@@ -115,4 +129,5 @@ jobs:
             ${{ env.CI_SOURCE }}/tests/**/result.out
             ${{ env.RESULT_ROOT }}/*.log
             ${{ env.RESULT_ROOT }}/*.out
+            ${{ env.RESULT_ROOT }}/*.txt
           if-no-files-found: warn
