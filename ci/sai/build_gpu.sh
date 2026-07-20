@@ -65,9 +65,11 @@ NCCL_LINK_LIBRARY=$(readlink -f "$SAI_NCCL_ROOT/lib/libnccl.so")
 NCCL_RUNTIME_LIBRARY=$(readlink -f "$SAI_NCCL_ROOT/lib/libnccl.so.2")
 [[ "$NCCL_LINK_LIBRARY" == "$NCCL_RUNTIME_LIBRARY" ]]
 readelf --wide -Ws "$NCCL_LINK_LIBRARY" \
-    | grep -w ncclCommQueryProperties >/dev/null
-"$MPI_RUN" --version | grep -F 'Open MPI 5.0.10' >/dev/null
-"$SAI_CUDA_ROOT/bin/nvcc" --version | grep -F 'release 12.9' >/dev/null
+    | awk '$8 == "ncclCommQueryProperties" {found=1} END {exit !found}'
+MPI_VERSION_OUTPUT=$("$MPI_RUN" --version)
+CUDA_VERSION_OUTPUT=$("$SAI_CUDA_ROOT/bin/nvcc" --version)
+grep -F 'Open MPI) 5.0.10' <<< "$MPI_VERSION_OUTPUT" >/dev/null
+grep -F 'release 12.9, V12.9.86' <<< "$CUDA_VERSION_OUTPUT" >/dev/null
 grep -F '"version" : "12.9.20250531"' "$SAI_CUDA_ROOT/version.json" >/dev/null
 
 mkdir -p "$BUILD_ROOT" "$INSTALL_ROOT"

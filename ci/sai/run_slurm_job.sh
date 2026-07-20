@@ -40,6 +40,7 @@ trap cancel_job EXIT
 
 job_active=1
 sbatch --parsable --export=ALL --job-name="$job_name" \
+    --chdir="${CI_SOURCE:?}" \
     --output="$output_pattern" "$job_script" > "$job_id_file"
 job_id=$(<"$job_id_file")
 rm -f "$job_id_file"
@@ -51,7 +52,7 @@ record=
 while true; do
     record=$(sacct --noheader --allocations --jobs="$job_id" \
         --format=JobIDRaw,State,ExitCode \
-        | awk -v id="$job_id" '$1 == id {print $2, $3; exit}')
+        | awk -v id="$job_id" '$1 == id {record=$2 " " $3} END {print record}')
     state=${record%% *}
     state=${state%%+}
     exit_code=${record#* }
