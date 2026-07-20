@@ -1,115 +1,130 @@
-name: SAI GPU Full Validation
+name: SAI GPU Rebuild and cuSolverMp Validation
 
 on:
   workflow_dispatch:
     inputs:
-      mp_version:
-        description: "cuSolverMp/cuBLASMp runtime: project (0.9.x) or system (NVHPC 0.7.x)"
+      mp_profile:
+        description: "Runner-local cuSolverMp/cuBLASMp toolchain profile"
         required: true
-        default: project
+        default: project-mp09
         type: choice
         options:
-          - project
-          - system
-      run_cusolvermp:
-        description: "Run the O3 RT-TDDFT cuSolverMp smoke case"
+          - project-mp09
+          - system-mp072
+      run_full_suite:
+        description: "Run the existing GPU suites after the 16-GPU smoke case"
         required: true
-        default: true
+        default: false
         type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: sai-gpu-full
+  group: sai-gpu-rebuild
   cancel-in-progress: false
 
 jobs:
-  gpu-full:
-    name: SAI GPU full suite (${{ inputs.mp_version }})
+  rebuild-and-test:
+    name: SAI rebuild and GPU validation (${{ inputs.mp_profile }})
     runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
-    timeout-minutes: 75
+    timeout-minutes: 120
     environment: sai-gpu
+    env:
+      SAI_PROJECT_ROOT: ${{ vars.SAI_PROJECT_ROOT }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Stage checkout on shared SAI filesystem
-        run: |
-          set -euo pipefail
-          export CI_SRC=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-checkouts/${GITHUB_RUN_ID}
-          export RESULT_ROOT=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-results/${GITHUB_RUN_ID}
-          rm -rf "$CI_SRC"
-          rm -rf "$RESULT_ROOT"
-          mkdir -p "$CI_SRC" "$RESULT_ROOT"
-          rsync -a --delete --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SRC/"
-          echo "CI_SRC=$CI_SRC" >> "$GITHUB_ENV"
-          echo "RESULT_ROOT=$RESULT_ROOT" >> "$GITHUB_ENV"
-
-      - name: Submit Slurm GPU validation
+      - name: Create isolated SAI run directory
         env:
-          MP_VERSION: ${{ inputs.mp_version }}
-          RUN_CUSOLVERMP: ${{ inputs.run_cusolvermp }}
+          MP_PROFILE: ${{ inputs.mp_profile }}
         run: |
           set -euo pipefail
-          script="$RUNNER_TEMP/sai-gpu-${GITHUB_RUN_ID}.sbatch"
-          log="$CI_SRC/sai-gpu-${GITHUB_RUN_ID}.log"
+          SAI_PROJECT_ROOT=${SAI_PROJECT_ROOT:-$HOME/agent/abacus_sai_gpu_ci}
+          TOOLCHAIN_FILE=${SAI_TOOLCHAIN_FILE:-$SAI_PROJECT_ROOT/toolchains/${MP_PROFILE}.env}
+          RUN_ROOT=$SAI_PROJECT_ROOT/runs/$GITHUB_RUN_ID
+          CI_SOURCE=$RUN_ROOT/source
+          BUILD_ROOT=$RUN_ROOT/build
+          INSTALL_ROOT=$RUN_ROOT/install
+          RESULT_ROOT=$RUN_ROOT/results
+
+          [[ -r "$TOOLCHAIN_FILE" ]] || {
+            echo "Missing runner-local toolchain profile: $TOOLCHAIN_FILE" >&2
+            exit 1
+          }
+          [[ ! -e "$RUN_ROOT" ]] || {
+            echo "Refusing to reuse an existing run directory: $RUN_ROOT" >&2
+            exit 1
+          }
+          mkdir -p "$CI_SOURCE" "$BUILD_ROOT" "$INSTALL_ROOT" "$RESULT_ROOT"
+          rsync -a --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SOURCE/"
+
+          {
+            echo "SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT"
+            echo "TOOLCHAIN_FILE=$TOOLCHAIN_FILE"
+            echo "RUN_ROOT=$RUN_ROOT"
+            echo "CI_SOURCE=$CI_SOURCE"
+            echo "BUILD_ROOT=$BUILD_ROOT"
+            echo "INSTALL_ROOT=$INSTALL_ROOT"
+            echo "RESULT_ROOT=$RESULT_ROOT"
+          } >> "$GITHUB_ENV"
+
+      - name: Build current checkout
+        run: bash "$GITHUB_WORKSPACE/ci/sai/build_gpu.sh"
+
+      - name: Submit 16-GPU cuSolverMp validation
+        env:
+          RUN_FULL_SUITE: ${{ inputs.run_full_suite }}
+          MP_PROFILE: ${{ inputs.mp_profile }}
+        run: |
+          set -euo pipefail
+          script="$RUNNER_TEMP/sai-cusolvermp-${GITHUB_RUN_ID}.sbatch"
+          log="$RESULT_ROOT/sai-cusolvermp-submit.log"
+
           cat > "$script" <<'SBATCH'
           #!/usr/bin/env bash
-          #SBATCH --job-name=abacus-sai-ci
+          #SBATCH --job-name=abacus-cusolvermp-ci
           #SBATCH --partition=16V100
           #SBATCH --qos=huge-gpu
           #SBATCH --nodes=1
-          #SBATCH --ntasks=4
-          #SBATCH --gpus-per-node=4
+          #SBATCH --ntasks=16
+          #SBATCH --gpus-per-node=16
           #SBATCH --time=01:00:00
-          #SBATCH --output=__RESULT_ROOT__/sai-gpu-%j.out
+          #SBATCH --output=__RESULT_ROOT__/sai-cusolvermp-%j.out
 
           set -euo pipefail
-          : "${CI_SRC:?}"
-          : "${ABACUS:?}"
-          : "${MP_VERSION:?}"
-          export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}
-          export LD_PRELOAD=${LD_PRELOAD:-}
-          source /etc/profile.d/lmod.sh
-          module purge
-          module load nvhpc/26.3-gnu-cuda12-tuned
-          module load openmpi/5.0.10-nvhpc26.3-gnu-cuda12-auto
-          module load fftw/3.3.10 libxc/7.0.0-auto saiblas/2603-gnu-auto
-          module load elpa/2026.02.001-2603-gnu cuda/12.9.1
-          module unload nccl
+          : "${CI_SOURCE:?}"
+          : "${INSTALL_ROOT:?}"
+          : "${RESULT_ROOT:?}"
+          : "${TOOLCHAIN_FILE:?}"
+
+          source "$TOOLCHAIN_FILE"
+          declare -F sai_load_toolchain >/dev/null || {
+            echo "Missing sai_load_toolchain() in $TOOLCHAIN_FILE" >&2
+            exit 1
+          }
+          sai_load_toolchain
+
           source /opt/sai_config/mps_mapping.d/16V100.bash
           export NCCL_IB_DISABLE=1
           export OMP_NUM_THREADS=1
           export OMPI_MCA_rmaps_base_mapping_policy="$MAP_OPT"
+          export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64:$SAI_NCCL_ROOT/lib:$SAI_DEPS_PREFIX/lib:$SAI_DEPS_PREFIX/lib64:$SAI_DEEPMD_ROOT/lib:$SAI_TORCH_ROOT/lib:$SAI_REFERENCE_ROOT/NEP_CPU-main/lib:${LD_LIBRARY_PATH:-}"
 
-          MPI=/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2
-          NV=/opt/devtools/nvidia/hpc_sdk/Linux_x86_64/26.3
-          CUDA=/opt/devtools/nvidia/cuda-12.9.1
-          MATH="$NV/math_libs/12.9"
-          NCCL="$NV/comm_libs/12.9/nccl-2.29"
-          if [[ "$MP_VERSION" == project ]]; then
-            CUSOLVERMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cu12
-            CUBLASMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cublasmp/cu12
-          else
-            CUSOLVERMP="$MATH/targets/x86_64-linux"
-            CUBLASMP="$MATH/targets/x86_64-linux"
-          fi
-          export PATH="$MPI/bin:$PATH"
-          echo "MPI=$MPI"
-          echo "CUDA=$CUDA"
-          echo "CUSOLVERMP=$CUSOLVERMP"
-          echo "CUBLASMP=$CUBLASMP"
-          ls -l "$CUSOLVERMP"/lib/libcusolverMp.so* "$CUBLASMP"/lib/libcublasMp.so* 2>/dev/null || true
-          export LD_LIBRARY_PATH="$MPI/lib:$CUDA/lib64:$CUSOLVERMP/lib:$CUBLASMP/lib:$MATH/lib64:$MATH/targets/x86_64-linux/lib:$NCCL/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib64:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-deepmd-pt-only/lib:/opt/devtools/elpa/elpa-2026.02.001-2603-gnu/nvidia/lib:/opt/devtools/libxc/libxc-7.0.0-avx2/lib:/opt/devtools/saiblas/2603-gnu-avx2/lib:/opt/devtools/fftw/fftw-3.3.10/lib:/opt/apps/conda_env/deepmd-kit-3.1.2/lib:/opt/apps/abacus/abacus-develop-3.9.0.26_nvhpc263gnu/toolchain/install/NEP_CPU-main/lib:${LD_LIBRARY_PATH:-}"
+          ABACUS="$INSTALL_ROOT/bin/abacus"
+          [[ -x "$ABACUS" ]]
+          "$ABACUS" --info
+          ldd "$ABACUS"
 
           suite_status=0
-          run_checked() {
-            if ! "$@"; then
-              suite_status=1
-              echo "[WARN] test command failed; continuing to collect remaining GPU diagnostics"
-            fi
-          }
+          cd "$CI_SOURCE/tests/15_rtTDDFT_GPU"
+          if ! timeout --signal=TERM --kill-after=30s 15m \
+            bash ../integrate/Autotest.sh -a "$ABACUS" -n 16 -o 1 \
+              -f CASES_CUSOLVERMP_16GPU.txt -r '^19_NO_O3_CUSOLVERMP_16GPU$'; then
+            suite_status=1
+            echo "[ERROR] 16-GPU cuSolverMp RT-TDDFT case failed"
+          fi
 
           run_cases() {
             local suite="$1"
@@ -117,65 +132,66 @@ jobs:
             local cases_file="$3"
             local regex="$4"
             if [[ "$ranks" -lt 4 ]]; then
-              (unset OMPI_MCA_rmaps_base_mapping_policy; cd "$CI_SRC/tests/$suite" && \
+              (unset OMPI_MCA_rmaps_base_mapping_policy; cd "$CI_SOURCE/tests/$suite" && \
                 bash ../integrate/Autotest.sh -a "$ABACUS" -n "$ranks" -o 1 \
                   -f "$cases_file" -r "$regex")
             else
-              (cd "$CI_SRC/tests/$suite" && bash ../integrate/Autotest.sh \
+              (cd "$CI_SOURCE/tests/$suite" && bash ../integrate/Autotest.sh \
                 -a "$ABACUS" -n "$ranks" -o 1 -f "$cases_file" -r "$regex")
             fi
           }
 
-          cases_11="$CI_SRC/tests/11_PW_GPU/CASES_CI_GPU.txt"
-          grep -v -E '^(scf_bpcg|scf_out_wf)$' "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" > "$cases_11"
-          run_checked run_cases 11_PW_GPU 4 "$cases_11" '^[^#].*_.*$'
-          run_checked run_cases 11_PW_GPU 2 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_bpcg$'
-          run_checked run_cases 11_PW_GPU 1 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_out_wf$'
-
-          for suite in 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU; do
-            run_checked run_cases "$suite" 4 CASES_GPU.txt '^[^#].*_.*$'
-          done
-          run_checked run_cases 16_SDFT_GPU 2 CASES_GPU.txt '^[^#].*_.*$'
-
-          if [[ "${RUN_CUSOLVERMP:-false}" == true ]]; then
-            tmp=$(mktemp -d /tmp/abacus-sai-cusolvermp.XXXXXX)
-            trap 'rm -rf "$tmp"' EXIT
-            cp -a "$CI_SRC/tests/15_rtTDDFT_GPU" "$tmp/"
-            ln -s "$CI_SRC/tests/integrate" "$tmp/integrate"
-            ln -s "$CI_SRC/tests/PP_ORB" "$tmp/PP_ORB"
-            sed -i 's/^ks_solver[[:space:]]\+cusolver[[:space:]]*$/ks_solver          cusolvermp/' \
-              "$tmp/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT"
-            if ! (cd "$tmp/15_rtTDDFT_GPU" && timeout --signal=TERM --kill-after=30s 10m \
-              bash ../integrate/Autotest.sh -a "$ABACUS" -n 4 -o 1 \
-              -f CASES_GPU.txt -r '^11_NO_O3_TDDFT_GPU$'); then
+          run_checked() {
+            if ! "$@"; then
               suite_status=1
-              echo "[WARN] cuSolverMp RT-TDDFT smoke failed"
+              echo "[WARN] GPU suite command failed; continuing diagnostics"
             fi
+          }
+
+          if [[ "${RUN_FULL_SUITE:-false}" == true ]]; then
+            cases_11="$CI_SOURCE/tests/11_PW_GPU/CASES_CI_GPU.txt"
+            grep -v -E '^(scf_bpcg|scf_out_wf)$' \
+              "$CI_SOURCE/tests/11_PW_GPU/CASES_GPU.txt" > "$cases_11"
+            run_checked run_cases 11_PW_GPU 4 "$cases_11" '^[^#].*_.*$'
+            run_checked run_cases 11_PW_GPU 2 \
+              "$CI_SOURCE/tests/11_PW_GPU/CASES_GPU.txt" '^scf_bpcg$'
+            run_checked run_cases 11_PW_GPU 1 \
+              "$CI_SOURCE/tests/11_PW_GPU/CASES_GPU.txt" '^scf_out_wf$'
+            for suite in 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU; do
+              run_checked run_cases "$suite" 4 CASES_GPU.txt '^[^#].*_.*$'
+            done
+            run_checked run_cases 16_SDFT_GPU 2 CASES_GPU.txt '^[^#].*_.*$'
           fi
-          echo "SAI_GPU_VALIDATION_PASSED mp_version=$MP_VERSION"
+
+          if [[ "$suite_status" -eq 0 ]]; then
+            echo "SAI_GPU_VALIDATION_PASSED profile=$MP_PROFILE"
+          else
+            echo "SAI_GPU_VALIDATION_FAILED profile=$MP_PROFILE"
+          fi
           exit "$suite_status"
           SBATCH
+
           sed -i "s|__RESULT_ROOT__|$RESULT_ROOT|g" "$script"
-          export CI_SRC RESULT_ROOT ABACUS=/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/bin/abacus MP_VERSION RUN_CUSOLVERMP
+          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE RUN_FULL_SUITE MP_PROFILE
           set +e
           sbatch --wait --parsable --export=ALL "$script" | tee "$log"
           status=${PIPESTATUS[0]}
           set -e
-          cat "$RESULT_ROOT"/sai-gpu-*.out >> "$log" 2>/dev/null || true
           exit "$status"
 
       - name: Upload SAI logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: sai-gpu-full-${{ github.run_id }}
+          name: sai-gpu-rebuild-${{ github.run_id }}
           path: |
-            ${{ env.CI_SRC }}/**/log.txt
-            ${{ env.CI_SRC }}/**/result.out
-            ${{ env.CI_SRC }}/sai-gpu-${{ github.run_id }}.log
-            ${{ env.RESULT_ROOT }}/sai-gpu-*.out
+            ${{ env.BUILD_ROOT }}/toolchain-summary.txt
+            ${{ env.BUILD_ROOT }}/CMakeCache.txt
+            ${{ env.INSTALL_ROOT }}/abacus-info.txt
+            ${{ env.INSTALL_ROOT }}/ldd.txt
+            ${{ env.INSTALL_ROOT }}/abacus.sha256
+            ${{ env.CI_SOURCE }}/tests/**/log.txt
+            ${{ env.CI_SOURCE }}/tests/**/result.out
+            ${{ env.RESULT_ROOT }}/*.log
+            ${{ env.RESULT_ROOT }}/*.out
           if-no-files-found: warn
-
-      - name: Cleanup shared checkout
-        if: always()
-        run: rm -rf "$CI_SRC"
