@@ -1,23 +1,9 @@
-name: SAI GPU Rebuild and cuSolverMp Validation
+name: SAI GPU Case Matrix
 
 on:
   workflow_dispatch:
-    inputs:
-      run_full_suite:
-        description: "Run all existing GPU integration suites"
-        required: true
-        default: true
-        type: boolean
-      slurm_nodelist:
-        description: "Compatibility input; ignored by the SAI NCCL control"
-        required: false
-        default: ""
-        type: string
-      disable_nccl_ib_for_cusolvermp:
-        description: "Compatibility input; ignored because this control requires IB"
-        required: true
-        default: false
-        type: boolean
+  schedule:
+    - cron: "23 18 * * 0"
 
 permissions:
   contents: read
@@ -34,11 +20,11 @@ jobs:
     environment: sai-gpu
     env:
       MP_PROFILE: archive-mp09-sai-nccl2293
+      SAI_PROJECT_ROOT_CONFIG: ${{ vars.SAI_PROJECT_ROOT }}
       RUN_ROOT: ${{ github.workspace }}/.sai-run-uninitialized
       BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
       INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
       RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
-      SAI_SLURM_NODELIST: ""
       SAI_DISABLE_NCCL_IB: false
     steps:
       - name: Checkout
@@ -47,9 +33,23 @@ jobs:
       - name: Create isolated SAI run directory
         run: |
           set -euo pipefail
-          SAI_PROJECT_ROOT=${SAI_PROJECT_ROOT:-$HOME/agent/abacus_sai_gpu_ci}
+          if [[ -n "$SAI_PROJECT_ROOT_CONFIG" ]]; then
+            export SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT_CONFIG
+          fi
+          : "${SAI_PROJECT_ROOT:?Set SAI_PROJECT_ROOT in the runner environment or repository variable}"
+          [[ "$SAI_PROJECT_ROOT" != *$'\n'* ]]
+          CANONICAL_HOME=$(cd "$HOME" && pwd -P)
+          SAI_PROJECT_ROOT=$(realpath --canonicalize-missing "$SAI_PROJECT_ROOT")
+          case "$SAI_PROJECT_ROOT" in
+            "$CANONICAL_HOME"/*) ;;
+            *)
+              echo "SAI_PROJECT_ROOT must resolve below HOME: $CANONICAL_HOME" >&2
+              exit 1
+              ;;
+          esac
           mkdir -p "$SAI_PROJECT_ROOT"
           SAI_PROJECT_ROOT=$(cd "$SAI_PROJECT_ROOT" && pwd -P)
+          [[ "$SAI_PROJECT_ROOT" == "$CANONICAL_HOME/"* ]]
           RUN_ROOT=$SAI_PROJECT_ROOT/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
           CI_SOURCE=$RUN_ROOT/source
           BUILD_ROOT=$RUN_ROOT/build
@@ -89,42 +89,11 @@ jobs:
             "$RESULT_ROOT/sai-build-%j.out" \
             "$CI_SOURCE/ci/sai/build_gpu.sbatch"
 
-      - name: Run existing GPU integration suites
-        if: inputs.run_full_suite
-        id: gpu_full
-        continue-on-error: true
+      - name: Submit concurrent per-case and multinode GPU validations
         run: |
           set -euo pipefail
-          log="$RESULT_ROOT/sai-gpu-full-submit.log"
           export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
-          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
-            "$RESULT_ROOT/sai-gpu-full-%j.out" \
-            "$CI_SOURCE/ci/sai/test_gpu_full.sbatch"
-
-      - name: Submit 16-GPU cuSolverMp validation
-        id: cusolvermp
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          log="$RESULT_ROOT/sai-cusolvermp-submit.log"
-          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
-          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
-            "$RESULT_ROOT/sai-cusolvermp-%j.out" \
-            "$CI_SOURCE/ci/sai/test_gpu.sbatch"
-
-      - name: Report validation failures
-        if: always()
-        env:
-          GPU_FULL_OUTCOME: ${{ steps.gpu_full.outcome }}
-          CUSOLVERMP_OUTCOME: ${{ steps.cusolvermp.outcome }}
-        run: |
-          set -euo pipefail
-          echo "GPU full suite: $GPU_FULL_OUTCOME"
-          echo "16-GPU cuSolverMp: $CUSOLVERMP_OUTCOME"
-          if [[ "${{ inputs.run_full_suite }}" == true && "$GPU_FULL_OUTCOME" != success ]]; then
-            exit 1
-          fi
-          [[ "$CUSOLVERMP_OUTCOME" == success ]]
+          "$CI_SOURCE/ci/sai/run_gpu_validation.sh"
 
       - name: Upload SAI logs
         if: always()
@@ -137,6 +106,21 @@ jobs:
             ${{ env.INSTALL_ROOT }}/abacus-info.txt
             ${{ env.INSTALL_ROOT }}/ldd.txt
             ${{ env.INSTALL_ROOT }}/abacus.sha256
+            ${{ env.RESULT_ROOT }}/case-matrix/inventory.txt
+            ${{ env.RESULT_ROOT }}/case-matrix/array-jobs.tsv
+            ${{ env.RESULT_ROOT }}/case-matrix/array-sacct.txt
+            ${{ env.RESULT_ROOT }}/case-matrix/array-task-accounting.tsv
+            ${{ env.RESULT_ROOT }}/case-matrix/arrays-terminal.txt
+            ${{ env.RESULT_ROOT }}/case-matrix/gpu-case-summary.md
+            ${{ env.RESULT_ROOT }}/case-matrix/manifests/*.tsv
+            ${{ env.RESULT_ROOT }}/case-matrix/logs/*.out
+            ${{ env.RESULT_ROOT }}/case-matrix/status/*.tsv
+            ${{ env.RESULT_ROOT }}/case-matrix/tasks/*/case.log
+            ${{ env.RESULT_ROOT }}/case-matrix/tasks/*/work/tests/*/*/log.txt
+            ${{ env.RESULT_ROOT }}/case-matrix/tasks/*/work/tests/*/*/result.out
+            ${{ env.RESULT_ROOT }}/case-matrix/tasks/*/work/tests/*/*/OUT.*/running*.log
+            ${{ env.RESULT_ROOT }}/case-matrix/tasks/*/work/tests/*/*/OUT.*/warning.log
+            ${{ env.RESULT_ROOT }}/gpu-validation-components.tsv
             ${{ env.CI_SOURCE }}/tests/**/log.txt
             ${{ env.CI_SOURCE }}/tests/**/result.out
             ${{ env.RESULT_ROOT }}/*.log

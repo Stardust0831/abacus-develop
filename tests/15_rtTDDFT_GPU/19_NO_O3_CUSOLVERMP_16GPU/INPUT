@@ -1,5 +1,5 @@
 INPUT_PARAMETERS
-# This case is run explicitly by the SAI 16-GPU cuSolverMp workflow.
+# This case is run explicitly by the SAI distributed cuSolverMp workflow.
 
 suffix            autotest
 pseudo_dir        ../../PP_ORB
