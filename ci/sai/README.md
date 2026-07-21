@@ -39,6 +39,12 @@ keeps Slurm parallelism while making the exact failing test visible without
 opening a combined suite log. A status is accepted only when its result agrees
 with the corresponding terminal Slurm state and exit code.
 
+SAI accepts `--export=ALL` for these arrays but cancels jobs submitted with
+assignment-bearing `--export=...,NAME=value` forms. The coordinator exports the
+per-array manifest and body paths in its own environment before each submission.
+It keys accounting by Slurm's logical array `JobID` (`parent_task`), since SAI
+assigns a separate numeric `JobIDRaw` to each array element.
+
 Runtime placement follows SAI's `/opt/sbatch_examples/gpu_abacus.sbatch`
 baseline: each job sources the partition-specific `mps_mapping.d` script and
 uses its `MAP_OPT` and `OMP_NUM_THREADS` values. Test-harness launches use a

@@ -77,12 +77,14 @@ for class in "${classes[@]}"; do
     job_names[$class]=$job_name
     job_id_file=$(mktemp "$matrix_root/.${class}-jobid.XXXXXX")
     job_id_files[$class]=$job_id_file
+    export GPU_CASE_MANIFEST=$manifest
+    export GPU_CASE_BODY=$CI_SOURCE/ci/sai/test_gpu_case.sh
     sbatch --parsable \
         --job-name="$job_name" \
         --array="0-${last_task}%${limits[$class]}" \
         --chdir="$CI_SOURCE" \
         --output="$log_root/${class}-%A_%a.out" \
-        --export="ALL,GPU_CASE_MANIFEST=$manifest,GPU_CASE_BODY=$CI_SOURCE/ci/sai/test_gpu_case.sh" \
+        --export=ALL \
         "${scripts[$class]}" > "$job_id_file"
     job_id=$(<"$job_id_file")
     job_id=${job_id%%;*}
@@ -118,7 +120,7 @@ declare -A final_states=()
 declare -A final_exit_codes=()
 for accounting_attempt in {1..30}; do
     if accounting_output=$(sacct --noheader --allocations --jobs="$job_list" \
-        --parsable2 --format=JobIDRaw,State,ExitCode); then
+        --parsable2 --format=JobID,State,ExitCode); then
         final_states=()
         final_exit_codes=()
         while IFS='|' read -r got_job_id got_state got_exit_code; do
@@ -173,7 +175,7 @@ trap - INT TERM EXIT
 cleanup_job_id_files
 
 if ! sacct --noheader --allocations --jobs="$job_list" \
-    --format=JobIDRaw,JobName,State,ExitCode,Elapsed,NodeList \
+    --format=JobID,JobIDRaw,JobName,State,ExitCode,Elapsed,NodeList \
     > "$matrix_root/array-sacct.txt"; then
     printf '%s\n' "$accounting_output" > "$matrix_root/array-sacct.txt"
 fi
