@@ -3,10 +3,10 @@
 #SBATCH --partition=16V100
 #SBATCH --qos=flood-gpu
 #SBATCH --nodes=2
-#SBATCH --ntasks=8
-#SBATCH --ntasks-per-node=4
-#SBATCH --gpus-per-node=4
-#SBATCH --time=00:20:00
+#SBATCH --ntasks=16
+#SBATCH --ntasks-per-node=8
+#SBATCH --gpus-per-node=8
+#SBATCH --time=00:40:00
 
 set -euo pipefail
 
@@ -83,15 +83,18 @@ fi
 
 "$ABACUS" --info
 
-suite_status=0
 bash "$CONTROL_ROOT/prepare_cusolvermp_smoke.sh"
-cd "$RESULT_ROOT/cusolvermp-smoke/15_rtTDDFT_GPU"
-if ! timeout --signal=TERM --kill-after=30s 15m \
-    bash ../integrate/Autotest.sh -a "$ABACUS" -n 8 \
-        -o "$OMP_NUM_THREADS" \
-        -f CASES_GPU.txt -r '^11_NO_O3_TDDFT_GPU$'; then
-    suite_status=1
-    echo "[ERROR] 2-node 8-GPU cuSolverMp RT-TDDFT case failed"
+case_name=19_NO_Si48_CUSOLVERMP_TDDFT_GPU
+case_dir="$RESULT_ROOT/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name"
+run_log="$RESULT_ROOT/cusolvermp-si48-run.log"
+cd "$case_dir"
+set +e
+timeout --signal=TERM --kill-after=30s 35m \
+    mpirun -np "$SLURM_NTASKS" "$ABACUS" 2>&1 | tee "$run_log"
+suite_status=${PIPESTATUS[0]}
+set -e
+if [[ $suite_status -ne 0 ]]; then
+    echo "[ERROR] 2-node 16-GPU Si48 cuSolverMp RT-TDDFT case failed (rc=$suite_status)"
 fi
 
 if [[ "$suite_status" -eq 0 ]]; then
