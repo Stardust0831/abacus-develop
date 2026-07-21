@@ -23,6 +23,18 @@ declare -F sai_load_toolchain >/dev/null || {
 sai_load_toolchain
 
 source "/opt/sai_config/mps_mapping.d/${SLURM_JOB_PARTITION}.bash"
+case ${SAI_DISABLE_NCCL_IB-false} in
+    true)
+        export NCCL_IB_DISABLE=1
+        ;;
+    false)
+        unset NCCL_IB_DISABLE
+        ;;
+    *)
+        echo "Invalid SAI_DISABLE_NCCL_IB=${SAI_DISABLE_NCCL_IB}" >&2
+        exit 2
+        ;;
+esac
 SAI_SYSTEM_MPIRUN=$(command -v mpirun)
 export SAI_SYSTEM_MPIRUN MAP_OPT
 launcher_dir="$RESULT_ROOT/launcher"

@@ -31,9 +31,10 @@ baseline: each job sources the partition-specific `mps_mapping.d` script and
 uses its `MAP_OPT` and `OMP_NUM_THREADS` values. Test-harness launches use a
 thin `mpirun` wrapper that adds the example's exact `--map-by "$MAP_OPT"`
 argument before forwarding the harness arguments. The validation scripts do not
-override NCCL's IB selection. The intended experimental differences from the
-SAI example are the freshly built ABACUS executable and the pinned newer
-cuSolverMp/cuBLASMp/NCCL toolchain. Each test job records the effective
+override NCCL's IB selection by default; the dedicated 16-GPU diagnostic input
+described below is the only exception. The intended experimental differences
+from the SAI example are the freshly built ABACUS executable and the pinned
+newer cuSolverMp/cuBLASMp/NCCL toolchain. Each test job records the effective
 UCX/Open MPI/NCCL environment and the RDMA devices visible on its compute node.
 
 The system CUDA/NVHPC/NCCL roots are pinned by default. A runner administrator
@@ -46,6 +47,10 @@ Each Slurm submission records its job ID and final accounting state. Cancelling
 the Actions step also cancels the associated pending or running Slurm job.
 The manual `slurm_nodelist` input can pin every job in one run to the same node
 for controlled reproduction. Leave it empty for normal Slurm placement.
+The `disable_nccl_ib_for_cusolvermp` input sets `NCCL_IB_DISABLE=1` only for
+the dedicated 16-GPU case. It is a single-variable diagnostic control for
+distinguishing NCCL's InfiniBand path from other cuSolverMp execution paths;
+the default remains the SAI runtime environment without that override.
 
 Do not enable automatic `pull_request` execution for this workflow. Keep it
 manual and protect the `sai-gpu` GitHub environment with required reviewers.
