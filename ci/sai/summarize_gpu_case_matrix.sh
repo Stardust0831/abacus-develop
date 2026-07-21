@@ -98,11 +98,11 @@ for class in "${classes[@]}"; do
                 [[ $got_case == "$case_name" ]] || errors+=(case_mismatch)
                 [[ $ranks =~ ^[0-9]+$ ]] || errors+=(ranks_not_numeric)
                 [[ $ranks == "$expected_ranks" ]] || errors+=(ranks_mismatch)
-                [[ $state =~ ^(PASS|FAIL|TIMEOUT)$ ]] || errors+=(invalid_state)
+                [[ $state =~ ^(PASS|FAIL|TIMEOUT|INFRA)$ ]] || errors+=(invalid_state)
                 [[ $rc =~ ^[0-9]+$ ]] || errors+=(rc_not_numeric)
                 if [[ $state == PASS && $rc != 0 ]]; then
                     errors+=(pass_with_nonzero_rc)
-                elif [[ $state =~ ^(FAIL|TIMEOUT)$ && $rc == 0 ]]; then
+                elif [[ $state =~ ^(FAIL|TIMEOUT|INFRA)$ && $rc == 0 ]]; then
                     errors+=(failure_with_zero_rc)
                 fi
                 slurm_rc=${slurm_exit_code%%:*}
@@ -110,7 +110,7 @@ for class in "${classes[@]}"; do
                 if [[ $state == PASS ]]; then
                     [[ $slurm_state == COMPLETED ]] || errors+=(pass_without_completed_slurm_state)
                     [[ $slurm_exit_code == 0:0 ]] || errors+=(pass_with_nonzero_slurm_exit)
-                elif [[ $state =~ ^(FAIL|TIMEOUT)$ ]]; then
+                elif [[ $state =~ ^(FAIL|TIMEOUT|INFRA)$ ]]; then
                     [[ $slurm_state == FAILED ]] || errors+=(failure_without_failed_slurm_state)
                     [[ $slurm_rc == "$rc" && $slurm_signal == 0 ]] || errors+=(status_slurm_exit_mismatch)
                 fi
@@ -137,7 +137,7 @@ for class in "${classes[@]}"; do
                 failed=$((failed + 1))
                 echo "::error title=SAI GPU case failed::${suite}/${case_name} state=${state} rc=${rc} Slurm=${job_id}_${task_id}"
                 ;;
-            *)
+            INFRA)
                 infra=$((infra + 1))
                 echo "::error title=SAI GPU case infrastructure failure::${suite}/${case_name} state=${state} rc=${rc} Slurm=${job_id}_${task_id}"
                 ;;
