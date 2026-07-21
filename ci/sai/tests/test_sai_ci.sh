@@ -137,19 +137,25 @@ test_prepare_cusolvermp_smoke() {
     local source=$root/source
     local results=$root/results
     local case_name=19_NO_Si48_CUSOLVERMP_TDDFT_GPU
+    local repository_case=tests/15_rtTDDFT_GPU/$case_name
     local source_case=$source/tests/15_rtTDDFT_GPU/$case_name
     local input=$source_case/INPUT
     local staged=$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/INPUT
     local name
-    mkdir -p "$source_case" "$source/tests/PP_ORB"
-    printf '%s\n' INPUT_PARAMETERS 'ks_solver         cusolvermp' > "$input"
-    for name in KPT README STRU; do
-        printf 'fixture\n' > "$source_case/$name"
-    done
+    mkdir -p "$(dirname "$source_case")" "$source/tests/PP_ORB"
+    cp -a "$repository_case" "$source_case"
+    printf 'must not be staged\n' > "$source_case/UNTRUSTED_EXTRA"
     CI_SOURCE=$source RESULT_ROOT=$results \
         bash ci/sai/prepare_cusolvermp_smoke.sh > "$root/prepare.log"
     assert_contains "$input" 'ks_solver         cusolvermp'
     assert_contains "$staged" 'ks_solver         cusolvermp'
+    for name in INPUT KPT README STRU; do
+        cmp "$source_case/$name" \
+            "$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/$name"
+    done
+    if [[ -e $results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/UNTRUSTED_EXTRA ]]; then
+        fail 'cuSolverMp smoke staging copied an unvalidated extra file'
+    fi
 
     printf '%s\n' INPUT_PARAMETERS 'ks_solver         elpa' > "$input"
     if CI_SOURCE=$source RESULT_ROOT=$root/missing-results \
@@ -161,6 +167,14 @@ test_prepare_cusolvermp_smoke() {
     if CI_SOURCE=$source RESULT_ROOT=$root/duplicate-results \
         bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
         fail 'cuSolverMp smoke staging accepted duplicate cusolvermp lines'
+    fi
+
+    cp "$repository_case/INPUT" "$input"
+    rm -f "$source_case/KPT"
+    ln -s "$PWD/$repository_case/KPT" "$source_case/KPT"
+    if CI_SOURCE=$source RESULT_ROOT=$root/symlink-results \
+        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
+        fail 'cuSolverMp smoke staging accepted a symlinked case file'
     fi
 }
 
