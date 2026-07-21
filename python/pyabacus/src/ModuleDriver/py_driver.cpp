@@ -425,7 +425,10 @@ CalculationResult PyDriver::run(
         );
 
         // Read structure
-        impl_->ucell_->setup_cell(PARAM.globalv.global_in_stru, GlobalV::ofs_running);
+        impl_->ucell_->setup_cell(PARAM.globalv.global_in_stru, GlobalV::ofs_running, PARAM.inp.symmetry_prec, PARAM.inp.dfthalf_type, PARAM.inp.pseudo_dir, PARAM.inp.nspin,
+            PARAM.inp.basis_type, PARAM.inp.orbital_dir, PARAM.inp.init_wfc,
+            PARAM.inp.onsite_radius, PARAM.globalv.deepks_setorb, PARAM.inp.rpa,
+            PARAM.inp.fixed_atoms, PARAM.inp.noncolin, PARAM.inp.calculation, PARAM.inp.esolver_type);
 
         // Check atomic structure
         unitcell::check_atomic_stru(*impl_->ucell_, PARAM.inp.min_dist_coef);
@@ -442,7 +445,7 @@ CalculationResult PyDriver::run(
         if (cal == "scf" || cal == "relax" || cal == "cell-relax" || cal == "nscf")
         {
             Relax_Driver rl_driver;
-            rl_driver.relax_driver(impl_->p_esolver_, *impl_->ucell_, PARAM.inp);
+            rl_driver.relax_driver(impl_->p_esolver_, *impl_->ucell_, PARAM.inp, GlobalV::ofs_running);
         }
         else if (cal == "get_s")
         {

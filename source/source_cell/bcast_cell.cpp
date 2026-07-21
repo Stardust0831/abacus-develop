@@ -1,10 +1,8 @@
-#include "unitcell.h"   
+#include "unitcell.h"
 #include "source_base/parallel_common.h"
-#include "source_io/module_parameter/parameter.h"
-#ifdef __EXX
-#include "source_lcao/module_ri/serialization_cereal.h"
-#endif
-#include "source_hamilt/module_xc/exx_info.h" // use GlobalC::exx_info
+
+#include <string>
+#include <vector>
 
 namespace unitcell
 {
@@ -64,7 +62,7 @@ namespace unitcell
             Parallel_Common::bcast_double(lat.a2[i]);
             Parallel_Common::bcast_double(lat.a3[i]);
             Parallel_Common::bcast_double(lat.latcenter[i]);
-            Parallel_Common::bcast_int(lat.lc[i]);
+            Parallel_Common::bcast_int(lat.lat_axis_free[i]);
         }
 
         // distribute superlattice vectors.
@@ -82,46 +80,38 @@ namespace unitcell
     #endif
     }
     
-    void bcast_magnetism(Magnetism& magnet, const int ntype)
+    void bcast_magnetism(Magnetism& magnet, const int ntype, const int nspin)
     {
-    #ifdef __MPI
+#ifdef __MPI
         MPI_Barrier(MPI_COMM_WORLD);
-        Parallel_Common::bcast_double(magnet.start_mag, ntype);
-        if (PARAM.inp.nspin == 4) 
+        if (GlobalV::MY_RANK != 0)
+        {
+            magnet.start_mag.resize(ntype, 0.0);
+        }
+        Parallel_Common::bcast_double(magnet.start_mag.data(), ntype);
+        if (nspin == 4) 
         {
             Parallel_Common::bcast_double(magnet.ux_[0]);
             Parallel_Common::bcast_double(magnet.ux_[1]);
             Parallel_Common::bcast_double(magnet.ux_[2]);
         }
-    #endif
+#endif
     }
 
-    void bcast_unitcell(UnitCell& ucell)
+    void bcast_unitcell(UnitCell& ucell, const int nspin)
     {
-    #ifdef __MPI
+#ifdef __MPI
         const int ntype = ucell.ntype;
         Parallel_Common::bcast_int(ucell.nat);
 
         bcast_Lattice(ucell.lat);
-        bcast_magnetism(ucell.magnet,ntype);
+        bcast_magnetism(ucell.magnet,ntype, nspin);
         bcast_atoms_tau(ucell.atoms,ntype);
 
         for (int i = 0; i < ntype; i++)
         {
             Parallel_Common::bcast_string(ucell.orbital_fn[i]);
         }
-
-        #ifdef __EXX
-        ModuleBase::bcast_data_cereal(GlobalC::exx_info.info_ri.files_abfs,
-                                      MPI_COMM_WORLD,
-                                      0);
-        ModuleBase::bcast_data_cereal(GlobalC::exx_info.info_opt_abfs.files_abfs,
-                                      MPI_COMM_WORLD,
-                                      0);
-        ModuleBase::bcast_data_cereal(GlobalC::exx_info.info_opt_abfs.files_jles,
-                                      MPI_COMM_WORLD,
-                                      0);
-        #endif
         return;
     #endif
     }

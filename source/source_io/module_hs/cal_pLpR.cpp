@@ -180,8 +180,13 @@ ModuleIO::AngularMomentumCalculator::AngularMomentumCalculator(
     const int rank)
 {
     
-    // ofs_running
     this->ofs_ = ptr_log;
+    if (this->ofs_ == nullptr)
+    {
+        this->fallback_ofs_.open("/dev/null");
+        this->ofs_ = &this->fallback_ofs_;
+    }
+
     *ofs_ << "\n\n\n\n";
     *ofs_ << " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     *ofs_ << " |                                                                    |" << std::endl;
@@ -241,7 +246,7 @@ ModuleIO::AngularMomentumCalculator::AngularMomentumCalculator(
     temp = atom_arrange::set_sr_NL(*ofs_,
                                    PARAM.inp.out_level,
                                    std::max(search_radius, rcut_max),
-                                   ucell.infoNL.get_rcutmax_Beta(),
+                                   ucell.infoNL->get_rcutmax_Beta(),
                                    PARAM.globalv.gamma_only_local);
     temp = std::max(temp, std::max(search_radius, rcut_max));
     this->neighbor_searcher_ = std::unique_ptr<Grid_Driver>(new Grid_Driver(tdestructor, tgrid));
@@ -259,7 +264,7 @@ void ModuleIO::AngularMomentumCalculator::kernel(
     const char dir,
     const int precision)
 {
-    if (!ofs->is_open())
+    if (ofs == nullptr || !ofs->is_open())
     {
         return;
     }

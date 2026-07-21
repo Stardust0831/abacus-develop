@@ -54,7 +54,7 @@ void populate_atom_pairs(hamilt::HContainer<TR>* container,
             const int iat2 = ucell->itia2iat(T2, I2);
 
             // Skip if atom pair has no local orbitals in parallel distribution
-            if (paraV->get_row_size(iat1) <= 0 || paraV->get_col_size(iat2) <= 0)
+            if (paraV->is_invalid_atom_pair(iat1, iat2))
             {
                 continue;
             }
@@ -106,7 +106,6 @@ hamilt::Overlap<hamilt::OperatorLCAO<TK, TR>>::Overlap(HS_Matrix_K<TK>* hsk_in,
     this->SR = SR_in;
 #ifdef __DEBUG
     assert(this->ucell != nullptr);
-    assert(this->SR != nullptr);
 #endif
     // Initialize SR to allocate sparse overlap matrix memory.
     // Only initialize if SR_in is not nullptr (for force calculation, SR_in can be nullptr).

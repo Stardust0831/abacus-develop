@@ -1,5 +1,45 @@
 #include "source_lcao/setup_exx.h"
 
+#ifdef __EXX
+#include "source_lcao/module_ri/Exx_LRI_interface.h"
+#include "source_hamilt/module_xc/exx_info.h" // use the global Exx_Info
+#if defined(__MPI)
+#include "source_base/parallel_common.h"
+#include <string>
+#include <vector>
+#endif
+#endif
+
+#ifdef __EXX
+#if defined(__MPI)
+namespace
+{
+    // Broadcast a vector<string> from rank 0 to all ranks.
+    // Moved here from source_cell/bcast_cell.cpp so that source_cell no longer
+    // depends on the XC module just to distribute these ABFS file-name lists.
+    void bcast_string_vector(std::vector<std::string>& v)
+    {
+        int size = static_cast<int>(v.size());
+        Parallel_Common::bcast_int(size);
+        v.resize(size);
+        for (int i = 0; i < size; ++i)
+        {
+            Parallel_Common::bcast_string(v[i]);
+        }
+    }
+} // namespace
+#endif
+
+void bcast_exx_file_lists()
+{
+#if defined(__MPI)
+    bcast_string_vector(GlobalC::exx_info.info_ri.files_abfs);
+    bcast_string_vector(GlobalC::exx_info.info_opt_abfs.files_abfs);
+    bcast_string_vector(GlobalC::exx_info.info_opt_abfs.files_jles);
+#endif
+}
+#endif
+
 template <typename TK>
 Exx_NAO<TK>::Exx_NAO(){}
 
@@ -16,13 +56,18 @@ void Exx_NAO<TK>::init()
     //  which cause the failure of the subsequent procedure reused by ESolver_LCAO_TDDFT
     // 2. always construct but only initialize when if(cal_exx) is true
     //  because some members like two_level_step are used outside if(cal_exx)
+
+    // Distribute the ABFS/JLE file lists (read from STRU on rank 0) to all ranks
+    // before Exx_LRI copies info_ri below.
+    bcast_exx_file_lists();
+
     if (GlobalC::exx_info.info_ri.real_number)
     {
-        this->exd = std::make_shared<Exx_LRI_Interface<TK, double>>(GlobalC::exx_info.info_ri);
+        this->exd = std::make_shared<Exx_LRI_Interface<TK, double>>(GlobalC::exx_info.info_ri, GlobalC::exx_info.info_global);
     }
     else
     {
-        this->exc = std::make_shared<Exx_LRI_Interface<TK, std::complex<double>>>(GlobalC::exx_info.info_ri);
+        this->exc = std::make_shared<Exx_LRI_Interface<TK, std::complex<double>>>(GlobalC::exx_info.info_ri, GlobalC::exx_info.info_global);
     }
 #endif
 }
@@ -59,6 +104,22 @@ void Exx_NAO<TK>::before_runner(
             }
         }
     }
+    else if (inp.calculation == "nscf" && (inp.init_chg == "dm" || inp.init_chg == "dm_no_renormalize"))
+    {
+        // init exx integration tables for Cs/Vs, but not use symmetry for nscf
+        if (GlobalC::exx_info.info_global.cal_exx)
+        {
+            if (GlobalC::exx_info.info_ri.real_number)
+            {
+                this->exd->init(MPI_COMM_WORLD, ucell, kv, orb);
+            }
+            else
+            {
+                this->exc->init(MPI_COMM_WORLD, ucell, kv, orb);
+            }
+        }
+    }
+
 #endif
 }
 

@@ -3,8 +3,10 @@
 #include "hamilt_casida.h"
 #include "hamilt_ulr.hpp"
 #include "source_lcao/module_lr/potentials/pot_hxc_lrtd.h"
+#include "source_lcao/LCAO_nonlocal_info.h"
 #include "source_lcao/module_lr/hsolver_lrtd.hpp"
 #include "source_lcao/module_lr/lr_spectrum.h"
+#include "source_lcao/module_gint/gint.h"
 #include <memory>
 #include "source_lcao/hamilt_lcao.h"
 #include "source_io/module_wf/read_wfc_nao.h"
@@ -16,6 +18,9 @@
 #include "source_io/module_parameter/parameter.h"
 #include "source_lcao/module_lr/ri_benchmark/ri_benchmark.h"
 #include "source_lcao/module_lr/operator_casida/operator_lr_diag.h" // for precondition
+#ifdef __EXX
+#include "source_lcao/module_ri/Exx_LRI_interface.h"
+#endif
 
 #ifdef __EXX
 template<>
@@ -69,8 +74,12 @@ inline void setup_2center_table(TwoCenterBundle& two_center_bundle, LCAO_Orbital
 #endif
     if (PARAM.inp.vnl_in_h)
     {
-        ucell.infoNL.setupNonlocal(ucell.ntype, ucell.atoms, GlobalV::ofs_running, orb);
-        two_center_bundle.build_beta(ucell.ntype, ucell.infoNL.Beta);
+        auto* lcao_nl = new LCAONonlocalInfo();
+        lcao_nl->setupNonlocal(ucell.ntype, ucell.atoms, GlobalV::ofs_running, orb,
+                               PARAM.inp.basis_type, PARAM.inp.out_element_info,
+                               PARAM.inp.lspinorb, PARAM.inp.nspin);
+        ucell.infoNL.reset(lcao_nl);
+        two_center_bundle.build_beta(ucell.ntype, lcao_nl->get_nonlocal().Beta);
     }
 }
 
@@ -264,6 +273,7 @@ LR::ESolver_LR<T, TR>::ESolver_LR(ModuleESolver::ESolver_KS_LCAO<T, TR>&& ks_sol
             // set ccp_type according to the xc_kernel
             if (xc_kernel == "hf") { exx_info.info_global.ccp_type = Conv_Coulomb_Pot_K::Ccp_Type::Hf; }
             else if (xc_kernel == "hse") { exx_info.info_global.ccp_type = Conv_Coulomb_Pot_K::Ccp_Type::Erfc; }
+            exx_info.sync_from_global();
             this->exx_lri = std::make_shared<Exx_LRI<T>>(exx_info.info_ri);
             this->exx_lri->init(MPI_COMM_WORLD, ucell,this->kv, ks_sol.orb_);
             this->exx_lri->cal_exx_ions(ucell,input.out_ri_cv);
@@ -295,10 +305,18 @@ LR::ESolver_LR<T, TR>::ESolver_LR(const Input_para& inp, UnitCell& ucell) : inpu
     // necessary steps in ESolver_KS::before_all_runners : symmetry and k-points
     if (ModuleSymmetry::Symmetry::symm_flag == 1)
     {
-        ucell.symm.analy_sys(ucell.lat, ucell.st, ucell.atoms, GlobalV::ofs_running);
+        const int cal_symm_repr[2] = {PARAM.inp.cal_symm_repr[0], PARAM.inp.cal_symm_repr[1]};
+        ucell.symm.analy_sys(ucell.lat, ucell.st, ucell.atoms, GlobalV::ofs_running,
+                             PARAM.inp.symmetry_prec, PARAM.inp.nspin, PARAM.inp.calculation, cal_symm_repr);
         ModuleBase::GlobalFunc::DONE(GlobalV::ofs_running, "SYMMETRY");
     }
-    this->kv.set(ucell,ucell.symm, PARAM.inp.kpoint_file, PARAM.inp.nspin, ucell.G, ucell.latvec, GlobalV::ofs_running);
+    const bool use_ibz = false;
+    const std::string global_out_dir = PARAM.globalv.global_out_dir;
+    const bool gamma_only_local = PARAM.globalv.gamma_only_local;
+    const double kspacing[3] = {PARAM.inp.kspacing[0], PARAM.inp.kspacing[1], PARAM.inp.kspacing[2]};
+    const std::string kmesh_type = PARAM.inp.kmesh_type;
+    const double koffset[3] = {PARAM.inp.koffset[0], PARAM.inp.koffset[1], PARAM.inp.koffset[2]};
+    this->kv.set(ucell, ucell.symm, PARAM.inp.kpoint_file, PARAM.inp.nspin, ucell.G, ucell.latvec, GlobalV::ofs_running, use_ibz, global_out_dir, gamma_only_local, kspacing, kmesh_type, koffset);
     ModuleBase::GlobalFunc::DONE(GlobalV::ofs_running, "INIT K-POINTS");
     ModuleIO::print_parameters(ucell, this->kv, inp);
 
@@ -369,7 +387,7 @@ LR::ESolver_LR<T, TR>::ESolver_LR(const Input_para& inp, UnitCell& ucell) : inpu
     search_radius = atom_arrange::set_sr_NL(GlobalV::ofs_running,
         PARAM.inp.out_level,
         orb.get_rcutmax_Phi(),
-        ucell.infoNL.get_rcutmax_Beta(),
+        ucell.infoNL->get_rcutmax_Beta(),
         PARAM.globalv.gamma_only_local);
     atom_arrange::search(PARAM.globalv.search_pbc,
                          GlobalV::ofs_running,

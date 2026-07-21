@@ -1,5 +1,6 @@
 #ifndef DEEPKSLCAO_H
 #define DEEPKSLCAO_H
+#include "source_basis/module_ao/ORB_read.h"
 #include "source_basis/module_ao/parallel_orbitals.h"
 #include "source_basis/module_nao/two_center_integrator.h"
 #include "source_cell/module_neighbor/sltk_grid_driver.h"
@@ -94,7 +95,7 @@ class DeePKS<OperatorLCAO<TK, TR>> : public OperatorLCAO<TK, TR>
      * @brief calculate the DeePKS correction matrix with specific <I,J,R> atom-pairs
      * use the adjs_all to calculate the HR matrix
      */
-    void calculate_HR();
+    void calculate_HR(double** gedm_use, double** gedm_mag_use = nullptr, const double sign = 0.0);
 
     /**
      * @brief calculate the HR local matrix of <I,J,R> atom pair
