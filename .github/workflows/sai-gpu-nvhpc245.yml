@@ -1,0 +1,118 @@
+name: SAI NVHPC 24.5 Legacy cuSolverMp Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sai-gpu-nvhpc245
+  cancel-in-progress: false
+
+jobs:
+  rebuild-and-test:
+    name: SAI NVHPC 24.5 CAL rebuild and 16-GPU validation
+    runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
+    timeout-minutes: 180
+    environment: sai-gpu
+    env:
+      MP_PROFILE: nvhpc245-cal-mp050-nccl218
+      RUN_ROOT: ${{ github.workspace }}/.sai-run-uninitialized
+      BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
+      INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
+      RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Create isolated SAI run directory
+        run: |
+          set -euo pipefail
+          SAI_PROJECT_ROOT=${SAI_PROJECT_ROOT:-$HOME/agent/abacus_sai_gpu_ci}
+          [[ "$SAI_PROJECT_ROOT" == "$HOME"/* ]] || {
+            echo "SAI_PROJECT_ROOT must be lexically below HOME: $SAI_PROJECT_ROOT" >&2
+            exit 1
+          }
+          mkdir -p "$SAI_PROJECT_ROOT"
+          SAI_PROJECT_ROOT=$(cd "$SAI_PROJECT_ROOT" && pwd -P)
+          HOME_ROOT=$(cd "$HOME" && pwd -P)
+          [[ "$SAI_PROJECT_ROOT" == "$HOME_ROOT"/* ]] || {
+            echo "SAI_PROJECT_ROOT must be below HOME: $SAI_PROJECT_ROOT" >&2
+            exit 1
+          }
+          RUN_ROOT=$SAI_PROJECT_ROOT/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
+          CI_SOURCE=$RUN_ROOT/source
+          BUILD_ROOT=$RUN_ROOT/build
+          INSTALL_ROOT=$RUN_ROOT/install
+          RESULT_ROOT=$RUN_ROOT/results
+
+          [[ ! -e "$RUN_ROOT" ]] || {
+            echo "Refusing to reuse an existing run directory: $RUN_ROOT" >&2
+            exit 1
+          }
+          mkdir -p "$CI_SOURCE" "$BUILD_ROOT" "$INSTALL_ROOT" "$RESULT_ROOT"
+          rsync -a --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SOURCE/"
+          TOOLCHAIN_FILE=$CI_SOURCE/ci/sai/toolchains/nvhpc245-cal-mp050.env.example
+
+          {
+            echo "SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT"
+            echo "TOOLCHAIN_FILE=$TOOLCHAIN_FILE"
+            echo "RUN_ROOT=$RUN_ROOT"
+            echo "CI_SOURCE=$CI_SOURCE"
+            echo "BUILD_ROOT=$BUILD_ROOT"
+            echo "INSTALL_ROOT=$INSTALL_ROOT"
+            echo "RESULT_ROOT=$RESULT_ROOT"
+          } >> "$GITHUB_ENV"
+
+      - name: Build current checkout with NVHPC 24.5 stack
+        run: |
+          set -euo pipefail
+          log="$RESULT_ROOT/sai-nvhpc245-build-submit.log"
+          unset SAI_SLURM_NODELIST
+          export TMPDIR=$RESULT_ROOT
+          export CI_SOURCE BUILD_ROOT INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE TMPDIR
+          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
+            "$RESULT_ROOT/sai-nvhpc245-build-%j.out" \
+            "$CI_SOURCE/ci/sai/build_gpu_nvhpc245.sbatch"
+
+      - name: Run 16-GPU legacy cuSolverMp validation
+        id: legacy_rt
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          log="$RESULT_ROOT/sai-nvhpc245-rt-submit.log"
+          unset SAI_SLURM_NODELIST
+          export TMPDIR=$RESULT_ROOT
+          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE TMPDIR
+          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
+            "$RESULT_ROOT/sai-nvhpc245-rt-%j.out" \
+            "$CI_SOURCE/ci/sai/test_gpu_nvhpc245.sbatch"
+
+      - name: Report validation failure
+        if: always()
+        env:
+          LEGACY_RT_OUTCOME: ${{ steps.legacy_rt.outcome }}
+        run: |
+          set -euo pipefail
+          echo "NVHPC 24.5 16-GPU cuSolverMp: $LEGACY_RT_OUTCOME"
+          [[ "$LEGACY_RT_OUTCOME" == success ]]
+
+      - name: Upload SAI logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sai-nvhpc245-cusolvermp-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.BUILD_ROOT }}/toolchain-summary.txt
+            ${{ env.BUILD_ROOT }}/CMakeCache.txt
+            ${{ env.INSTALL_ROOT }}/abacus-info.txt
+            ${{ env.INSTALL_ROOT }}/ldd.txt
+            ${{ env.INSTALL_ROOT }}/abacus.sha256
+            ${{ env.CI_SOURCE }}/tests/**/log.txt
+            ${{ env.CI_SOURCE }}/tests/**/result.out
+            ${{ env.RESULT_ROOT }}/*.log
+            ${{ env.RESULT_ROOT }}/*.out
+            ${{ env.RESULT_ROOT }}/*.txt
+          if-no-files-found: warn

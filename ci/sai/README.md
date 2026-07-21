@@ -57,3 +57,27 @@ manual and protect the `sai-gpu` GitHub environment with required reviewers.
 
 The tested 0.9.0/0.9.1 archive binaries reference NCCL APIs that are absent
 from NCCL 2.18.5. This workflow requires NVIDIA NCCL 2.29.3.
+
+## NVHPC 24.5 legacy control
+
+`.github/workflows/sai-gpu-nvhpc245.yml` is a separate manual diagnostic for
+the CUDA 12.4-era stack installed on SAI:
+
+```text
+cuSolverMp 0.5.0 (CAL communicator backend)
+cuBLASMp 0.2.0 (transitive stack component; direct ABACUS support disabled)
+NCCL 2.18.5-1-sai.1 (the root exported by nccl/2.18.5-sai-cuda12.4)
+CUDA 12.4.1
+Open MPI 5.0.8
+```
+
+Current ABACUS requires cuBLASMp 0.8 or newer for its direct cuBLASMp path,
+so this profile builds with `ENABLE_CUBLASMP=OFF`. cuSolverMp 0.5 uses CAL and
+does not have a dynamic dependency on NCCL or cuBLASMp; the workflow verifies
+that property before building. Consequently this control tests the legacy
+cuSolverMp/CAL 16-GPU path. It records the requested NCCL 2.18.5 installation
+but must not be interpreted as a test of cuSolverMp over NCCL.
+
+The legacy workflow deliberately has no node-selection input. It also rejects
+project roots outside the invoking user's canonical home directory and places
+submission-helper temporary files in the per-run result directory.
