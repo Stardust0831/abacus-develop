@@ -130,9 +130,132 @@ test_workflow_security_policy() {
     fi
 }
 
+test_pmix_startup_retry() {
+    local root=$test_root/pmix-retry
+    local suite=$root/work/tests/suite
+    local case_dir=$suite/case
+    local integrate=$root/work/tests/integrate
+    local results=$root/results
+    local abacus=$root/abacus
+    local fake_count=$root/count
+    local task
+    mkdir -p "$case_dir" "$integrate" "$results" "$root/bin"
+    : > "$abacus"
+    chmod +x "$abacus"
+    cat > "$root/bin/sleep" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$root/bin/sleep"
+    cat > "$integrate/Autotest.sh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+count=0
+if [[ -f $FAKE_COUNT_FILE ]]; then
+    count=$(<"$FAKE_COUNT_FILE")
+fi
+count=$((count + 1))
+printf '%s\n' "$count" > "$FAKE_COUNT_FILE"
+emit_pmix_failure() {
+    echo 'PMIX ERROR: PMIX_ERR_FILE_OPEN_FAILURE'
+    echo '*** An error occurred in MPI_Init_thread'
+    echo 'PMIx_Init failed for the following reason:'
+    exit 1
+}
+case $FAKE_MODE in
+    pmix_once)
+        if [[ $count -eq 1 ]]; then
+            mkdir -p "$FAKE_CASE_DIR/OUT.autotest"
+            : > "$FAKE_CASE_DIR/log.txt"
+            emit_pmix_failure
+        fi
+        [[ ! -e $FAKE_CASE_DIR/OUT.autotest ]]
+        [[ ! -e $FAKE_CASE_DIR/log.txt ]]
+        echo 'recovered on the second attempt'
+        ;;
+    pmix_always)
+        emit_pmix_failure
+        ;;
+    pmix_timeout)
+        echo 'PMIX ERROR: PMIX_ERR_FILE_OPEN_FAILURE'
+        echo '*** An error occurred in MPI_Init_thread'
+        echo 'PMIx_Init failed for the following reason:'
+        exit 124
+        ;;
+    normal_failure)
+        echo 'numerical comparison failed'
+        exit 1
+        ;;
+    *) exit 2 ;;
+esac
+EOF
+    chmod +x "$integrate/Autotest.sh"
+
+    task=$results/recovered
+    mkdir -p "$task"
+    FAKE_MODE=pmix_once FAKE_COUNT_FILE=$fake_count FAKE_CASE_DIR=$case_dir \
+    RESULT_ROOT=$results PATH="$root/bin:$PATH" \
+        bash ci/sai/run_gpu_case_attempts.sh \
+            "$suite" "$case_dir" case "$abacus" 2 8 "$task" \
+            > "$root/recovered.log"
+    [[ $(<"$fake_count") == 2 ]]
+    assert_contains "$task/pmix-retry.tsv" $'attempts\t2'
+    assert_contains "$task/pmix-retry.tsv" $'retried\t1'
+    assert_contains "$task/pmix-retry.tsv" $'final_pmix\t0'
+    assert_contains "$task/case.log" 'SAI_PMIX_STARTUP_RETRY'
+    assert_contains "$task/case-attempt-2.log" 'recovered on the second attempt'
+
+    rm -f "$fake_count"
+    task=$results/persistent
+    mkdir -p "$task"
+    if FAKE_MODE=pmix_always FAKE_COUNT_FILE=$fake_count FAKE_CASE_DIR=$case_dir \
+        RESULT_ROOT=$results PATH="$root/bin:$PATH" \
+            bash ci/sai/run_gpu_case_attempts.sh \
+                "$suite" "$case_dir" case "$abacus" 2 8 "$task" \
+                > "$root/persistent.log"; then
+        fail 'persistent PMIx startup failure returned success'
+    fi
+    [[ $(<"$fake_count") == 2 ]]
+    assert_contains "$task/pmix-retry.tsv" $'attempts\t2'
+    assert_contains "$task/pmix-retry.tsv" $'final_pmix\t1'
+
+    rm -f "$fake_count"
+    task=$results/normal-failure
+    mkdir -p "$task"
+    if FAKE_MODE=normal_failure FAKE_COUNT_FILE=$fake_count FAKE_CASE_DIR=$case_dir \
+        RESULT_ROOT=$results PATH="$root/bin:$PATH" \
+            bash ci/sai/run_gpu_case_attempts.sh \
+                "$suite" "$case_dir" case "$abacus" 2 8 "$task" \
+                > "$root/normal-failure.log"; then
+        fail 'normal case failure returned success'
+    fi
+    [[ $(<"$fake_count") == 1 ]]
+    assert_contains "$task/pmix-retry.tsv" $'attempts\t1'
+    assert_contains "$task/pmix-retry.tsv" $'retried\t0'
+    assert_contains "$task/pmix-retry.tsv" $'final_pmix\t0'
+
+    rm -f "$fake_count"
+    task=$results/pmix-timeout
+    mkdir -p "$task"
+    if FAKE_MODE=pmix_timeout FAKE_COUNT_FILE=$fake_count FAKE_CASE_DIR=$case_dir \
+        RESULT_ROOT=$results PATH="$root/bin:$PATH" \
+            bash ci/sai/run_gpu_case_attempts.sh \
+                "$suite" "$case_dir" case "$abacus" 2 8 "$task" \
+                > "$root/pmix-timeout.log"; then
+        fail 'PMIx timeout returned success'
+    fi
+    [[ $(<"$fake_count") == 1 ]]
+    assert_contains "$task/pmix-retry.tsv" $'attempts\t1'
+    assert_contains "$task/pmix-retry.tsv" $'retried\t0'
+    assert_contains "$task/pmix-retry.tsv" $'final_pmix\t0'
+    assert_contains "$task/pmix-retry.tsv" $'final_rc\t124'
+}
+
 test_gpu_matrix_submission_policy() {
     local script=ci/sai/run_gpu_case_matrix.sh
     local multinode=ci/sai/test_gpu.sbatch
+    local launcher=ci/sai/test_gpu_case.sh
+    local summary=ci/sai/summarize_gpu_case_matrix.sh
     assert_contains "$script" 'export GPU_CASE_CLASS=$class'
     assert_contains "$script" 'export GPU_CASE_RANKS=${ranks[$class]}'
     assert_contains "$script" 'export GPU_CASE_MANIFEST=$manifest'
@@ -152,6 +275,9 @@ test_gpu_matrix_submission_policy() {
     assert_contains "$multinode" '#SBATCH --gpus-per-node=8'
     assert_contains "$multinode" '19_NO_Si48_CUSOLVERMP_TDDFT_GPU'
     assert_not_contains "$multinode" 'Autotest.sh'
+    assert_contains "$launcher" 'run_gpu_case_attempts.sh'
+    assert_contains "$launcher" 'state=INFRA'
+    assert_contains "$summary" '^(PASS|FAIL|TIMEOUT|INFRA)$'
 }
 
 test_prepare_cusolvermp_smoke() {
@@ -1007,6 +1133,7 @@ EOF
 
 run_test 'SSH client configuration' test_configure_ssh_client
 run_test 'workflow security policy' test_workflow_security_policy
+run_test 'PMIx startup retry policy' test_pmix_startup_retry
 run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
 run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths

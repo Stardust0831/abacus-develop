@@ -33,7 +33,8 @@ unset GITHUB_ENV GITHUB_STEP_SUMMARY SAI_SLURM_NODELIST
 [[ $source_sha =~ ^[0-9a-fA-F]{40}$ ]]
 [[ $control_sha =~ ^[0-9a-fA-F]{40}$ ]]
 for control_file in prepare_nvidia_mp.sh prepare_cusolvermp_smoke.sh \
-    run_slurm_job.sh build_gpu.sbatch run_gpu_validation.sh; do
+    run_slurm_job.sh run_gpu_case_attempts.sh build_gpu.sbatch \
+    run_gpu_validation.sh; do
     [[ -f $CONTROL_ROOT/$control_file ]]
 done
 

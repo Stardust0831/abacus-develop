@@ -158,7 +158,11 @@ The validation keeps InfiniBand enabled and records effective MPI, UCX, NCCL,
 RDMA, dynamic-library, Slurm accounting, and per-case numerical results.
 Existing numerical references and thresholds are not relaxed. The currently
 known `16_SDFT_GPU/005_PW_SDFT_MALL_BPCG_GPU` numerical failure therefore
-makes the full workflow red until ABACUS fixes it.
+makes the full workflow red until ABACUS fixes it. A case is retried exactly
+once only when its first attempt fails before MPI initialization with the
+observed PMIx shared-memory startup signature. Both attempt logs and retry
+metadata are retained. A second PMIx startup failure is reported as
+infrastructure rather than as an ABACUS numerical failure.
 
 ## Artifacts and cleanup
 
