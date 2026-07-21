@@ -12,6 +12,11 @@ on:
         required: false
         default: ""
         type: string
+      run_namespace:
+        description: "Optional run subdirectory, for example pr-7658"
+        required: false
+        default: "manual"
+        type: string
   schedule:
     - cron: "30 20 * * *"
 
@@ -19,7 +24,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: sai-gpu-rebuild
+  group: sai-gpu-${{ github.event_name == 'schedule' && 'daily' || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -32,6 +37,7 @@ jobs:
     env:
       SOURCE_SHA: ${{ github.event_name == 'schedule' && github.sha || inputs.source_sha }}
       PROJECT_ROOT_INPUT: ${{ inputs.project_root || '' }}
+      RUN_NAMESPACE_INPUT: ${{ inputs.run_namespace || '' }}
       SAI_PROJECT_ROOT_DEFAULT: ${{ vars.SAI_PROJECT_ROOT }}
       SAI_SSH_HOST: ${{ vars.SAI_SSH_HOST }}
       SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
@@ -66,7 +72,19 @@ jobs:
               exit 1
               ;;
           esac
-          echo "REQUESTED_PROJECT_ROOT=$requested_root" >> "$GITHUB_ENV"
+          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+            run_namespace=daily
+            source_cache_role=baseline
+          else
+            run_namespace=${RUN_NAMESPACE_INPUT:-manual}
+            source_cache_role=candidate
+          fi
+          [[ "$run_namespace" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]
+          {
+            echo "REQUESTED_PROJECT_ROOT=$requested_root"
+            echo "RUN_NAMESPACE=$run_namespace"
+            echo "SOURCE_CACHE_ROLE=$source_cache_role"
+          } >> "$GITHUB_ENV"
 
       - name: Checkout requested ABACUS commit
         uses: actions/checkout@v6
@@ -120,13 +138,14 @@ jobs:
           set -euo pipefail
           run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
-            "$REQUESTED_PROJECT_ROOT" "$run_key" "$SOURCE_SHA" "$CONTROL_SHA" \
+            "$REQUESTED_PROJECT_ROOT" "$RUN_NAMESPACE" "$run_key" \
+            "$SOURCE_SHA" "$CONTROL_SHA" \
             < control/ci/sai/prepare_remote_run.sh)
           printf '%s\n' "$output"
           remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
           remote_run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
           [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
-          [[ "$remote_run_root" == "$remote_project_root/runs/$run_key" ]]
+          [[ "$remote_run_root" == "$remote_project_root/runs/$RUN_NAMESPACE/$run_key" ]]
           {
             echo "REMOTE_PROJECT_ROOT=$remote_project_root"
             echo "REMOTE_RUN_ROOT=$remote_run_root"
@@ -145,13 +164,16 @@ jobs:
           set -euo pipefail
           output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
             prepare "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" \
+            "$SOURCE_CACHE_ROLE" \
             < control/ci/sai/source_transfer_cache.sh)
           printf '%s\n' "$output"
           transfer_root=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
           base_sha=$(awk -F= '$1 == "SOURCE_CACHE_BASE_SHA" {print $2}' <<< "$output")
+          cache_role=$(awk -F= '$1 == "SOURCE_CACHE_ROLE" {print $2}' <<< "$output")
           run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           [[ "$transfer_root" == "$REMOTE_PROJECT_ROOT/cache/source-transfers/$run_key" ]]
           [[ "$base_sha" == none || "$base_sha" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$cache_role" == "$SOURCE_CACHE_ROLE" ]]
           {
             echo "REMOTE_SOURCE_TRANSFER_ROOT=$transfer_root"
             echo "SOURCE_CACHE_BASE_SHA=$base_sha"

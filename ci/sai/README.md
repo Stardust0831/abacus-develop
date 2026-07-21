@@ -29,6 +29,11 @@ before approval because its code will execute on SAI with all permissions of
 reviews the pull request and then dispatches its exact commit when GPU testing
 is warranted. Do not add an automatic `pull_request` trigger.
 
+Different manually approved commits may run concurrently. Scheduled runs share
+one `daily` concurrency group and therefore serialize with other scheduled
+runs, while every manual dispatch uses its GitHub run ID as an independent
+group. The protected Environment approval remains per run.
+
 ### One-time GitHub configuration
 
 Configure these settings in the upstream repository after this workflow is
@@ -76,15 +81,22 @@ rejects any path that escapes the account's canonical HOME. Only
    `SAI_PROJECT_ROOT`, or enter another absolute directory below
    `/home/abacus-group/abacususer01`, for example
    `/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci_trial`.
-5. Submit the workflow. A required reviewer then opens the pending deployment,
+5. Set `run_namespace` to a short label such as `pr-7658`. Runs using the same
+   project root share the daily source baseline and NVIDIA archive cache, but
+   keep build, install, and result files in separate namespace directories.
+6. Submit the workflow. A required reviewer then opens the pending deployment,
    checks the requested SHA and directory, and approves `sai-ssh-manual`.
 
 The selected directory is a reusable project root, not a checkout directory.
-Each attempt uses a new `runs/<GitHub run ID>-<attempt>` subdirectory. Official
-NVIDIA archives are cached under `vendor/`, and the user-level cleanup service
+Each attempt uses a new
+`runs/<namespace>/<GitHub run ID>-<attempt>` subdirectory. Official NVIDIA
+archives are cached under `vendor/`, and the user-level cleanup service
 discovers every selected project root through its registry. A scheduled run
-has no input form and always uses the scheduled Environment's
-`SAI_PROJECT_ROOT` with the current default-branch SHA.
+has no input form, always uses namespace `daily`, and uses the scheduled
+Environment's `SAI_PROJECT_ROOT` with the current default-branch SHA. Choosing
+a different project root intentionally creates an independent source baseline
+and vendor cache; use a namespace below the default project root when sharing
+those caches is desired.
 
 The SSH client disables agent and port forwarding, uses `BatchMode`, requires
 the repository-pinned SAI host key, and enables transport compression for all
@@ -103,9 +115,9 @@ jobs to avoid leaving orphan allocations.
 ## Build and GPU jobs
 
 Each attempt creates a collision-resistant directory at
-`$SAI_PROJECT_ROOT/runs/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT`. The project root
-also holds a shared, locked cache of the SHA256-pinned official NVIDIA
-archives:
+`$SAI_PROJECT_ROOT/runs/$RUN_NAMESPACE/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT`.
+The project root also holds a shared, locked cache of the SHA256-pinned
+official NVIDIA archives:
 
 ```text
 cuSolverMp 0.9.0.6427 (CUDA 12)
@@ -129,21 +141,26 @@ Runtime checks require the expected `libnccl.so.2`,
 `NCCL_SAI_RAIL_BY_CHANNEL=1`, cuSolverMp 0.9.0, cuBLASMp 0.9.1, and NCCL
 2.29.3. The workflow does not modify `/opt`, modules, or system configuration.
 
-Source transfer keeps one non-executed snapshot and its commit SHA under the
-selected project root. For the first run, GitHub sends a gzip-compressed full
-snapshot represented as a binary diff from Git's empty tree. Later runs ask
-SAI for the last verified cached SHA and send the same compressed diff format
-from that SHA to the requested commit. A canonical Git tree manifest
-accompanies every payload. SAI checks every path, file type, executable bit,
-symlink target and blob hash, and rejects extra filesystem entries before
-promoting the source. An invalid or unavailable cache pointer falls back to a
-full snapshot. SAI applies the payload to a server-side copy, copies the
-verified result into the
-isolated run, and promotes the snapshot before compilation starts. Promotion
-is independent of later test outcomes, so a numerically failing run can still
-serve as the next transfer baseline. Build, install, and result directories
-are never reused, and tested code never executes from or writes into the
-source cache.
+Source transfer keeps one verified, non-executed daily baseline snapshot and
+its commit SHA under the selected project root. For the first run, GitHub sends
+a gzip-compressed full snapshot represented as a binary diff from Git's empty
+tree. Later runs ask SAI for that baseline SHA and send the same compressed
+diff format from the baseline to the requested commit. A canonical Git tree
+manifest accompanies every payload. SAI checks every path, file type,
+executable bit, symlink target and blob hash, and rejects extra filesystem
+entries before use. An invalid or unavailable cache pointer falls back to a
+full snapshot. A manual candidate leaves an invalid baseline untouched; the
+next scheduled baseline run may quarantine and replace it.
+
+Only a scheduled `daily` run promotes its verified source to the next
+baseline. A manual PR run consumes the baseline but never advances it, even
+when its tests pass or fail, so concurrent PRs do not form an accidental
+rolling cache chain. Cache preparation and promotion hold a shared filesystem
+lock; each run applies its payload in a private transfer directory before
+copying it into the isolated run. The pre-existing `source-latest` snapshot is
+accepted as the initial daily baseline when this policy is first deployed.
+Build, install, and result directories are never reused, and tested code never
+executes from or writes into the source cache.
 
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
 because the selected GPU suites do not exercise them. After a successful
@@ -151,7 +168,8 @@ build, three resource-homogeneous Slurm arrays submit all 48 cases in suites
 11/12/13/15/16 while a 2-node, 16-rank Si48 cuSolverMp RT-TDDFT smoke job runs in
 parallel. The arrays use one 1-GPU task, seven 2-GPU tasks, and forty 4-GPU
 tasks. The 1/2-GPU arrays use `flood-1o2gpu`; the 4-GPU array and multinode job
-use `flood-gpu`. No job pins a node name or explicitly requests CPU resources.
+use `flood-gpu`. Their per-class concurrent task caps are 2, 8, and 8,
+respectively. No job pins a node name or explicitly requests CPU resources.
 
 SAI's partition mapping scripts determine MPI placement and OpenMP threads.
 The validation keeps InfiniBand enabled and records effective MPI, UCX, NCCL,

@@ -17,7 +17,7 @@ log_root="$matrix_root/logs"
 mkdir -p "$log_root"
 
 classes=(gpu1 gpu2 gpu4)
-declare -A limits=([gpu1]=1 [gpu2]=4 [gpu4]=4)
+declare -A limits=([gpu1]=2 [gpu2]=8 [gpu4]=8)
 declare -A ranks=([gpu1]=1 [gpu2]=2 [gpu4]=4)
 declare -A qos=([gpu1]=flood-1o2gpu [gpu2]=flood-1o2gpu [gpu4]=flood-gpu)
 declare -A job_ids=()

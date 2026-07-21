@@ -28,6 +28,10 @@ unset GITHUB_ENV GITHUB_STEP_SUMMARY SAI_SLURM_NODELIST
 
 [[ $SAI_PROJECT_ROOT == "$HOME/"* ]]
 [[ $RUN_ROOT == "$SAI_PROJECT_ROOT/runs/"* ]]
+run_parent=$(dirname "$RUN_ROOT")
+[[ $(dirname "$run_parent") == "$SAI_PROJECT_ROOT/runs" ]]
+run_namespace=${run_parent##*/}
+[[ $run_namespace =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]
 [[ -d $CI_SOURCE && -d $CONTROL_ROOT && -d $BUILD_ROOT && \
    -d $INSTALL_ROOT && -d $RESULT_ROOT ]]
 [[ $source_sha =~ ^[0-9a-fA-F]{40}$ ]]
@@ -77,6 +81,7 @@ trap cancel_child EXIT
     printf 'remote_user\t%s\n' "$USER"
     printf 'remote_host\t%s\n' "$(hostname)"
     printf 'project_root\t%s\n' "$SAI_PROJECT_ROOT"
+    printf 'run_namespace\t%s\n' "$run_namespace"
 } > "$RESULT_ROOT/remote-run-metadata.tsv"
 
 bash "$CONTROL_ROOT/prepare_nvidia_mp.sh"

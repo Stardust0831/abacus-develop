@@ -115,7 +115,7 @@ while IFS= read -r configured_root; do
             fi
             (( now - stamp >= age_limit )) || continue
             remove_candidate "$run_root" "$reason"
-        done < <(find "$project_root/runs" -mindepth 1 -maxdepth 1 -type d -print0)
+        done < <(find "$project_root/runs" -mindepth 1 -maxdepth 2 -type d -print0)
     fi
 
     if [[ -d $project_root/diagnostics ]]; then
