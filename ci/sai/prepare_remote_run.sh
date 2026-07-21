@@ -2,15 +2,17 @@
 
 set -euo pipefail
 
-if [[ $# -ne 4 ]]; then
-    echo "Usage: $0 PROJECT_ROOT RUN_KEY SOURCE_SHA CONTROL_SHA" >&2
+if [[ $# -ne 5 ]]; then
+    echo "Usage: $0 PROJECT_ROOT RUN_NAMESPACE RUN_KEY SOURCE_SHA CONTROL_SHA" >&2
     exit 2
 fi
 
 requested_root=$1
-run_key=$2
-source_sha=$3
-control_sha=$4
+run_namespace=$2
+run_key=$3
+source_sha=$4
+control_sha=$5
+[[ $run_namespace =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]
 [[ $run_key =~ ^[0-9]+-[0-9]+$ ]]
 [[ $source_sha =~ ^[0-9a-fA-F]{40}$ ]]
 [[ $control_sha =~ ^[0-9a-fA-F]{40}$ ]]
@@ -31,12 +33,21 @@ esac
 
 config_root=$(realpath --canonicalize-missing "$HOME/.config/abacus-sai-ci")
 [[ $config_root == "$canonical_home/"* ]]
-mkdir -p "$project_root/runs" "$config_root"
+runs_root=$(realpath --canonicalize-missing "$project_root/runs")
+namespace_root=$(realpath --canonicalize-missing \
+    "$runs_root/$run_namespace")
+[[ $runs_root == "$project_root/runs" ]]
+[[ $namespace_root == "$runs_root/$run_namespace" ]]
+mkdir -p "$namespace_root" "$config_root"
 project_root=$(cd "$project_root" && pwd -P)
+runs_root=$(cd "$runs_root" && pwd -P)
+namespace_root=$(cd "$namespace_root" && pwd -P)
 config_root=$(cd "$config_root" && pwd -P)
 [[ $project_root == "$canonical_home/"* ]]
+[[ $runs_root == "$project_root/runs" ]]
+[[ $namespace_root == "$runs_root/$run_namespace" ]]
 [[ $config_root == "$canonical_home/"* ]]
-run_root="$project_root/runs/$run_key"
+run_root="$namespace_root/$run_key"
 [[ ! -e $run_root && ! -L $run_root ]] || {
     echo "Refusing to reuse remote run: $run_root" >&2
     exit 1

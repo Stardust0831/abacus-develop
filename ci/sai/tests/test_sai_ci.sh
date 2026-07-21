@@ -97,6 +97,8 @@ test_workflow_security_policy() {
     local toolchain=ci/sai/toolchains/archive-mp09-sai-nccl2293.env.example
     assert_contains "$workflow" 'cron: "30 20 * * *"'
     assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
+    assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
+    assert_not_contains "$workflow" 'group: sai-gpu-rebuild'
     assert_contains "$workflow" 'ref: ${{ github.event.repository.default_branch }}'
     assert_contains "$workflow" 'Approved code SHA; executes as abacususer01 on SAI'
     assert_contains "$bootstrap" 'name: sai-ssh-manual'
@@ -120,6 +122,12 @@ test_workflow_security_policy() {
     assert_contains "$workflow" 'git -C source ls-tree -r -z --full-tree "$SOURCE_SHA"'
     assert_contains "$workflow" '| gzip -1 > "$payload"'
     assert_contains "$workflow" 'SOURCE_CACHE_BASE_SHA'
+    assert_contains "$workflow" 'run_namespace=${RUN_NAMESPACE_INPUT:-manual}'
+    assert_contains "$workflow" 'source_cache_role=baseline'
+    assert_contains "$workflow" 'source_cache_role=candidate'
+    assert_contains "$workflow" \
+        'runs/$RUN_NAMESPACE/$run_key'
+    assert_contains ci/sai/source_transfer_cache.sh 'flock 8'
     assert_contains "$workflow" 'SOURCE_MANIFEST=$manifest'
     assert_contains "$workflow" '"$SOURCE_PAYLOAD" "$SOURCE_MANIFEST"'
     assert_contains "$workflow" '"sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"'
@@ -256,6 +264,8 @@ test_gpu_matrix_submission_policy() {
     local multinode=ci/sai/test_gpu.sbatch
     local launcher=ci/sai/test_gpu_case.sh
     local summary=ci/sai/summarize_gpu_case_matrix.sh
+    assert_contains "$script" \
+        'declare -A limits=([gpu1]=2 [gpu2]=8 [gpu4]=8)'
     assert_contains "$script" 'export GPU_CASE_CLASS=$class'
     assert_contains "$script" 'export GPU_CASE_RANKS=${ranks[$class]}'
     assert_contains "$script" 'export GPU_CASE_MANIFEST=$manifest'
@@ -337,29 +347,47 @@ test_prepare_remote_run_paths() {
     mkdir -p "$home/projects" "$outside"
 
     HOME=$home bash ci/sai/prepare_remote_run.sh \
-        "$project" 123-1 0123456789abcdef0123456789abcdef01234567 \
+        "$project" pr-123 123-1 \
+        0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > "$output"
-    assert_file "$project/runs/123-1/.ci-created"
+    assert_file "$project/runs/pr-123/123-1/.ci-created"
     assert_contains "$output" "SAI_PROJECT_ROOT=$project"
-    assert_contains "$output" "RUN_ROOT=$project/runs/123-1"
+    assert_contains "$output" "RUN_ROOT=$project/runs/pr-123/123-1"
     if HOME=$home bash ci/sai/prepare_remote_run.sh \
-        "$project" 123-1 0123456789abcdef0123456789abcdef01234567 \
+        "$project" pr-123 123-1 \
+        0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > /dev/null 2>&1; then
         fail 'remote run collision was accepted'
     fi
+    if HOME=$home bash ci/sai/prepare_remote_run.sh \
+        "$project" ../escape 128-1 \
+        0123456789abcdef0123456789abcdef01234567 \
+        89abcdef0123456789abcdef0123456789abcdef \
+        > /dev/null 2>&1; then
+        fail 'unsafe run namespace was accepted'
+    fi
+    ln -s "$outside" "$project/runs/linked"
+    if HOME=$home bash ci/sai/prepare_remote_run.sh \
+        "$project" linked 129-1 \
+        0123456789abcdef0123456789abcdef01234567 \
+        89abcdef0123456789abcdef0123456789abcdef \
+        > /dev/null 2>&1; then
+        fail 'symlinked run namespace was accepted'
+    fi
+    assert_not_exists "$outside/129-1"
 
     ln -s "$outside" "$home/projects/escape"
     if HOME=$home bash ci/sai/prepare_remote_run.sh \
-        "$home/projects/escape/project" 124-1 \
+        "$home/projects/escape/project" manual 124-1 \
         0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > /dev/null 2>&1; then
         fail 'symlink escape was accepted'
     fi
     if HOME=$home bash ci/sai/prepare_remote_run.sh \
-        "$home/projects/../outside" 125-1 \
+        "$home/projects/../outside" manual 125-1 \
         0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > /dev/null 2>&1; then
@@ -369,7 +397,7 @@ test_prepare_remote_run_paths() {
     mkdir -p "$config_home" "$root/outside-config"
     ln -s "$root/outside-config" "$config_home/.config"
     if HOME=$config_home bash ci/sai/prepare_remote_run.sh \
-        "$config_home/project" 126-1 \
+        "$config_home/project" manual 126-1 \
         0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > /dev/null 2>&1; then
@@ -382,7 +410,7 @@ test_prepare_remote_run_paths() {
     ln -s "$root/registry-target" \
         "$registry_home/.config/abacus-sai-ci/project-roots"
     if HOME=$registry_home bash ci/sai/prepare_remote_run.sh \
-        "$registry_home/project" 127-1 \
+        "$registry_home/project" manual 127-1 \
         0123456789abcdef0123456789abcdef01234567 \
         89abcdef0123456789abcdef0123456789abcdef \
         > /dev/null 2>&1; then
@@ -406,6 +434,8 @@ test_source_snapshot_cache() {
     local run7=$project/runs/106-1
     local run8=$project/runs/107-1
     local run9=$project/runs/108-1
+    local candidate=$project/runs/pr-7658/109-1
+    local invalid_candidate=$project/runs/pr-invalid/110-1
     local output transfer snapshot snapshot_name inode_run inode_cache orphan
     mkdir -p "$repository"
     git -C "$repository" init -q
@@ -430,7 +460,7 @@ test_source_snapshot_cache() {
     touch "$run1/.ci-created"
 
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run1" "$sha1")
+        "$project" "$run1" "$sha1" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     [[ $transfer == "$project/cache/source-transfers/100-1" ]]
@@ -469,11 +499,35 @@ test_source_snapshot_cache() {
     git -C "$repository" commit -qm target
     sha2=$(git -C "$repository" rev-parse HEAD)
 
+    mkdir -p "$candidate/source" "$candidate/control" "$candidate/build" \
+        "$candidate/install" "$candidate/results"
+    touch "$candidate/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$candidate" "$sha2" candidate)
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha1"
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_ROLE=candidate'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha1" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$candidate" "$transfer" delta "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$candidate" "$transfer" "$sha2" \
+        > "$root/finalize-candidate.log"
+    assert_contains "$candidate/source/keep.txt" 'changed'
+    assert_contains "$root/finalize-candidate.log" \
+        "SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=$sha2"
+    assert_contains "$project/cache/source-latest" "$sha1.100-1"
+    assert_file "$snapshot/keep.txt"
+    assert_not_exists "$transfer"
+
     mkdir -p "$run2/source" "$run2/control" "$run2/build" \
         "$run2/install" "$run2/results"
     touch "$run2/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run2" "$sha2")
+        "$project" "$run2" "$sha2" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha1"
     assert_contains "$transfer/source/keep.txt" 'unchanged'
@@ -504,7 +558,7 @@ test_source_snapshot_cache() {
         "$run3/install" "$run3/results"
     touch "$run3/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run3" "$sha2")
+        "$project" "$run3" "$sha2" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha2"
     assert_not_exists "$orphan"
@@ -521,11 +575,39 @@ test_source_snapshot_cache() {
     snapshot_name=$(<"$project/cache/source-latest")
     snapshot="$project/cache/source-snapshots/$snapshot_name"
     printf 'cache drift\n' > "$snapshot/keep.txt"
+
+    mkdir -p "$invalid_candidate/source" "$invalid_candidate/control" \
+        "$invalid_candidate/build" "$invalid_candidate/install" \
+        "$invalid_candidate/results"
+    touch "$invalid_candidate/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$invalid_candidate" "$sha2" candidate \
+        2> "$root/candidate-drift.err")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    assert_contains "$root/candidate-drift.err" \
+        'content_or_manifest_mismatch role=candidate'
+    assert_contains "$project/cache/source-latest" "$snapshot_name"
+    assert_not_exists "$project/cache/.source-latest.invalid.110-1"
+    assert_contains "$snapshot/keep.txt" 'cache drift'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha2" \
+        | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$invalid_candidate" "$transfer" full "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$invalid_candidate" "$transfer" "$sha2" > /dev/null
+    assert_contains "$invalid_candidate/source/keep.txt" 'changed'
+    assert_contains "$project/cache/source-latest" "$snapshot_name"
+    assert_contains "$snapshot/keep.txt" 'cache drift'
+
     mkdir -p "$run4/source" "$run4/control" "$run4/build" \
         "$run4/install" "$run4/results"
     touch "$run4/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run4" "$sha2" 2> "$root/drift.err")
+        "$project" "$run4" "$sha2" baseline 2> "$root/drift.err")
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     assert_contains "$root/drift.err" 'content_or_manifest_mismatch'
@@ -548,7 +630,7 @@ test_source_snapshot_cache() {
         "$run5/install" "$run5/results"
     touch "$run5/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run5" "$sha2" 2> "$root/extra.err")
+        "$project" "$run5" "$sha2" baseline 2> "$root/extra.err")
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     assert_contains "$root/extra.err" 'content_or_manifest_mismatch'
@@ -567,7 +649,8 @@ test_source_snapshot_cache() {
         "$run6/install" "$run6/results"
     touch "$run6/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run6" "$sha2" 2> "$root/malformed-pointer.err")
+        "$project" "$run6" "$sha2" baseline \
+        2> "$root/malformed-pointer.err")
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     assert_contains "$root/malformed-pointer.err" 'malformed_pointer'
@@ -587,7 +670,8 @@ test_source_snapshot_cache() {
         "$run7/install" "$run7/results"
     touch "$run7/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run7" "$sha2" 2> "$root/dangling-pointer.err")
+        "$project" "$run7" "$sha2" baseline \
+        2> "$root/dangling-pointer.err")
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     assert_contains "$root/dangling-pointer.err" 'content_or_manifest_mismatch'
@@ -605,7 +689,7 @@ test_source_snapshot_cache() {
         "$run8/install" "$run8/results"
     touch "$run8/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run8" "$sha2")
+        "$project" "$run8" "$sha2" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
         | gzip -1 > "$transfer/source-manifest.gz"
@@ -624,7 +708,7 @@ test_source_snapshot_cache() {
         "$run9/install" "$run9/results"
     touch "$run9/.ci-created"
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run9" "$sha2")
+        "$project" "$run9" "$sha2" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     rm "$transfer/source/windows.bat"
     git -C "$repository" diff --binary --full-index --no-renames \
@@ -640,6 +724,10 @@ test_source_snapshot_cache() {
 
     if HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
         "$project" "$run2" "$sha2" > /dev/null 2>&1; then
+        fail 'source transfer accepted an omitted cache role'
+    fi
+    if HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run2" "$sha2" baseline > /dev/null 2>&1; then
         fail 'source transfer accepted a reused run key'
     fi
 }
@@ -830,6 +918,11 @@ make_cleanup_fixture() {
     touch -d '73 hours ago' "$project/runs/205-1/.artifacts-uploaded"
     printf 'SLURM_JOB_ID=702\n' > "$project/runs/205-1/results/build-submit.log"
 
+    mkdir -p "$project/runs/pr-7658/208-1/results"
+    : > "$project/runs/pr-7658/208-1/.artifacts-uploaded"
+    touch -d '73 hours ago' \
+        "$project/runs/pr-7658/208-1/.artifacts-uploaded"
+
     mkdir -p "$project/diagnostics/diagnostic-old"
     : > "$project/diagnostics/diagnostic-old/.ci-diagnostic"
     touch -d '169 hours ago' "$project/diagnostics/diagnostic-old/.ci-diagnostic"
@@ -879,17 +972,22 @@ EOF
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/runs/201-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/runs/203-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/runs/205-1"
+    assert_contains "$root/dry-run.log" \
+        "DRY_RUN delete path=$project/runs/pr-7658/208-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/diagnostics/diagnostic-old"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/cache/source-transfers/206-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$home/diagnostic-only/diagnostics/diagnostic-old"
     assert_contains "$root/dry-run.log" "SKIP active_or_unknown path=$project/runs/204-1"
     assert_file "$project/runs/201-1/.artifacts-uploaded"
+    [[ -d $project/runs/pr-7658 ]]
 
     : > "$squeue_mode"
     PATH="$fake_bin:$original_path" HOME=$home \
         bash ci/sai/cleanup_sai_runs.sh > "$root/cleanup.log"
     assert_not_exists "$project/runs/201-1"
     assert_not_exists "$project/runs/203-1"
+    assert_not_exists "$project/runs/pr-7658/208-1"
+    [[ -d $project/runs/pr-7658 ]]
     assert_not_exists "$project/diagnostics/diagnostic-old"
     assert_not_exists "$project/cache/source-transfers/206-1"
     assert_not_exists "$home/diagnostic-only/diagnostics/diagnostic-old"

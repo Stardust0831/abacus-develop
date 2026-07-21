@@ -12,14 +12,20 @@ TRANSFER_PARENT=
 TRANSFER_ROOT=
 TRANSFER_SOURCE=
 TRANSFER_MARKER=
+CACHE_ROLE=
 
 resolve_run() {
-    local canonical_home requested_project=$1 requested_run=$2
+    local canonical_home requested_project=$1 requested_run=$2 run_parent
     canonical_home=$(cd "$HOME" && pwd -P)
     PROJECT_ROOT=$(realpath -e "$requested_project")
     RUN_ROOT=$(realpath -e "$requested_run")
     [[ $PROJECT_ROOT == "$canonical_home/"* ]]
     [[ $RUN_ROOT == "$PROJECT_ROOT/runs/"* ]]
+    run_parent=$(dirname "$RUN_ROOT")
+    if [[ $run_parent != "$PROJECT_ROOT/runs" ]]; then
+        [[ $(dirname "$run_parent") == "$PROJECT_ROOT/runs" ]]
+        [[ ${run_parent##*/} =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]
+    fi
     RUN_NAME=${RUN_ROOT##*/}
     [[ $RUN_NAME =~ ^[0-9]+-[0-9]+$ ]]
     [[ -f $RUN_ROOT/.ci-created && ! -L $RUN_ROOT/.ci-created ]]
@@ -50,9 +56,17 @@ resolve_transfer() {
 }
 
 verify_marker() {
-    local source_sha=$1
+    local source_sha=$1 role
     grep -Fxq "run_root=$RUN_ROOT" "$TRANSFER_MARKER"
     grep -Fxq "source_sha=$source_sha" "$TRANSFER_MARKER"
+    role=$(awk -F= '$1 == "cache_role" {print $2}' "$TRANSFER_MARKER")
+    [[ $role == baseline || $role == candidate ]]
+    CACHE_ROLE=$role
+}
+
+lock_cache() {
+    exec 8<"$CACHE_ROOT"
+    flock 8
 }
 
 verify_tree() {
@@ -182,9 +196,11 @@ cleanup_orphan_snapshots() {
 
 prepare_transfer() {
     local requested_project=$1 requested_run=$2 source_sha=$3
+    local cache_role=$4
     local base_sha=none latest latest_name='' base_snapshot manifest cache_missing
     local latest_valid=0 cache_invalid=0
     [[ $source_sha =~ ^[0-9a-f]{40}$ ]]
+    [[ $cache_role == baseline || $cache_role == candidate ]]
     resolve_run "$requested_project" "$requested_run"
     [[ -z $(find "$RUN_SOURCE" -mindepth 1 -maxdepth 1 -print -quit) ]]
 
@@ -192,6 +208,7 @@ prepare_transfer() {
     [[ $cache_missing == "$PROJECT_ROOT/cache" ]]
     mkdir -p "$cache_missing/source-snapshots" "$cache_missing/source-transfers"
     resolve_cache
+    lock_cache
 
     TRANSFER_ROOT="$TRANSFER_PARENT/$RUN_NAME"
     [[ ! -e $TRANSFER_ROOT && ! -L $TRANSFER_ROOT ]] || {
@@ -202,6 +219,7 @@ prepare_transfer() {
     {
         printf 'run_root=%s\n' "$RUN_ROOT"
         printf 'source_sha=%s\n' "$source_sha"
+        printf 'cache_role=%s\n' "$cache_role"
     } > "$TRANSFER_ROOT/.ci-source-transfer"
 
     latest="$CACHE_ROOT/source-latest"
@@ -222,26 +240,41 @@ prepare_transfer() {
                 else
                     base_sha=none
                     cache_invalid=1
-                    quarantine_latest "$latest" content_or_manifest_mismatch
+                    if [[ $cache_role == baseline ]]; then
+                        quarantine_latest "$latest" content_or_manifest_mismatch
+                    else
+                        echo "SOURCE_CACHE_INVALID reason=content_or_manifest_mismatch role=candidate" >&2
+                    fi
                 fi
             else
                 cache_invalid=1
-                quarantine_latest "$latest" malformed_pointer
+                if [[ $cache_role == baseline ]]; then
+                    quarantine_latest "$latest" malformed_pointer
+                else
+                    echo "SOURCE_CACHE_INVALID reason=malformed_pointer role=candidate" >&2
+                fi
             fi
         else
             cache_invalid=1
-            quarantine_latest "$latest" unsafe_pointer_type
+            if [[ $cache_role == baseline ]]; then
+                quarantine_latest "$latest" unsafe_pointer_type
+            else
+                echo "SOURCE_CACHE_INVALID reason=unsafe_pointer_type role=candidate" >&2
+            fi
         fi
     fi
 
     if [[ $latest_valid -eq 1 ]]; then
-        cleanup_orphan_snapshots "$latest_name"
+        if [[ $cache_role == baseline ]]; then
+            cleanup_orphan_snapshots "$latest_name"
+        fi
         cp -a "$base_snapshot/." "$TRANSFER_ROOT/source/"
-    elif [[ $cache_invalid -eq 0 ]]; then
+    elif [[ $cache_invalid -eq 0 && $cache_role == baseline ]]; then
         cleanup_orphan_snapshots ""
     fi
     printf 'SOURCE_TRANSFER_ROOT=%s\n' "$TRANSFER_ROOT"
     printf 'SOURCE_CACHE_BASE_SHA=%s\n' "$base_sha"
+    printf 'SOURCE_CACHE_ROLE=%s\n' "$cache_role"
 }
 
 receive_payload() {
@@ -283,11 +316,21 @@ finalize_transfer() {
     resolve_run "$requested_project" "$requested_run"
     resolve_transfer "$requested_transfer"
     verify_marker "$source_sha"
+    lock_cache
     [[ ! -e $TRANSFER_ROOT/source-payload.gz ]]
     [[ -z $(find "$RUN_SOURCE" -mindepth 1 -maxdepth 1 -print -quit) ]]
     manifest="$TRANSFER_ROOT/source-manifest.gz"
     verify_tree "$TRANSFER_SOURCE" "$manifest"
     cp -a "$TRANSFER_SOURCE/." "$RUN_SOURCE/"
+
+    if [[ $CACHE_ROLE == candidate ]]; then
+        rm -rf --one-file-system -- "$TRANSFER_SOURCE"
+        rm -f "$manifest" "$TRANSFER_MARKER"
+        rmdir "$TRANSFER_ROOT"
+        printf 'SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=%s\n' \
+            "$source_sha"
+        return
+    fi
 
     snapshot_name="$source_sha.$RUN_NAME"
     snapshot="$SNAPSHOT_ROOT/$snapshot_name"
@@ -310,8 +353,8 @@ finalize_transfer() {
 command=${1:-}
 case $command in
     prepare)
-        [[ $# -eq 4 ]] || { echo "Usage: $0 prepare PROJECT_ROOT RUN_ROOT SOURCE_SHA" >&2; exit 2; }
-        prepare_transfer "$2" "$3" "$4"
+        [[ $# -eq 5 ]] || { echo "Usage: $0 prepare PROJECT_ROOT RUN_ROOT SOURCE_SHA baseline|candidate" >&2; exit 2; }
+        prepare_transfer "$2" "$3" "$4" "$5"
         ;;
     receive)
         [[ $# -eq 6 ]] || { echo "Usage: $0 receive PROJECT_ROOT RUN_ROOT TRANSFER_ROOT MODE SOURCE_SHA" >&2; exit 2; }
