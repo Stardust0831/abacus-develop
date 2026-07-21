@@ -42,6 +42,7 @@ Host sai-ci
     ForwardAgent no
     ClearAllForwardings yes
     RequestTTY no
+    Compression yes
     ServerAliveInterval 30
     ServerAliveCountMax 4
 EOF

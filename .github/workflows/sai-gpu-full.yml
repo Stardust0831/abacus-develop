@@ -41,6 +41,7 @@ jobs:
       REMOTE_RUN_ROOT: ""
       REMOTE_SOURCE_TRANSFER_ROOT: ""
       SOURCE_CACHE_BASE_SHA: ""
+      SOURCE_MANIFEST: ""
       SOURCE_PAYLOAD: ""
       SOURCE_PAYLOAD_MODE: ""
       SAI_SSH_CONFIG: ""
@@ -148,6 +149,9 @@ jobs:
         run: |
           set -euo pipefail
           payload="$RUNNER_TEMP/source-payload.gz"
+          manifest="$RUNNER_TEMP/source-manifest.gz"
+          git -C source ls-tree -r -z --full-tree "$SOURCE_SHA" \
+            | gzip -1 > "$manifest"
           mode=full
           if [[ "$SOURCE_CACHE_BASE_SHA" != none ]]; then
             if git -C source cat-file -e "$SOURCE_CACHE_BASE_SHA^{commit}" 2>/dev/null || \
@@ -160,12 +164,14 @@ jobs:
             fi
           fi
           if [[ "$mode" == full ]]; then
-            tar -C "$GITHUB_WORKSPACE/source" --exclude=.git -cf - . \
-              | gzip -1 > "$payload"
+            empty_tree=$(git -C source hash-object -t tree /dev/null)
+            git -C source diff --binary --full-index --no-renames \
+              "$empty_tree" "$SOURCE_SHA" | gzip -1 > "$payload"
           fi
-          [[ -s "$payload" ]]
+          [[ -s "$payload" && -s "$manifest" ]]
           {
             echo "SOURCE_PAYLOAD=$payload"
+            echo "SOURCE_MANIFEST=$manifest"
             echo "SOURCE_PAYLOAD_MODE=$mode"
           } >> "$GITHUB_ENV"
           echo "SOURCE_PAYLOAD_READY mode=$mode base=$SOURCE_CACHE_BASE_SHA target=$SOURCE_SHA bytes=$(stat -c %s "$payload")"
@@ -176,7 +182,8 @@ jobs:
           started=$(date +%s)
           rsync -a --partial --timeout=600 --stats \
             -e "ssh -F $SAI_SSH_CONFIG" \
-            "$SOURCE_PAYLOAD" "sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/source-payload.gz"
+            "$SOURCE_PAYLOAD" "$SOURCE_MANIFEST" \
+            "sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"
           ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
             receive "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
             "$REMOTE_SOURCE_TRANSFER_ROOT" "$SOURCE_PAYLOAD_MODE" "$SOURCE_SHA" \

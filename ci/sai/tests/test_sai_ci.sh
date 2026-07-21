@@ -81,6 +81,7 @@ test_configure_ssh_client() {
     ssh-keygen -y -f "$output/id_ed25519" >/dev/null
     assert_contains "$output/config" 'ClearAllForwardings yes'
     assert_contains "$output/config" 'StrictHostKeyChecking yes'
+    assert_contains "$output/config" 'Compression yes'
     assert_not_contains "$log" 'PRIVATE KEY'
     assert_not_contains "$log" 'sai-ci-secret-marker'
 }
@@ -95,6 +96,7 @@ test_workflow_security_policy() {
     assert_contains "$workflow" 'Approved code SHA; executes as abacususer01 on SAI'
     assert_contains "$bootstrap" 'name: sai-ssh-manual'
     assert_contains "$bootstrap" 'ref: ${{ github.event.repository.default_branch }}'
+    assert_contains "$bootstrap" 'rsync -az -e "ssh -F $SAI_SSH_CONFIG"'
     assert_contains ci/sai/run_remote_ci.sh \
         'export SAI_CUSOLVERMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive'
     assert_contains ci/sai/run_remote_ci.sh \
@@ -105,9 +107,13 @@ test_workflow_security_policy() {
     assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
     assert_contains "$workflow" 'source_transfer_cache.sh'
     assert_contains "$workflow" 'git -C source diff --binary --full-index --no-renames'
+    assert_contains "$workflow" 'empty_tree=$(git -C source hash-object -t tree /dev/null)'
+    assert_contains "$workflow" 'git -C source ls-tree -r -z --full-tree "$SOURCE_SHA"'
     assert_contains "$workflow" '| gzip -1 > "$payload"'
     assert_contains "$workflow" 'SOURCE_CACHE_BASE_SHA'
-    assert_contains "$workflow" 'REMOTE_SOURCE_TRANSFER_ROOT/source-payload.gz'
+    assert_contains "$workflow" 'SOURCE_MANIFEST=$manifest'
+    assert_contains "$workflow" '"$SOURCE_PAYLOAD" "$SOURCE_MANIFEST"'
+    assert_contains "$workflow" '"sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"'
     assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
     assert_contains ci/sai/probe_remote_sai.sh 'rsync curl git gzip tar xz'
     if sed -n '/^on:/,/^permissions:/p' "$workflow" | grep -Eq '^[[:space:]]+pull_request:'; then
@@ -258,11 +264,20 @@ test_source_snapshot_cache() {
     local sha1 sha2
     local run1=$project/runs/100-1
     local run2=$project/runs/101-1
-    local output transfer snapshot inode_run inode_cache
+    local run3=$project/runs/102-1
+    local run4=$project/runs/103-1
+    local run5=$project/runs/104-1
+    local run6=$project/runs/105-1
+    local run7=$project/runs/106-1
+    local run8=$project/runs/107-1
+    local run9=$project/runs/108-1
+    local output transfer snapshot snapshot_name inode_run inode_cache orphan
     mkdir -p "$repository"
     git -C "$repository" init -q
     git -C "$repository" config user.email ci@example.invalid
     git -C "$repository" config user.name ci
+    printf '*.bat text eol=crlf\n' > "$repository/.gitattributes"
+    printf 'canonical line\r\n' > "$repository/windows.bat"
     printf 'unchanged\n' > "$repository/keep.txt"
     printf 'remove later\n' > "$repository/delete.txt"
     printf '\x00\x01base\xff' > "$repository/data.bin"
@@ -272,6 +287,8 @@ test_source_snapshot_cache() {
     git -C "$repository" add .
     git -C "$repository" commit -qm base
     sha1=$(git -C "$repository" rev-parse HEAD)
+    rm "$repository/windows.bat"
+    git -C "$repository" checkout -q -- windows.bat
 
     mkdir -p "$run1/source" "$run1/control" "$run1/build" \
         "$run1/install" "$run1/results"
@@ -282,8 +299,11 @@ test_source_snapshot_cache() {
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     [[ $transfer == "$project/cache/source-transfers/100-1" ]]
-    tar -C "$repository" --exclude=.git -cf - . \
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha1" \
         | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha1" \
+        | gzip -1 > "$transfer/source-manifest.gz"
     HOME=$home bash ci/sai/source_transfer_cache.sh receive \
         "$project" "$run1" "$transfer" full "$sha1" > "$root/receive1.log"
     HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
@@ -293,6 +313,12 @@ test_source_snapshot_cache() {
     assert_contains "$project/cache/source-latest" "$sha1.100-1"
     snapshot=$project/cache/source-snapshots/$sha1.100-1
     assert_file "$snapshot/keep.txt"
+    assert_file "$snapshot.manifest.gz"
+    git -C "$repository" show "$sha1:windows.bat" > "$root/windows.blob"
+    cmp "$root/windows.blob" "$snapshot/windows.bat"
+    if cmp -s "$repository/windows.bat" "$snapshot/windows.bat"; then
+        fail 'full source payload came from the CRLF checkout instead of Git blobs'
+    fi
     inode_run=$(stat -c %i "$run1/source/keep.txt")
     inode_cache=$(stat -c %i "$snapshot/keep.txt")
     [[ $inode_run != "$inode_cache" ]] || fail 'run source shares cache inode'
@@ -319,6 +345,8 @@ test_source_snapshot_cache() {
     assert_file "$transfer/source/delete.txt"
     git -C "$repository" diff --binary --full-index --no-renames \
         "$sha1" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
     HOME=$home bash ci/sai/source_transfer_cache.sh receive \
         "$project" "$run2" "$transfer" delta "$sha2" > "$root/receive2.log"
     HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
@@ -331,6 +359,149 @@ test_source_snapshot_cache() {
     cmp "$repository/data.bin" "$run2/source/data.bin"
     assert_contains "$project/cache/source-latest" "$sha2.101-1"
     assert_not_exists "$snapshot"
+    assert_not_exists "$snapshot.manifest.gz"
+
+    orphan="$project/cache/source-snapshots/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.999-1"
+    mkdir -p "$orphan"
+    printf 'orphan\n' > "$orphan/file"
+    printf 'orphan manifest\n' | gzip -1 > "$orphan.manifest.gz"
+    mkdir -p "$run3/source" "$run3/control" "$run3/build" \
+        "$run3/install" "$run3/results"
+    touch "$run3/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run3" "$sha2")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha2"
+    assert_not_exists "$orphan"
+    assert_not_exists "$orphan.manifest.gz"
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha2" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run3" "$transfer" delta "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run3" "$transfer" "$sha2" > /dev/null
+
+    snapshot_name=$(<"$project/cache/source-latest")
+    snapshot="$project/cache/source-snapshots/$snapshot_name"
+    printf 'cache drift\n' > "$snapshot/keep.txt"
+    mkdir -p "$run4/source" "$run4/control" "$run4/build" \
+        "$run4/install" "$run4/results"
+    touch "$run4/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run4" "$sha2" 2> "$root/drift.err")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    assert_contains "$root/drift.err" 'content_or_manifest_mismatch'
+    assert_file "$project/cache/.source-latest.invalid.103-1"
+    [[ -z $(find "$transfer/source" -mindepth 1 -print -quit) ]]
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha2" \
+        | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run4" "$transfer" full "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run4" "$transfer" "$sha2" > /dev/null
+
+    snapshot_name=$(<"$project/cache/source-latest")
+    snapshot="$project/cache/source-snapshots/$snapshot_name"
+    printf 'extra\n' > "$snapshot/untracked.txt"
+    mkdir -p "$run5/source" "$run5/control" "$run5/build" \
+        "$run5/install" "$run5/results"
+    touch "$run5/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run5" "$sha2" 2> "$root/extra.err")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    assert_contains "$root/extra.err" 'content_or_manifest_mismatch'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha2" \
+        | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run5" "$transfer" full "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run5" "$transfer" "$sha2" > /dev/null
+
+    printf 'not-a-cache-pointer\n' > "$project/cache/source-latest"
+    mkdir -p "$run6/source" "$run6/control" "$run6/build" \
+        "$run6/install" "$run6/results"
+    touch "$run6/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run6" "$sha2" 2> "$root/malformed-pointer.err")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    assert_contains "$root/malformed-pointer.err" 'malformed_pointer'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha2" \
+        | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run6" "$transfer" full "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run6" "$transfer" "$sha2" > /dev/null
+
+    printf '%s\n' bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.777-1 \
+        > "$project/cache/source-latest"
+    mkdir -p "$run7/source" "$run7/control" "$run7/build" \
+        "$run7/install" "$run7/results"
+    touch "$run7/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run7" "$sha2" 2> "$root/dangling-pointer.err")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    assert_contains "$root/dangling-pointer.err" 'content_or_manifest_mismatch'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha2" \
+        | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run7" "$transfer" full "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run7" "$transfer" "$sha2" > /dev/null
+
+    mkdir -p "$run8/source" "$run8/control" "$run8/build" \
+        "$run8/install" "$run8/results"
+    touch "$run8/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run8" "$sha2")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    printf 'not gzip\n' > "$transfer/source-payload.gz"
+    if HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run8" "$transfer" delta "$sha2" > /dev/null 2>&1; then
+        fail 'source transfer accepted a malformed gzip payload'
+    fi
+    printf 'not a Git patch\n' | gzip -1 > "$transfer/source-payload.gz"
+    if HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run8" "$transfer" delta "$sha2" > /dev/null 2>&1; then
+        fail 'source transfer accepted an invalid Git patch'
+    fi
+
+    mkdir -p "$run9/source" "$run9/control" "$run9/build" \
+        "$run9/install" "$run9/results"
+    touch "$run9/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run9" "$sha2")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    rm "$transfer/source/windows.bat"
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha2" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | head -c -1 | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run9" "$transfer" delta "$sha2" > /dev/null
+    if HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run9" "$transfer" "$sha2" > /dev/null 2>&1; then
+        fail 'source transfer accepted a manifest with an unterminated record'
+    fi
 
     if HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
         "$project" "$run2" "$sha2" > /dev/null 2>&1; then
