@@ -2,6 +2,7 @@ name: SAI NVHPC 24.5 Legacy cuSolverMp Validation
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read

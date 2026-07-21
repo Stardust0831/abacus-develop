@@ -1,20 +1,24 @@
-name: SAI GPU Rebuild and cuSolverMp Validation
+name: SAI GPU Full Validation
 
+# GitHub can dispatch only workflow paths registered on the default branch.
+# This experiment branch reuses that registered path to call its local legacy
+# workflow at the same commit. The inputs stay compatible with the registered
+# dispatcher but do not alter the legacy experiment.
 on:
   workflow_dispatch:
     inputs:
       run_full_suite:
-        description: "Run all existing GPU integration suites"
+        description: "Compatibility input; ignored by the legacy control"
         required: true
-        default: true
+        default: false
         type: boolean
       slurm_nodelist:
-        description: "Optional Slurm node list for controlled reproduction"
+        description: "Compatibility input; ignored by the legacy control"
         required: false
         default: ""
         type: string
       disable_nccl_ib_for_cusolvermp:
-        description: "Disable NCCL InfiniBand transport for the 16-GPU cuSolverMp case"
+        description: "Compatibility input; ignored because cuSolverMp 0.5 uses CAL"
         required: true
         default: false
         type: boolean
@@ -22,124 +26,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: sai-gpu-rebuild
-  cancel-in-progress: false
-
 jobs:
-  rebuild-and-test:
-    name: SAI official NVIDIA stack rebuild and GPU validation
-    runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
-    timeout-minutes: 210
-    environment: sai-gpu
-    env:
-      MP_PROFILE: archive-mp09
-      RUN_ROOT: ${{ github.workspace }}/.sai-run-uninitialized
-      BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
-      INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
-      RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
-      SAI_SLURM_NODELIST: ${{ inputs.slurm_nodelist }}
-      SAI_DISABLE_NCCL_IB: ${{ inputs.disable_nccl_ib_for_cusolvermp }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Create isolated SAI run directory
-        run: |
-          set -euo pipefail
-          SAI_PROJECT_ROOT=${SAI_PROJECT_ROOT:-$HOME/agent/abacus_sai_gpu_ci}
-          mkdir -p "$SAI_PROJECT_ROOT"
-          SAI_PROJECT_ROOT=$(cd "$SAI_PROJECT_ROOT" && pwd -P)
-          RUN_ROOT=$SAI_PROJECT_ROOT/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}
-          CI_SOURCE=$RUN_ROOT/source
-          BUILD_ROOT=$RUN_ROOT/build
-          INSTALL_ROOT=$RUN_ROOT/install
-          RESULT_ROOT=$RUN_ROOT/results
-
-          [[ ! -e "$RUN_ROOT" ]] || {
-            echo "Refusing to reuse an existing run directory: $RUN_ROOT" >&2
-            exit 1
-          }
-          mkdir -p "$CI_SOURCE" "$BUILD_ROOT" "$INSTALL_ROOT" "$RESULT_ROOT"
-          rsync -a --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SOURCE/"
-          TOOLCHAIN_FILE=$CI_SOURCE/ci/sai/toolchains/archive-mp09.env.example
-
-          {
-            echo "SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT"
-            echo "TOOLCHAIN_FILE=$TOOLCHAIN_FILE"
-            echo "RUN_ROOT=$RUN_ROOT"
-            echo "CI_SOURCE=$CI_SOURCE"
-            echo "BUILD_ROOT=$BUILD_ROOT"
-            echo "INSTALL_ROOT=$INSTALL_ROOT"
-            echo "RESULT_ROOT=$RESULT_ROOT"
-          } >> "$GITHUB_ENV"
-
-      - name: Prepare official NVIDIA MP archives
-        run: |
-          set -euo pipefail
-          export SAI_NVIDIA_MP_ROOT=$RUN_ROOT/vendor/nvidia-mp-0.9-archive
-          bash ci/sai/prepare_nvidia_mp.sh
-
-      - name: Build current checkout on Slurm
-        run: |
-          set -euo pipefail
-          log="$RESULT_ROOT/sai-build-submit.log"
-          export CI_SOURCE BUILD_ROOT INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE
-          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
-            "$RESULT_ROOT/sai-build-%j.out" \
-            "$CI_SOURCE/ci/sai/build_gpu.sbatch"
-
-      - name: Run existing GPU integration suites
-        if: inputs.run_full_suite
-        id: gpu_full
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          log="$RESULT_ROOT/sai-gpu-full-submit.log"
-          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
-          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
-            "$RESULT_ROOT/sai-gpu-full-%j.out" \
-            "$CI_SOURCE/ci/sai/test_gpu_full.sbatch"
-
-      - name: Submit 16-GPU cuSolverMp validation
-        id: cusolvermp
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          log="$RESULT_ROOT/sai-cusolvermp-submit.log"
-          export CI_SOURCE INSTALL_ROOT RESULT_ROOT TOOLCHAIN_FILE MP_PROFILE
-          "$CI_SOURCE/ci/sai/run_slurm_job.sh" "$log" \
-            "$RESULT_ROOT/sai-cusolvermp-%j.out" \
-            "$CI_SOURCE/ci/sai/test_gpu.sbatch"
-
-      - name: Report validation failures
-        if: always()
-        env:
-          GPU_FULL_OUTCOME: ${{ steps.gpu_full.outcome }}
-          CUSOLVERMP_OUTCOME: ${{ steps.cusolvermp.outcome }}
-        run: |
-          set -euo pipefail
-          echo "GPU full suite: $GPU_FULL_OUTCOME"
-          echo "16-GPU cuSolverMp: $CUSOLVERMP_OUTCOME"
-          if [[ "${{ inputs.run_full_suite }}" == true && "$GPU_FULL_OUTCOME" != success ]]; then
-            exit 1
-          fi
-          [[ "$CUSOLVERMP_OUTCOME" == success ]]
-
-      - name: Upload SAI logs
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: sai-official-gpu-rebuild-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ env.BUILD_ROOT }}/toolchain-summary.txt
-            ${{ env.BUILD_ROOT }}/CMakeCache.txt
-            ${{ env.INSTALL_ROOT }}/abacus-info.txt
-            ${{ env.INSTALL_ROOT }}/ldd.txt
-            ${{ env.INSTALL_ROOT }}/abacus.sha256
-            ${{ env.CI_SOURCE }}/tests/**/log.txt
-            ${{ env.CI_SOURCE }}/tests/**/result.out
-            ${{ env.RESULT_ROOT }}/*.log
-            ${{ env.RESULT_ROOT }}/*.out
-            ${{ env.RESULT_ROOT }}/*.txt
-          if-no-files-found: warn
+  nvhpc245-legacy-control:
+    uses: ./.github/workflows/sai-gpu-nvhpc245.yml
