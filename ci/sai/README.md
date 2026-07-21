@@ -28,9 +28,9 @@ job and the cuSolverMp RT-TDDFT smoke case in a separate 16-GPU job.
 
 Runtime placement follows SAI's `/opt/sbatch_examples/gpu_abacus.sbatch`
 baseline: each job sources the partition-specific `mps_mapping.d` script and
-uses its `MAP_OPT` and `OMP_NUM_THREADS` values. Open MPI 5 test-harness runs
-pass `MAP_OPT` through PRRTE's native `PRTE_MCA_mapby` parameter, which is
-equivalent to the example's `mpirun --map-by`. The validation scripts do not
+uses its `MAP_OPT` and `OMP_NUM_THREADS` values. Test-harness launches use a
+thin `mpirun` wrapper that adds the example's exact `--map-by "$MAP_OPT"`
+argument before forwarding the harness arguments. The validation scripts do not
 override NCCL's IB selection. The intended experimental differences from the
 SAI example are the freshly built ABACUS executable and the pinned newer
 cuSolverMp/cuBLASMp/NCCL toolchain. Each test job records the effective

@@ -11,6 +11,7 @@ set -euo pipefail
 
 : "${CI_SOURCE:?}"
 : "${INSTALL_ROOT:?}"
+: "${RESULT_ROOT:?}"
 : "${TOOLCHAIN_FILE:?}"
 : "${MP_PROFILE:?}"
 
@@ -22,7 +23,12 @@ declare -F sai_load_toolchain >/dev/null || {
 sai_load_toolchain
 
 source "/opt/sai_config/mps_mapping.d/${SLURM_JOB_PARTITION}.bash"
-export PRTE_MCA_mapby="$MAP_OPT"
+SAI_SYSTEM_MPIRUN=$(command -v mpirun)
+export SAI_SYSTEM_MPIRUN MAP_OPT
+launcher_dir="$RESULT_ROOT/launcher"
+mkdir -p "$launcher_dir"
+ln -sfn "$CI_SOURCE/ci/sai/mpirun_with_mapping.sh" "$launcher_dir/mpirun"
+export PATH="$launcher_dir:$PATH"
 export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64:$SAI_NCCL_ROOT/lib:${LD_LIBRARY_PATH:-}"
 
 echo "SAI runtime mapping: partition=$SLURM_JOB_PARTITION tasks=$SLURM_NTASKS map_by=$MAP_OPT omp_threads=$OMP_NUM_THREADS"
