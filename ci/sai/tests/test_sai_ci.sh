@@ -110,6 +110,7 @@ test_workflow_security_policy() {
 
 test_gpu_matrix_submission_policy() {
     local script=ci/sai/run_gpu_case_matrix.sh
+    local multinode=ci/sai/test_gpu.sbatch
     assert_contains "$script" 'export GPU_CASE_CLASS=$class'
     assert_contains "$script" 'export GPU_CASE_RANKS=${ranks[$class]}'
     assert_contains "$script" 'export GPU_CASE_MANIFEST=$manifest'
@@ -121,6 +122,43 @@ test_gpu_matrix_submission_policy() {
     assert_contains "$script" '--gpus-per-node="${ranks[$class]}"'
     assert_contains "$script" '"$CONTROL_ROOT/test_gpu_case.sh"'
     assert_not_contains "$script" '--cpus-per-task'
+    assert_contains "$multinode" 'prepare_cusolvermp_smoke.sh'
+    assert_not_contains "$multinode" 'CASES_CUSOLVERMP_16GPU.txt'
+    assert_contains "$multinode" '#SBATCH --nodes=2'
+    assert_contains "$multinode" '#SBATCH --ntasks=8'
+    assert_contains "$multinode" '#SBATCH --ntasks-per-node=4'
+    assert_contains "$multinode" '#SBATCH --gpus-per-node=4'
+}
+
+test_prepare_cusolvermp_smoke() {
+    local root=$test_root/cusolvermp-smoke
+    local source=$root/source
+    local results=$root/results
+    local input=$source/tests/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT
+    local staged=$results/cusolvermp-smoke/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT
+    mkdir -p "$(dirname "$input")" "$source/tests/integrate" \
+        "$source/tests/PP_ORB"
+    printf '%s\n' INPUT_PARAMETERS 'ks_solver         cusolver' > "$input"
+    CI_SOURCE=$source RESULT_ROOT=$results \
+        bash ci/sai/prepare_cusolvermp_smoke.sh > "$root/prepare.log"
+    assert_contains "$input" 'ks_solver         cusolver'
+    assert_not_contains "$input" 'cusolvermp'
+    assert_contains "$staged" 'ks_solver         cusolvermp'
+    if grep -Eq '^[[:space:]]*ks_solver[[:space:]]+cusolver[[:space:]]*$' "$staged"; then
+        fail 'staged cuSolverMp smoke still selects cusolver'
+    fi
+
+    printf '%s\n' INPUT_PARAMETERS 'ks_solver         elpa' > "$input"
+    if CI_SOURCE=$source RESULT_ROOT=$root/missing-results \
+        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
+        fail 'cuSolverMp smoke staging accepted a missing cusolver line'
+    fi
+
+    printf '%s\n' INPUT_PARAMETERS 'ks_solver cusolver' 'ks_solver cusolver' > "$input"
+    if CI_SOURCE=$source RESULT_ROOT=$root/duplicate-results \
+        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
+        fail 'cuSolverMp smoke staging accepted duplicate cusolver lines'
+    fi
 }
 
 test_prepare_remote_run_paths() {
@@ -666,6 +704,7 @@ EOF
 run_test 'SSH client configuration' test_configure_ssh_client
 run_test 'workflow security policy' test_workflow_security_policy
 run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
+run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
 run_test 'cleanup staging containment and collision' test_prepare_cleanup_install
 run_test 'NVIDIA archive cache reuse and rejection' test_nvidia_archive_cache

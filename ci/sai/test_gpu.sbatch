@@ -84,11 +84,12 @@ fi
 "$ABACUS" --info
 
 suite_status=0
-cd "$CI_SOURCE/tests/15_rtTDDFT_GPU"
+bash "$CONTROL_ROOT/prepare_cusolvermp_smoke.sh"
+cd "$RESULT_ROOT/cusolvermp-smoke/15_rtTDDFT_GPU"
 if ! timeout --signal=TERM --kill-after=30s 15m \
     bash ../integrate/Autotest.sh -a "$ABACUS" -n 8 \
         -o "$OMP_NUM_THREADS" \
-        -f CASES_CUSOLVERMP_16GPU.txt -r '^19_NO_O3_CUSOLVERMP_16GPU$'; then
+        -f CASES_GPU.txt -r '^11_NO_O3_TDDFT_GPU$'; then
     suite_status=1
     echo "[ERROR] 2-node 8-GPU cuSolverMp RT-TDDFT case failed"
 fi
