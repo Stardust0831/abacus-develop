@@ -39,6 +39,11 @@ jobs:
       ARTIFACT_ROOT: ""
       REMOTE_PROJECT_ROOT: ""
       REMOTE_RUN_ROOT: ""
+      REMOTE_SOURCE_TRANSFER_ROOT: ""
+      SOURCE_CACHE_BASE_SHA: ""
+      SOURCE_MANIFEST: ""
+      SOURCE_PAYLOAD: ""
+      SOURCE_PAYLOAD_MODE: ""
       SAI_SSH_CONFIG: ""
     steps:
       - name: Checkout trusted CI control plane
@@ -115,16 +120,79 @@ jobs:
             echo "REMOTE_RUN_ROOT=$remote_run_root"
           } >> "$GITHUB_ENV"
 
-      - name: Upload requested source to SAI
+      - name: Upload trusted control plane to SAI
         run: |
           set -euo pipefail
-          rsync -a --delete --exclude=.git/ \
-            -e "ssh -F $SAI_SSH_CONFIG" \
-            "$GITHUB_WORKSPACE/source/" "sai-ci:$REMOTE_RUN_ROOT/source/"
-          rsync -a --delete \
+          rsync -az --delete --timeout=600 --stats \
             -e "ssh -F $SAI_SSH_CONFIG" \
             "$GITHUB_WORKSPACE/control/ci/sai/" \
             "sai-ci:$REMOTE_RUN_ROOT/control/"
+
+      - name: Prepare source delta target
+        run: |
+          set -euo pipefail
+          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            prepare "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" \
+            < control/ci/sai/source_transfer_cache.sh)
+          printf '%s\n' "$output"
+          transfer_root=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+          base_sha=$(awk -F= '$1 == "SOURCE_CACHE_BASE_SHA" {print $2}' <<< "$output")
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          [[ "$transfer_root" == "$REMOTE_PROJECT_ROOT/cache/source-transfers/$run_key" ]]
+          [[ "$base_sha" == none || "$base_sha" =~ ^[0-9a-f]{40}$ ]]
+          {
+            echo "REMOTE_SOURCE_TRANSFER_ROOT=$transfer_root"
+            echo "SOURCE_CACHE_BASE_SHA=$base_sha"
+          } >> "$GITHUB_ENV"
+
+      - name: Build compressed source payload
+        run: |
+          set -euo pipefail
+          payload="$RUNNER_TEMP/source-payload.gz"
+          manifest="$RUNNER_TEMP/source-manifest.gz"
+          git -C source ls-tree -r -z --full-tree "$SOURCE_SHA" \
+            | gzip -1 > "$manifest"
+          mode=full
+          if [[ "$SOURCE_CACHE_BASE_SHA" != none ]]; then
+            if git -C source cat-file -e "$SOURCE_CACHE_BASE_SHA^{commit}" 2>/dev/null || \
+              git -C source fetch --no-tags --depth=1 origin "$SOURCE_CACHE_BASE_SHA"; then
+              git -C source diff --binary --full-index --no-renames \
+                "$SOURCE_CACHE_BASE_SHA" "$SOURCE_SHA" | gzip -1 > "$payload"
+              mode=delta
+            else
+              echo "Cached SHA is unavailable from GitHub; sending a full snapshot"
+            fi
+          fi
+          if [[ "$mode" == full ]]; then
+            empty_tree=$(git -C source hash-object -t tree /dev/null)
+            git -C source diff --binary --full-index --no-renames \
+              "$empty_tree" "$SOURCE_SHA" | gzip -1 > "$payload"
+          fi
+          [[ -s "$payload" && -s "$manifest" ]]
+          {
+            echo "SOURCE_PAYLOAD=$payload"
+            echo "SOURCE_MANIFEST=$manifest"
+            echo "SOURCE_PAYLOAD_MODE=$mode"
+          } >> "$GITHUB_ENV"
+          echo "SOURCE_PAYLOAD_READY mode=$mode base=$SOURCE_CACHE_BASE_SHA target=$SOURCE_SHA bytes=$(stat -c %s "$payload")"
+
+      - name: Upload and apply compressed source payload
+        run: |
+          set -euo pipefail
+          started=$(date +%s)
+          rsync -a --partial --timeout=600 --stats \
+            -e "ssh -F $SAI_SSH_CONFIG" \
+            "$SOURCE_PAYLOAD" "$SOURCE_MANIFEST" \
+            "sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            receive "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
+            "$REMOTE_SOURCE_TRANSFER_ROOT" "$SOURCE_PAYLOAD_MODE" "$SOURCE_SHA" \
+            < control/ci/sai/source_transfer_cache.sh
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            finalize "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
+            "$REMOTE_SOURCE_TRANSFER_ROOT" "$SOURCE_SHA" \
+            < control/ci/sai/source_transfer_cache.sh
+          echo "SOURCE_TRANSFER_SECONDS=$(($(date +%s) - started))"
 
       - name: Build and run SAI GPU validations
         id: remote_validation

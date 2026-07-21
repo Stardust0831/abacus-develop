@@ -76,7 +76,7 @@ jobs:
           staging_file=$(awk -F= '$1 == "CLEANUP_STAGING_FILE" {print $2}' <<< "$output")
           [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
           [[ "$staging_file" == "$remote_project_root/diagnostics/cleanup-$run_key/cleanup_sai_runs.sh" ]]
-          rsync -a -e "ssh -F $SAI_SSH_CONFIG" \
+          rsync -az -e "ssh -F $SAI_SSH_CONFIG" \
             ci/sai/cleanup_sai_runs.sh \
             "sai-ci:$staging_file"
           ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \

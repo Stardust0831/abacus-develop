@@ -86,9 +86,12 @@ discovers every selected project root through its registry. A scheduled run
 has no input form and always uses the scheduled Environment's
 `SAI_PROJECT_ROOT` with the current default-branch SHA.
 
-The SSH client disables agent and port forwarding, uses `BatchMode`, and
-requires the repository-pinned SAI host key. The private key is written only to
-the GitHub runner's temporary directory with mode 0600 and is removed in an
+The SSH client disables agent and port forwarding, uses `BatchMode`, requires
+the repository-pinned SAI host key, and enables transport compression for all
+control commands and rsync traffic. Source payloads and manifests are already
+gzip-compressed before rsync starts, while returned artifacts are created as a
+gzip-compressed tar stream on SAI. The private key is written only to the
+GitHub runner's temporary directory with mode 0600 and is removed in an
 `always()` step. Never print the key or pass it on a command line.
 
 ## Build and GPU jobs
@@ -119,6 +122,22 @@ an unmodified NVIDIA binary.
 Runtime checks require the expected `libnccl.so.2`,
 `NCCL_SAI_RAIL_BY_CHANNEL=1`, cuSolverMp 0.9.0, cuBLASMp 0.9.1, and NCCL
 2.29.3. The workflow does not modify `/opt`, modules, or system configuration.
+
+Source transfer keeps one non-executed snapshot and its commit SHA under the
+selected project root. For the first run, GitHub sends a gzip-compressed full
+snapshot represented as a binary diff from Git's empty tree. Later runs ask
+SAI for the last verified cached SHA and send the same compressed diff format
+from that SHA to the requested commit. A canonical Git tree manifest
+accompanies every payload. SAI checks every path, file type, executable bit,
+symlink target and blob hash, and rejects extra filesystem entries before
+promoting the source. An invalid or unavailable cache pointer falls back to a
+full snapshot. SAI applies the payload to a server-side copy, copies the
+verified result into the
+isolated run, and promotes the snapshot before compilation starts. Promotion
+is independent of later test outcomes, so a numerically failing run can still
+serve as the next transfer baseline. Build, install, and result directories
+are never reused, and tested code never executes from or writes into the
+source cache.
 
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
 because the selected GPU suites do not exercise them. After a successful
