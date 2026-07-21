@@ -43,6 +43,11 @@ Host sai-ci
     ClearAllForwardings yes
     RequestTTY no
     Compression yes
+    ConnectionAttempts 4
+    ConnectTimeout 30
+    ControlMaster auto
+    ControlPath $output_dir/control-%C
+    ControlPersist 15m
     ServerAliveInterval 30
     ServerAliveCountMax 4
 EOF

@@ -90,9 +90,15 @@ The SSH client disables agent and port forwarding, uses `BatchMode`, requires
 the repository-pinned SAI host key, and enables transport compression for all
 control commands and rsync traffic. Source payloads and manifests are already
 gzip-compressed before rsync starts, while returned artifacts are created as a
-gzip-compressed tar stream on SAI. The private key is written only to the
-GitHub runner's temporary directory with mode 0600 and is removed in an
-`always()` step. Never print the key or pass it on a command line.
+gzip-compressed tar stream on SAI. The read-only probe establishes one SSH
+master connection with bounded connection retries; later SSH and rsync steps
+reuse it instead of repeatedly negotiating with the login gateway. The
+workflow explicitly closes the master before removing the private key and
+socket directory in an `always()` step. The key is written only to the GitHub
+runner's temporary directory with mode 0600. Never print the key or pass it on
+a command line. This connection retry does not resume a Slurm coordinator
+after a mid-session disconnect; the current signal handlers cancel recorded
+jobs to avoid leaving orphan allocations.
 
 ## Build and GPU jobs
 

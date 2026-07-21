@@ -82,6 +82,11 @@ test_configure_ssh_client() {
     assert_contains "$output/config" 'ClearAllForwardings yes'
     assert_contains "$output/config" 'StrictHostKeyChecking yes'
     assert_contains "$output/config" 'Compression yes'
+    assert_contains "$output/config" 'ConnectionAttempts 4'
+    assert_contains "$output/config" 'ConnectTimeout 30'
+    assert_contains "$output/config" 'ControlMaster auto'
+    assert_contains "$output/config" "ControlPath $output/control-%C"
+    assert_contains "$output/config" 'ControlPersist 15m'
     assert_not_contains "$log" 'PRIVATE KEY'
     assert_not_contains "$log" 'sai-ci-secret-marker'
 }
@@ -97,6 +102,10 @@ test_workflow_security_policy() {
     assert_contains "$bootstrap" 'name: sai-ssh-manual'
     assert_contains "$bootstrap" 'ref: ${{ github.event.repository.default_branch }}'
     assert_contains "$bootstrap" 'rsync -az -e "ssh -F $SAI_SSH_CONFIG"'
+    assert_contains "$workflow" 'ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci'
+    assert_contains "$bootstrap" 'ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci'
+    assert_contains "$workflow" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
+    assert_contains "$bootstrap" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
     assert_contains ci/sai/run_remote_ci.sh \
         'export SAI_CUSOLVERMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive'
     assert_contains ci/sai/run_remote_ci.sh \
