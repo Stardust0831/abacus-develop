@@ -123,7 +123,7 @@ Runtime checks require the expected `libnccl.so.2`,
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
 because the selected GPU suites do not exercise them. After a successful
 build, three resource-homogeneous Slurm arrays submit all 48 cases in suites
-11/12/13/15/16 while a 2-node, 8-rank cuSolverMp RT-TDDFT smoke job runs in
+11/12/13/15/16 while a 2-node, 16-rank Si48 cuSolverMp RT-TDDFT smoke job runs in
 parallel. The arrays use one 1-GPU task, seven 2-GPU tasks, and forty 4-GPU
 tasks. The 1/2-GPU arrays use `flood-1o2gpu`; the 4-GPU array and multinode job
 use `flood-gpu`. No job pins a node name or explicitly requests CPU resources.

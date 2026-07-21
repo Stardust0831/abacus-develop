@@ -125,39 +125,56 @@ test_gpu_matrix_submission_policy() {
     assert_contains "$multinode" 'prepare_cusolvermp_smoke.sh'
     assert_not_contains "$multinode" 'CASES_CUSOLVERMP_16GPU.txt'
     assert_contains "$multinode" '#SBATCH --nodes=2'
-    assert_contains "$multinode" '#SBATCH --ntasks=8'
-    assert_contains "$multinode" '#SBATCH --ntasks-per-node=4'
-    assert_contains "$multinode" '#SBATCH --gpus-per-node=4'
+    assert_contains "$multinode" '#SBATCH --ntasks=16'
+    assert_contains "$multinode" '#SBATCH --ntasks-per-node=8'
+    assert_contains "$multinode" '#SBATCH --gpus-per-node=8'
+    assert_contains "$multinode" '19_NO_Si48_CUSOLVERMP_TDDFT_GPU'
+    assert_not_contains "$multinode" 'Autotest.sh'
 }
 
 test_prepare_cusolvermp_smoke() {
     local root=$test_root/cusolvermp-smoke
     local source=$root/source
     local results=$root/results
-    local input=$source/tests/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT
-    local staged=$results/cusolvermp-smoke/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT
-    mkdir -p "$(dirname "$input")" "$source/tests/integrate" \
-        "$source/tests/PP_ORB"
-    printf '%s\n' INPUT_PARAMETERS 'ks_solver         cusolver' > "$input"
+    local case_name=19_NO_Si48_CUSOLVERMP_TDDFT_GPU
+    local repository_case=tests/15_rtTDDFT_GPU/$case_name
+    local source_case=$source/tests/15_rtTDDFT_GPU/$case_name
+    local input=$source_case/INPUT
+    local staged=$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/INPUT
+    local name
+    mkdir -p "$(dirname "$source_case")" "$source/tests/PP_ORB"
+    cp -a "$repository_case" "$source_case"
+    printf 'must not be staged\n' > "$source_case/UNTRUSTED_EXTRA"
     CI_SOURCE=$source RESULT_ROOT=$results \
         bash ci/sai/prepare_cusolvermp_smoke.sh > "$root/prepare.log"
-    assert_contains "$input" 'ks_solver         cusolver'
-    assert_not_contains "$input" 'cusolvermp'
+    assert_contains "$input" 'ks_solver         cusolvermp'
     assert_contains "$staged" 'ks_solver         cusolvermp'
-    if grep -Eq '^[[:space:]]*ks_solver[[:space:]]+cusolver[[:space:]]*$' "$staged"; then
-        fail 'staged cuSolverMp smoke still selects cusolver'
+    for name in INPUT KPT README STRU; do
+        cmp "$source_case/$name" \
+            "$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/$name"
+    done
+    if [[ -e $results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/UNTRUSTED_EXTRA ]]; then
+        fail 'cuSolverMp smoke staging copied an unvalidated extra file'
     fi
 
     printf '%s\n' INPUT_PARAMETERS 'ks_solver         elpa' > "$input"
     if CI_SOURCE=$source RESULT_ROOT=$root/missing-results \
         bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
-        fail 'cuSolverMp smoke staging accepted a missing cusolver line'
+        fail 'cuSolverMp smoke staging accepted a missing cusolvermp line'
     fi
 
-    printf '%s\n' INPUT_PARAMETERS 'ks_solver cusolver' 'ks_solver cusolver' > "$input"
+    printf '%s\n' INPUT_PARAMETERS 'ks_solver cusolvermp' 'ks_solver cusolvermp' > "$input"
     if CI_SOURCE=$source RESULT_ROOT=$root/duplicate-results \
         bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
-        fail 'cuSolverMp smoke staging accepted duplicate cusolver lines'
+        fail 'cuSolverMp smoke staging accepted duplicate cusolvermp lines'
+    fi
+
+    cp "$repository_case/INPUT" "$input"
+    rm -f "$source_case/KPT"
+    ln -s "$PWD/$repository_case/KPT" "$source_case/KPT"
+    if CI_SOURCE=$source RESULT_ROOT=$root/symlink-results \
+        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
+        fail 'cuSolverMp smoke staging accepted a symlinked case file'
     fi
 }
 
