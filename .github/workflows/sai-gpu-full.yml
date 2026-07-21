@@ -9,12 +9,12 @@ on:
         default: true
         type: boolean
       slurm_nodelist:
-        description: "Optional Slurm node list for controlled reproduction"
+        description: "Compatibility input; ignored by the SAI NCCL control"
         required: false
         default: ""
         type: string
       disable_nccl_ib_for_cusolvermp:
-        description: "Disable NCCL InfiniBand transport for the 16-GPU cuSolverMp case"
+        description: "Compatibility input; ignored because this control requires IB"
         required: true
         default: false
         type: boolean
@@ -33,13 +33,13 @@ jobs:
     timeout-minutes: 210
     environment: sai-gpu
     env:
-      MP_PROFILE: archive-mp09
+      MP_PROFILE: archive-mp09-sai-nccl2293
       RUN_ROOT: ${{ github.workspace }}/.sai-run-uninitialized
       BUILD_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/build
       INSTALL_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/install
       RESULT_ROOT: ${{ github.workspace }}/.sai-run-uninitialized/results
-      SAI_SLURM_NODELIST: ${{ inputs.slurm_nodelist }}
-      SAI_DISABLE_NCCL_IB: ${{ inputs.disable_nccl_ib_for_cusolvermp }}
+      SAI_SLURM_NODELIST: ""
+      SAI_DISABLE_NCCL_IB: false
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -62,7 +62,7 @@ jobs:
           }
           mkdir -p "$CI_SOURCE" "$BUILD_ROOT" "$INSTALL_ROOT" "$RESULT_ROOT"
           rsync -a --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SOURCE/"
-          TOOLCHAIN_FILE=$CI_SOURCE/ci/sai/toolchains/archive-mp09.env.example
+          TOOLCHAIN_FILE=$CI_SOURCE/ci/sai/toolchains/archive-mp09-sai-nccl2293.env.example
 
           {
             echo "SAI_PROJECT_ROOT=$SAI_PROJECT_ROOT"

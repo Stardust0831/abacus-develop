@@ -51,8 +51,34 @@ fi
 
 ABACUS="$INSTALL_ROOT/bin/abacus"
 [[ -x "$ABACUS" ]]
+ABACUS_LDD=$(ldd "$ABACUS")
+printf '%s\n' "$ABACUS_LDD"
+if grep -q 'not found' <<< "$ABACUS_LDD"; then
+    echo "ABACUS has unresolved runtime dependencies" >&2
+    exit 1
+fi
+
+if [[ ${SAI_REQUIRE_NCCL_SAI_RAIL_BY_CHANNEL:-0} == 1 ]]; then
+    [[ ${NCCL_SAI_RAIL_BY_CHANNEL:-} == 1 ]] || {
+        echo "NCCL_SAI_RAIL_BY_CHANNEL=1 is required for this profile" >&2
+        exit 1
+    }
+    [[ -z ${LD_PRELOAD:-} ]] || {
+        printf 'LD_PRELOAD must be empty at runtime: %q\n' "$LD_PRELOAD" >&2
+        exit 1
+    }
+    NCCL_LOADED_PATH=$(awk '$1 == "libnccl.so.2" {print $3; exit}' <<< "$ABACUS_LDD")
+    [[ -n $NCCL_LOADED_PATH ]]
+    NCCL_EXPECTED_PATH=$(readlink -f "$SAI_NCCL_ROOT/lib/libnccl.so.2")
+    NCCL_LOADED_PATH=$(readlink -f "$NCCL_LOADED_PATH")
+    [[ $NCCL_LOADED_PATH == "$NCCL_EXPECTED_PATH" ]] || {
+        echo "Unexpected NCCL runtime: $NCCL_LOADED_PATH (expected $NCCL_EXPECTED_PATH)" >&2
+        exit 1
+    }
+    echo "SAI_NCCL_RUNTIME_VERIFIED=$NCCL_LOADED_PATH rail_by_channel=$NCCL_SAI_RAIL_BY_CHANNEL"
+fi
+
 "$ABACUS" --info
-ldd "$ABACUS"
 
 suite_status=0
 cd "$CI_SOURCE/tests/15_rtTDDFT_GPU"

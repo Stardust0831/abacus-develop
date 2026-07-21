@@ -57,3 +57,14 @@ manual and protect the `sai-gpu` GitHub environment with required reviewers.
 
 The tested 0.9.0/0.9.1 archive binaries reference NCCL APIs that are absent
 from NCCL 2.18.5. This workflow requires NVIDIA NCCL 2.29.3.
+
+The `archive-mp09-sai-nccl2293` profile is a controlled alternative that uses
+the exact library root exported by SAI's `nccl/2.29.3-sai-cuda12.9` module.
+That module conflicts with `nvhpc`, so the profile loads the NVHPC/Open MPI
+toolchain and prepends the module's NCCL root directly. The SAI build derives
+from NVIDIA NCCL 2.29.3 but adds an operator-controlled dual-rail endpoint
+policy; it is not an unmodified NVIDIA binary. Validation must confirm both
+the resolved `libnccl.so.2` path and `NCCL_SAI_RAIL_BY_CHANNEL=1` at runtime.
+The profile explicitly enables that policy, rejects inherited `LD_PRELOAD`,
+requires IB to remain enabled, and ignores node-selection/IB-disable workflow
+inputs so the A/B control cannot be dispatched with those confounders.
