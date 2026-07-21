@@ -1,163 +1,217 @@
-name: SAI GPU Full Validation
+name: SAI GPU Case Matrix
 
 on:
   workflow_dispatch:
     inputs:
-      mp_version:
-        description: "cuSolverMp/cuBLASMp runtime: project (0.9.x) or system (NVHPC 0.7.x)"
+      source_sha:
+        description: "Approved code SHA; executes as abacususer01 on SAI"
         required: true
-        default: project
-        type: choice
-        options:
-          - project
-          - system
-      run_cusolvermp:
-        description: "Run the O3 RT-TDDFT cuSolverMp smoke case"
-        required: true
-        default: true
-        type: boolean
+        type: string
+      project_root:
+        description: "Optional absolute project root below the SAI account HOME"
+        required: false
+        default: ""
+        type: string
+  schedule:
+    - cron: "30 20 * * *"
 
 permissions:
   contents: read
 
 concurrency:
-  group: sai-gpu-full
+  group: sai-gpu-rebuild
   cancel-in-progress: false
 
 jobs:
-  gpu-full:
-    name: SAI GPU full suite (${{ inputs.mp_version }})
-    runs-on: [self-hosted, linux, x64, sai-slurm, v100, cusolvermp]
-    timeout-minutes: 75
-    environment: sai-gpu
+  rebuild-and-test:
+    name: SAI SSH rebuild and GPU validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    environment:
+      name: ${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}
+    env:
+      SOURCE_SHA: ${{ github.event_name == 'schedule' && github.sha || inputs.source_sha }}
+      PROJECT_ROOT_INPUT: ${{ inputs.project_root || '' }}
+      SAI_PROJECT_ROOT_DEFAULT: ${{ vars.SAI_PROJECT_ROOT }}
+      SAI_SSH_HOST: ${{ vars.SAI_SSH_HOST }}
+      SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
+      SAI_SSH_USER: ${{ vars.SAI_SSH_USER }}
+      ARTIFACT_ROOT: ""
+      REMOTE_PROJECT_ROOT: ""
+      REMOTE_RUN_ROOT: ""
+      SAI_SSH_CONFIG: ""
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout trusted CI control plane
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: control
+          persist-credentials: false
 
-      - name: Stage checkout on shared SAI filesystem
+      - name: Validate requested source
         run: |
           set -euo pipefail
-          export CI_SRC=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-checkouts/${GITHUB_RUN_ID}
-          export RESULT_ROOT=/home/sai-partner/saiuser01/agent/abacus_beta6_build/ci-results/${GITHUB_RUN_ID}
-          rm -rf "$CI_SRC"
-          rm -rf "$RESULT_ROOT"
-          mkdir -p "$CI_SRC" "$RESULT_ROOT"
-          rsync -a --delete --exclude .git/ "$GITHUB_WORKSPACE/" "$CI_SRC/"
-          echo "CI_SRC=$CI_SRC" >> "$GITHUB_ENV"
-          echo "RESULT_ROOT=$RESULT_ROOT" >> "$GITHUB_ENV"
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          requested_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
+          : "${requested_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
+          [[ "$requested_root" =~ ^/home/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
+          case "/$requested_root/" in
+            */./*|*/../*)
+              echo "Project root contains a dot path component: $requested_root" >&2
+              exit 1
+              ;;
+          esac
+          echo "REQUESTED_PROJECT_ROOT=$requested_root" >> "$GITHUB_ENV"
 
-      - name: Submit Slurm GPU validation
+      - name: Checkout requested ABACUS commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          path: source
+          persist-credentials: false
+
+      - name: Verify immutable source checkout
+        run: |
+          set -euo pipefail
+          actual_sha=$(git -C source rev-parse HEAD)
+          [[ "$actual_sha" == "$SOURCE_SHA" ]]
+          control_sha=$(git -C control rev-parse HEAD)
+          git -C source diff --exit-code
+          git -C source diff --cached --exit-code
+          git -C control diff --exit-code
+          git -C control diff --cached --exit-code
+          echo "SOURCE_SHA=$actual_sha"
+          echo "CONTROL_SHA=$control_sha" >> "$GITHUB_ENV"
+
+      - name: Configure pinned SSH client
         env:
-          MP_VERSION: ${{ inputs.mp_version }}
-          RUN_CUSOLVERMP: ${{ inputs.run_cusolvermp }}
+          SAI_SSH_PRIVATE_KEY: ${{ secrets.SAI_SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          script="$RUNNER_TEMP/sai-gpu-${GITHUB_RUN_ID}.sbatch"
-          log="$CI_SRC/sai-gpu-${GITHUB_RUN_ID}.log"
-          cat > "$script" <<'SBATCH'
-          #!/usr/bin/env bash
-          #SBATCH --job-name=abacus-sai-ci
-          #SBATCH --partition=16V100
-          #SBATCH --qos=huge-gpu
-          #SBATCH --nodes=1
-          #SBATCH --ntasks=4
-          #SBATCH --gpus-per-node=4
-          #SBATCH --time=01:00:00
-          #SBATCH --output=__RESULT_ROOT__/sai-gpu-%j.out
+          bash control/ci/sai/configure_ssh_client.sh \
+            "$RUNNER_TEMP/sai-ssh" "$GITHUB_WORKSPACE/control/ci/sai/known_hosts"
+          echo "SAI_SSH_CONFIG=$RUNNER_TEMP/sai-ssh/config" >> "$GITHUB_ENV"
 
+      - name: Verify SAI SSH and Slurm access
+        run: |
           set -euo pipefail
-          : "${CI_SRC:?}"
-          : "${ABACUS:?}"
-          : "${MP_VERSION:?}"
-          export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}
-          export LD_PRELOAD=${LD_PRELOAD:-}
-          source /etc/profile.d/lmod.sh
-          module purge
-          module load nvhpc/26.3-gnu-cuda12-tuned
-          module load openmpi/5.0.10-nvhpc26.3-gnu-cuda12-auto
-          module load fftw/3.3.10 libxc/7.0.0-auto saiblas/2603-gnu-auto
-          module load elpa/2026.02.001-2603-gnu cuda/12.9.1
-          module unload nccl
-          source /opt/sai_config/mps_mapping.d/16V100.bash
-          export NCCL_IB_DISABLE=1
-          export OMP_NUM_THREADS=1
-          export OMPI_MCA_rmaps_base_mapping_policy="$MAP_OPT"
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s \
+            < control/ci/sai/probe_remote_sai.sh
 
-          MPI=/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2
-          NV=/opt/devtools/nvidia/hpc_sdk/Linux_x86_64/26.3
-          CUDA=/opt/devtools/nvidia/cuda-12.9.1
-          MATH="$NV/math_libs/12.9"
-          NCCL="$NV/comm_libs/12.9/nccl-2.29"
-          if [[ "$MP_VERSION" == project ]]; then
-            CUSOLVERMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cu12
-            CUBLASMP=/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-mp-0.9/nvidia/cublasmp/cu12
-          else
-            CUSOLVERMP="$MATH/targets/x86_64-linux"
-            CUBLASMP="$MATH/targets/x86_64-linux"
-          fi
-          export LD_LIBRARY_PATH="$MPI/lib:$CUDA/lib64:$CUSOLVERMP/lib:$CUBLASMP/lib:$MATH/lib64:$MATH/targets/x86_64-linux/lib:$NCCL/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-full/lib64:/home/sai-partner/saiuser01/agent/abacus_beta6_build/deps-deepmd-pt-only/lib:/opt/devtools/elpa/elpa-2026.02.001-2603-gnu/nvidia/lib:/opt/devtools/libxc/libxc-7.0.0-avx2/lib:/opt/devtools/saiblas/2603-gnu-avx2/lib:/opt/devtools/fftw/fftw-3.3.10/lib:/opt/apps/conda_env/deepmd-kit-3.1.2/lib:/opt/apps/abacus/abacus-develop-3.9.0.26_nvhpc263gnu/toolchain/install/NEP_CPU-main/lib:${LD_LIBRARY_PATH:-}"
+      - name: Create isolated remote run
+        run: |
+          set -euo pipefail
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            "$REQUESTED_PROJECT_ROOT" "$run_key" "$SOURCE_SHA" "$CONTROL_SHA" \
+            < control/ci/sai/prepare_remote_run.sh)
+          printf '%s\n' "$output"
+          remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
+          remote_run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
+          [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
+          [[ "$remote_run_root" == "$remote_project_root/runs/$run_key" ]]
+          {
+            echo "REMOTE_PROJECT_ROOT=$remote_project_root"
+            echo "REMOTE_RUN_ROOT=$remote_run_root"
+          } >> "$GITHUB_ENV"
 
-          run_cases() {
-            local suite="$1"
-            local ranks="$2"
-            local cases_file="$3"
-            local regex="$4"
-            if [[ "$ranks" -lt 4 ]]; then
-              (unset OMPI_MCA_rmaps_base_mapping_policy; cd "$CI_SRC/tests/$suite" && \
-                bash ../integrate/Autotest.sh -a "$ABACUS" -n "$ranks" -o 1 \
-                  -f "$cases_file" -r "$regex")
-            else
-              (cd "$CI_SRC/tests/$suite" && bash ../integrate/Autotest.sh \
-                -a "$ABACUS" -n "$ranks" -o 1 -f "$cases_file" -r "$regex")
-            fi
-          }
+      - name: Upload requested source to SAI
+        run: |
+          set -euo pipefail
+          rsync -a --delete --exclude=.git/ \
+            -e "ssh -F $SAI_SSH_CONFIG" \
+            "$GITHUB_WORKSPACE/source/" "sai-ci:$REMOTE_RUN_ROOT/source/"
+          rsync -a --delete \
+            -e "ssh -F $SAI_SSH_CONFIG" \
+            "$GITHUB_WORKSPACE/control/ci/sai/" \
+            "sai-ci:$REMOTE_RUN_ROOT/control/"
 
-          cases_11="$CI_SRC/tests/11_PW_GPU/CASES_CI_GPU.txt"
-          grep -v -E '^(scf_bpcg|scf_out_wf)$' "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" > "$cases_11"
-          run_cases 11_PW_GPU 4 "$cases_11" '^[^#].*_.*$'
-          run_cases 11_PW_GPU 2 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_bpcg$'
-          run_cases 11_PW_GPU 1 "$CI_SRC/tests/11_PW_GPU/CASES_GPU.txt" '^scf_out_wf$'
-
-          for suite in 12_NAO_Gamma_GPU 13_NAO_multik_GPU 15_rtTDDFT_GPU; do
-            run_cases "$suite" 4 CASES_GPU.txt '^[^#].*_.*$'
-          done
-          run_cases 16_SDFT_GPU 2 CASES_GPU.txt '^[^#].*_.*$'
-
-          if [[ "${RUN_CUSOLVERMP:-false}" == true ]]; then
-            tmp=$(mktemp -d /tmp/abacus-sai-cusolvermp.XXXXXX)
-            trap 'rm -rf "$tmp"' EXIT
-            cp -a "$CI_SRC/tests/15_rtTDDFT_GPU" "$tmp/"
-            ln -s "$CI_SRC/tests/integrate" "$tmp/integrate"
-            ln -s "$CI_SRC/tests/PP_ORB" "$tmp/PP_ORB"
-            sed -i 's/^ks_solver[[:space:]]\+cusolver[[:space:]]*$/ks_solver          cusolvermp/' \
-              "$tmp/15_rtTDDFT_GPU/11_NO_O3_TDDFT_GPU/INPUT"
-            (cd "$tmp/15_rtTDDFT_GPU" && timeout --signal=TERM --kill-after=30s 10m \
-              bash ../integrate/Autotest.sh -a "$ABACUS" -n 4 -o 1 \
-              -f CASES_GPU.txt -r '^11_NO_O3_TDDFT_GPU$')
-          fi
-          echo "SAI_GPU_VALIDATION_PASSED mp_version=$MP_VERSION"
-          SBATCH
-          sed -i "s|__RESULT_ROOT__|$RESULT_ROOT|g" "$script"
-          export CI_SRC RESULT_ROOT ABACUS=/home/sai-partner/saiuser01/agent/abacus_beta6_build/install-full-sm70-avx2-mp09/bin/abacus MP_VERSION RUN_CUSOLVERMP
+      - name: Build and run SAI GPU validations
+        id: remote_validation
+        continue-on-error: true
+        run: |
+          set -uo pipefail
           set +e
-          sbatch --wait --parsable --export=ALL "$script" | tee "$log"
-          status=${PIPESTATUS[0]}
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" "$CONTROL_SHA" \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" \
+            < control/ci/sai/run_remote_ci.sh \
+            2>&1 | tee "$RUNNER_TEMP/sai-remote-driver.log"
+          remote_rc=${PIPESTATUS[0]}
           set -e
-          cat "$RESULT_ROOT"/sai-gpu-*.out >> "$log" 2>/dev/null || true
-          exit "$status"
+          echo "exit_code=$remote_rc" >> "$GITHUB_OUTPUT"
+          exit "$remote_rc"
+
+      - name: Collect remote artifacts
+        id: collect
+        if: always()
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          ARTIFACT_ROOT=${ARTIFACT_ROOT:-$RUNNER_TEMP/sai-artifacts}
+          export ARTIFACT_ROOT
+          mkdir -p "$ARTIFACT_ROOT"
+          echo "ARTIFACT_ROOT=$ARTIFACT_ROOT" >> "$GITHUB_ENV"
+          {
+            echo "event_name=$GITHUB_EVENT_NAME"
+            echo "source_sha=$SOURCE_SHA"
+            echo "control_sha=${CONTROL_SHA:-unavailable}"
+            echo "remote_run_root=${REMOTE_RUN_ROOT:-unavailable}"
+          } > "$ARTIFACT_ROOT/workflow-context.txt"
+          if [[ -f "$RUNNER_TEMP/sai-remote-driver.log" ]]; then
+            cp "$RUNNER_TEMP/sai-remote-driver.log" "$ARTIFACT_ROOT/"
+          fi
+          if [[ -z ${SAI_SSH_CONFIG:-} || ! -f $SAI_SSH_CONFIG || \
+                -z ${REMOTE_RUN_ROOT:-} ]]; then
+            echo "Remote run was not created; no remote artifacts are available." \
+              | tee "$ARTIFACT_ROOT/collection-error.log" >&2
+            exit 1
+          fi
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$REMOTE_RUN_ROOT" \
+            < control/ci/sai/collect_remote_artifacts.sh \
+            | tar -xzf - -C "$ARTIFACT_ROOT"
+
+      - name: Publish GPU case summary
+        if: always()
+        run: |
+          set -euo pipefail
+          summary="$ARTIFACT_ROOT/results/case-matrix/gpu-case-summary.md"
+          if [[ -f "$summary" ]]; then
+            cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## SAI GPU validation produced no case summary" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload SAI logs
+        id: artifact_upload
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: sai-gpu-full-${{ github.run_id }}
-          path: |
-            ${{ env.CI_SRC }}/**/log.txt
-            ${{ env.CI_SRC }}/**/result.out
-            ${{ env.CI_SRC }}/sai-gpu-${{ github.run_id }}.log
-            ${{ env.RESULT_ROOT }}/sai-gpu-*.out
+          name: sai-ssh-gpu-rebuild-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.ARTIFACT_ROOT }}
           if-no-files-found: warn
+          retention-days: 30
 
-      - name: Cleanup shared checkout
+      - name: Mark remote artifacts as uploaded
+        if: always() && steps.collect.outcome == 'success' && steps.artifact_upload.outcome == 'success'
+        run: |
+          set -euo pipefail
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$REMOTE_RUN_ROOT" \
+            < control/ci/sai/mark_artifacts_uploaded.sh
+
+      - name: Remove local SSH credentials
         if: always()
-        run: rm -rf "$CI_SRC"
+        run: rm -rf "$RUNNER_TEMP/sai-ssh"
+
+      - name: Report validation result
+        if: always()
+        env:
+          REMOTE_OUTCOME: ${{ steps.remote_validation.outcome }}
+          COLLECT_OUTCOME: ${{ steps.collect.outcome }}
+          REMOTE_EXIT_CODE: ${{ steps.remote_validation.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          echo "Remote validation: $REMOTE_OUTCOME (rc=${REMOTE_EXIT_CODE:-missing})"
+          echo "Artifact collection: $COLLECT_OUTCOME"
+          [[ "$REMOTE_OUTCOME" == success ]]
+          [[ "$COLLECT_OUTCOME" == success ]]

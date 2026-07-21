@@ -1,0 +1,88 @@
+name: SAI SSH Bootstrap
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Read-only probe or install the user cron cleanup"
+        required: true
+        default: probe
+        type: choice
+        options:
+          - probe
+          - install-cleanup
+      project_root:
+        description: "Optional absolute project root below the SAI account HOME"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: sai-ssh-manual
+    env:
+      SAI_PROJECT_ROOT_DEFAULT: ${{ vars.SAI_PROJECT_ROOT }}
+      SAI_SSH_HOST: ${{ vars.SAI_SSH_HOST }}
+      SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
+      SAI_SSH_USER: ${{ vars.SAI_SSH_USER }}
+    steps:
+      - name: Checkout trusted control plane
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Configure pinned SSH client
+        env:
+          SAI_SSH_PRIVATE_KEY: ${{ secrets.SAI_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          bash ci/sai/configure_ssh_client.sh \
+            "$RUNNER_TEMP/sai-ssh" "$GITHUB_WORKSPACE/ci/sai/known_hosts"
+          echo "SAI_SSH_CONFIG=$RUNNER_TEMP/sai-ssh/config" >> "$GITHUB_ENV"
+
+      - name: Run read-only SAI probe
+        run: |
+          set -euo pipefail
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s < ci/sai/probe_remote_sai.sh
+
+      - name: Install cleanup cron
+        if: inputs.mode == 'install-cleanup'
+        env:
+          PROJECT_ROOT_INPUT: ${{ inputs.project_root }}
+        run: |
+          set -euo pipefail
+          project_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
+          : "${project_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
+          [[ "$project_root" =~ ^/home/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
+          case "/$project_root/" in
+            */./*|*/../*)
+              echo "Project root contains a dot path component: $project_root" >&2
+              exit 1
+              ;;
+          esac
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            "$project_root" "$run_key" \
+            < ci/sai/prepare_cleanup_install.sh)
+          printf '%s\n' "$output"
+          remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
+          staging_file=$(awk -F= '$1 == "CLEANUP_STAGING_FILE" {print $2}' <<< "$output")
+          [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
+          [[ "$staging_file" == "$remote_project_root/diagnostics/cleanup-$run_key/cleanup_sai_runs.sh" ]]
+          rsync -a -e "ssh -F $SAI_SSH_CONFIG" \
+            ci/sai/cleanup_sai_runs.sh \
+            "sai-ci:$staging_file"
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            "$remote_project_root" "$staging_file" \
+            < ci/sai/install_cleanup_cron.sh
+
+      - name: Remove local SSH credentials
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/sai-ssh"
