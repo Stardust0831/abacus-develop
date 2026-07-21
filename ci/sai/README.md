@@ -120,6 +120,16 @@ Runtime checks require the expected `libnccl.so.2`,
 `NCCL_SAI_RAIL_BY_CHANNEL=1`, cuSolverMp 0.9.0, cuBLASMp 0.9.1, and NCCL
 2.29.3. The workflow does not modify `/opt`, modules, or system configuration.
 
+Source transfer keeps one non-executable snapshot and its commit SHA under the
+selected project root. For the first run, GitHub sends a gzip-compressed full
+snapshot. Later runs ask SAI for the cached SHA and send a compressed binary
+Git diff from that SHA to the requested commit. SAI applies the patch to a
+server-side copy, copies the result into the isolated run, and promotes the
+snapshot before compilation starts. Promotion is independent of later test
+outcomes, so a numerically failing run can still serve as the next transfer
+baseline. Build, install, and result directories are never reused, and tested
+code never executes from or writes into the source cache.
+
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
 because the selected GPU suites do not exercise them. After a successful
 build, three resource-homogeneous Slurm arrays submit all 48 cases in suites

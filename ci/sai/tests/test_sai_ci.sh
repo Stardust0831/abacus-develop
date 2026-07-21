@@ -103,6 +103,13 @@ test_workflow_security_policy() {
     assert_contains "$toolchain" 'export SAI_NCCL_ROOT=$NCCL_ROOT'
     assert_not_contains "$toolchain" 'module load nccl/'
     assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
+    assert_contains "$workflow" 'source_transfer_cache.sh'
+    assert_contains "$workflow" 'git -C source diff --binary --full-index --no-renames'
+    assert_contains "$workflow" '| gzip -1 > "$payload"'
+    assert_contains "$workflow" 'SOURCE_CACHE_BASE_SHA'
+    assert_contains "$workflow" 'REMOTE_SOURCE_TRANSFER_ROOT/source-payload.gz'
+    assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
+    assert_contains ci/sai/probe_remote_sai.sh 'rsync curl git gzip tar xz'
     if sed -n '/^on:/,/^permissions:/p' "$workflow" | grep -Eq '^[[:space:]]+pull_request:'; then
         fail 'GPU workflow must not run automatically for pull requests'
     fi
@@ -241,6 +248,94 @@ test_prepare_remote_run_paths() {
         fail 'remote setup accepted a registry leaf symlink'
     fi
     [[ $(<"$root/registry-target") == registry-sentinel ]]
+}
+
+test_source_snapshot_cache() {
+    local root=$test_root/source-cache
+    local home=$root/home
+    local project=$home/projects/abacus-ci
+    local repository=$root/repository
+    local sha1 sha2
+    local run1=$project/runs/100-1
+    local run2=$project/runs/101-1
+    local output transfer snapshot inode_run inode_cache
+    mkdir -p "$repository"
+    git -C "$repository" init -q
+    git -C "$repository" config user.email ci@example.invalid
+    git -C "$repository" config user.name ci
+    printf 'unchanged\n' > "$repository/keep.txt"
+    printf 'remove later\n' > "$repository/delete.txt"
+    printf '\x00\x01base\xff' > "$repository/data.bin"
+    printf '#!/bin/sh\necho base\n' > "$repository/tool.sh"
+    chmod 0644 "$repository/tool.sh"
+    ln -s keep.txt "$repository/link"
+    git -C "$repository" add .
+    git -C "$repository" commit -qm base
+    sha1=$(git -C "$repository" rev-parse HEAD)
+
+    mkdir -p "$run1/source" "$run1/control" "$run1/build" \
+        "$run1/install" "$run1/results"
+    touch "$run1/.ci-created"
+
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run1" "$sha1")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
+    [[ $transfer == "$project/cache/source-transfers/100-1" ]]
+    tar -C "$repository" --exclude=.git -cf - . \
+        | gzip -1 > "$transfer/source-payload.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run1" "$transfer" full "$sha1" > "$root/receive1.log"
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run1" "$transfer" "$sha1" > "$root/finalize1.log"
+    assert_contains "$run1/source/keep.txt" 'unchanged'
+    assert_file "$project/cache/source-latest"
+    assert_contains "$project/cache/source-latest" "$sha1.100-1"
+    snapshot=$project/cache/source-snapshots/$sha1.100-1
+    assert_file "$snapshot/keep.txt"
+    inode_run=$(stat -c %i "$run1/source/keep.txt")
+    inode_cache=$(stat -c %i "$snapshot/keep.txt")
+    [[ $inode_run != "$inode_cache" ]] || fail 'run source shares cache inode'
+
+    printf 'changed\n' > "$repository/keep.txt"
+    printf '\x00\x01target\xfe' > "$repository/data.bin"
+    rm "$repository/delete.txt" "$repository/link"
+    printf '#!/bin/sh\necho target\n' > "$repository/tool.sh"
+    chmod 0755 "$repository/tool.sh"
+    ln -s data.bin "$repository/link"
+    printf 'added\n' > "$repository/add.txt"
+    git -C "$repository" add -A
+    git -C "$repository" commit -qm target
+    sha2=$(git -C "$repository" rev-parse HEAD)
+
+    mkdir -p "$run2/source" "$run2/control" "$run2/build" \
+        "$run2/install" "$run2/results"
+    touch "$run2/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run2" "$sha2")
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha1"
+    assert_contains "$transfer/source/keep.txt" 'unchanged'
+    assert_file "$transfer/source/delete.txt"
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha1" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$run2" "$transfer" delta "$sha2" > "$root/receive2.log"
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$run2" "$transfer" "$sha2" > "$root/finalize2.log"
+    assert_contains "$run2/source/keep.txt" 'changed'
+    assert_contains "$run2/source/add.txt" 'added'
+    assert_not_exists "$run2/source/delete.txt"
+    [[ -x $run2/source/tool.sh ]]
+    [[ $(readlink "$run2/source/link") == data.bin ]]
+    cmp "$repository/data.bin" "$run2/source/data.bin"
+    assert_contains "$project/cache/source-latest" "$sha2.101-1"
+    assert_not_exists "$snapshot"
+
+    if HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$run2" "$sha2" > /dev/null 2>&1; then
+        fail 'source transfer accepted a reused run key'
+    fi
 }
 
 test_prepare_cleanup_install() {
@@ -402,6 +497,8 @@ make_cleanup_fixture() {
     local home=$1
     local project=$home/project
     mkdir -p "$project/runs" "$project/diagnostics" \
+        "$project/cache/source-transfers/206-1" \
+        "$project/cache/source-transfers/207-1" \
         "$home/.config/abacus-sai-ci"
     printf '%s\n' "$project" > "$home/.config/abacus-sai-ci/project-roots"
 
@@ -430,6 +527,13 @@ make_cleanup_fixture() {
     mkdir -p "$project/diagnostics/diagnostic-old"
     : > "$project/diagnostics/diagnostic-old/.ci-diagnostic"
     touch -d '169 hours ago' "$project/diagnostics/diagnostic-old/.ci-diagnostic"
+
+    : > "$project/cache/source-transfers/206-1/.ci-source-transfer"
+    touch -d '169 hours ago' \
+        "$project/cache/source-transfers/206-1/.ci-source-transfer"
+    : > "$project/cache/source-transfers/207-1/.ci-source-transfer"
+    touch -d '167 hours ago' \
+        "$project/cache/source-transfers/207-1/.ci-source-transfer"
 
     diagnostic_only=$home/diagnostic-only
     mkdir -p "$diagnostic_only/diagnostics/diagnostic-old"
@@ -470,6 +574,7 @@ EOF
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/runs/203-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/runs/205-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/diagnostics/diagnostic-old"
+    assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/cache/source-transfers/206-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$home/diagnostic-only/diagnostics/diagnostic-old"
     assert_contains "$root/dry-run.log" "SKIP active_or_unknown path=$project/runs/204-1"
     assert_file "$project/runs/201-1/.artifacts-uploaded"
@@ -480,10 +585,12 @@ EOF
     assert_not_exists "$project/runs/201-1"
     assert_not_exists "$project/runs/203-1"
     assert_not_exists "$project/diagnostics/diagnostic-old"
+    assert_not_exists "$project/cache/source-transfers/206-1"
     assert_not_exists "$home/diagnostic-only/diagnostics/diagnostic-old"
     assert_file "$project/runs/202-1/.artifacts-uploaded"
     assert_file "$project/runs/204-1/.artifacts-uploaded"
     assert_file "$project/runs/205-1/.artifacts-uploaded"
+    assert_file "$project/cache/source-transfers/207-1/.ci-source-transfer"
 
     mkdir -p "$escape_home" "$root/outside-cache"
     ln -s "$root/outside-cache" "$escape_home/.cache"
@@ -723,6 +830,7 @@ run_test 'workflow security policy' test_workflow_security_policy
 run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
 run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
+run_test 'compressed source snapshot cache' test_source_snapshot_cache
 run_test 'cleanup staging containment and collision' test_prepare_cleanup_install
 run_test 'NVIDIA archive cache reuse and rejection' test_nvidia_archive_cache
 run_test 'artifact collection whitelist' test_artifact_collection

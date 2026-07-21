@@ -126,6 +126,21 @@ while IFS= read -r configured_root; do
             remove_candidate "$diagnostic" diagnostic_over_168h
         done < <(find "$project_root/diagnostics" -mindepth 1 -maxdepth 1 -type d -print0)
     fi
+
+    transfer_root="$project_root/cache/source-transfers"
+    if [[ -d $transfer_root && ! -L $transfer_root ]]; then
+        transfer_root=$(realpath -e "$transfer_root")
+        [[ $transfer_root == "$project_root/cache/source-transfers" ]]
+        while IFS= read -r -d '' transfer; do
+            transfer_name=${transfer##*/}
+            [[ $transfer_name =~ ^[0-9]+-[0-9]+$ ]] || continue
+            marker="$transfer/.ci-source-transfer"
+            [[ -f $marker && ! -L $marker ]] || continue
+            stamp=$(stat -c %Y "$marker")
+            (( now - stamp >= 604800 )) || continue
+            remove_candidate "$transfer" source_transfer_over_168h
+        done < <(find "$transfer_root" -mindepth 1 -maxdepth 1 -type d -print0)
+    fi
 done < "$registry"
 
 echo "CLEANUP_FINISHED mode=$mode at=$(date --iso-8601=seconds)"
