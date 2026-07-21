@@ -1,0 +1,227 @@
+# SAI GPU validation through SSH
+
+`.github/workflows/sai-gpu-full.yml` runs on a GitHub-hosted
+`ubuntu-24.04` runner. It checks out the trusted control plane from the
+repository default branch, checks out the requested ABACUS source commit
+separately, and connects to SAI over pinned-host-key SSH as `abacususer01`.
+No self-hosted GitHub runner or inbound service on SAI is required.
+
+The control checkout's exact commit is recorded as `CONTROL_SHA`. Its
+`ci/sai` directory is uploaded to the run's `control` directory, and all
+Slurm submission, toolchain, matrix, and launcher scripts execute from that
+copy. `SOURCE_SHA` identifies the ABACUS source and test data being built.
+Building an approved source commit still executes that commit's build system
+and code as `abacususer01`; the control-plane separation does not sandbox an
+untrusted source commit.
+
+## Triggers and trust boundary
+
+The daily schedule is `30 20 * * *` (04:30 the following day in Beijing).
+Scheduled runs test the default-branch commit supplied by GitHub and use the
+`sai-ssh-scheduled` Environment. That Environment has no required reviewer and
+allows deployments only from the default branch.
+
+Manual dispatch requires an exact 40-character source commit SHA and uses the
+protected `sai-ssh-manual` Environment. Configure `Stardust0831` as its required
+reviewer and leave self-approval enabled. The reviewer must inspect the commit
+before approval because its code will execute on SAI with all permissions of
+`abacususer01`. External contributors only submit pull requests; a maintainer
+reviews the pull request and then dispatches its exact commit when GPU testing
+is warranted. Do not add an automatic `pull_request` trigger.
+
+Different manually approved commits may run concurrently. Scheduled runs share
+one `daily` concurrency group and therefore serialize with other scheduled
+runs, while every manual dispatch uses its GitHub run ID as an independent
+group. The protected Environment approval remains per run.
+
+### One-time GitHub configuration
+
+Configure these settings in the upstream repository after this workflow is
+merged. Do not upload the SSH key to a fork or create a repository-level
+secret.
+
+1. Open **Settings > Environments** and create `sai-ssh-scheduled`.
+2. Restrict its deployment branches to the default branch and do not add a
+   required reviewer.
+3. Add an Environment secret named `SAI_SSH_PRIVATE_KEY`. Its value is the
+   complete contents of `~/.ssh/abacususer01`, including the `BEGIN` and `END`
+   lines. GitHub accepts the key as pasted text, not as a file upload.
+4. Add the Environment variables shown below.
+5. Create `sai-ssh-manual`, restrict it to the default branch, and add the
+   designated maintainer as a required reviewer. Allow self-review if that
+   maintainer must be able to dispatch and approve the same run.
+6. Add the same Environment secret and variables to `sai-ssh-manual`. GitHub
+   does not share secrets or variables between Environments.
+
+Both Environments use these variables:
+
+```text
+SAI_SSH_HOST=c0.sai.ai-4s.com
+SAI_SSH_PORT=12022
+SAI_SSH_USER=abacususer01
+SAI_PROJECT_ROOT=/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci
+```
+
+`SAI_PROJECT_ROOT` is a default, not a compiled-in path. A manual run may use
+another absolute project root whose components contain only letters, digits,
+dot, underscore, or hyphen. The remote setup resolves existing symlinks and
+rejects any path that escapes the account's canonical HOME. Only
+`abacususer01` is supported by this deployment.
+
+### Manual run
+
+1. Review the source commit that will execute as `abacususer01` and obtain its
+   full 40-character SHA. For a pull request, use its head commit, not a merge
+   ref.
+2. Open **Actions > SAI GPU Case Matrix > Run workflow** and select the
+   repository default branch. The workflow control scripts always come from
+   that trusted branch.
+3. Enter the reviewed SHA as `source_sha`.
+4. Leave `project_root` empty to use the manual Environment's
+   `SAI_PROJECT_ROOT`, or enter another absolute directory below
+   `/home/abacus-group/abacususer01`, for example
+   `/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci_trial`.
+5. Set `run_namespace` to a short label such as `pr-7658`. Runs using the same
+   project root share the daily source baseline and NVIDIA archive cache, but
+   keep build, install, and result files in separate namespace directories.
+6. Submit the workflow. A required reviewer then opens the pending deployment,
+   checks the requested SHA and directory, and approves `sai-ssh-manual`.
+
+The selected directory is a reusable project root, not a checkout directory.
+Each attempt uses a new
+`runs/<namespace>/<GitHub run ID>-<attempt>` subdirectory. Official NVIDIA
+archives are cached under `vendor/`, and the user-level cleanup service
+discovers every selected project root through its registry. A scheduled run
+has no input form, always uses namespace `daily`, and uses the scheduled
+Environment's `SAI_PROJECT_ROOT` with the current default-branch SHA. Choosing
+a different project root intentionally creates an independent source baseline
+and vendor cache; use a namespace below the default project root when sharing
+those caches is desired.
+
+The SSH client disables agent and port forwarding, uses `BatchMode`, requires
+the repository-pinned SAI host key, and enables transport compression for all
+control commands and rsync traffic. Source payloads and manifests are already
+gzip-compressed before rsync starts, while returned artifacts are created as a
+gzip-compressed tar stream on SAI. The read-only probe establishes one SSH
+master connection with bounded connection retries; later SSH and rsync steps
+reuse it instead of repeatedly negotiating with the login gateway. The
+workflow explicitly closes the master before removing the private key and
+socket directory in an `always()` step. The key is written only to the GitHub
+runner's temporary directory with mode 0600. Never print the key or pass it on
+a command line. This connection retry does not resume a Slurm coordinator
+after a mid-session disconnect; the current signal handlers cancel recorded
+jobs to avoid leaving orphan allocations.
+
+## Build and GPU jobs
+
+Each attempt creates a collision-resistant directory at
+`$SAI_PROJECT_ROOT/runs/$RUN_NAMESPACE/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT`.
+The project root also holds a shared, locked cache of the SHA256-pinned
+official NVIDIA archives:
+
+```text
+cuSolverMp 0.9.0.6427 (CUDA 12)
+cuBLASMp 0.9.1.3056 (CUDA 12)
+```
+
+An extracted archive is reused only when its `.archive-sha256` marker equals
+the pinned digest. Unexpected, symlinked, or mismatched cache directories are
+rejected rather than overwritten. First extraction uses a temporary directory
+and an atomic rename.
+
+The active `archive-mp09-sai-nccl2293` profile combines those NVIDIA archives
+with SAI's NCCL 2.29.3 library and the NVHPC/Open MPI/CUDA 12.9 toolchain. It
+loads `nvhpc/26.3-gnu-cuda12-tuned`, whose SAI modulefile exports the same
+`NCCL_ROOT` as `nccl/2.29.3-sai-cuda12.9`. The two modules intentionally
+conflict because the tuned NVHPC module already includes that SAI NCCL stack;
+the workflow therefore must not load both. The SAI NCCL build derives from
+NVIDIA NCCL 2.29.3 and adds the operator's dual-rail channel policy; it is not
+an unmodified NVIDIA binary.
+Runtime checks require the expected `libnccl.so.2`,
+`NCCL_SAI_RAIL_BY_CHANNEL=1`, cuSolverMp 0.9.0, cuBLASMp 0.9.1, and NCCL
+2.29.3. The workflow does not modify `/opt`, modules, or system configuration.
+
+Source transfer keeps one verified, non-executed daily baseline snapshot and
+its commit SHA under the selected project root. For the first run, GitHub sends
+a gzip-compressed full snapshot represented as a binary diff from Git's empty
+tree. Later runs ask SAI for that baseline SHA and send the same compressed
+diff format from the baseline to the requested commit. A canonical Git tree
+manifest accompanies every payload. SAI checks every path, file type,
+executable bit, symlink target and blob hash, and rejects extra filesystem
+entries before use. An invalid or unavailable cache pointer falls back to a
+full snapshot. A manual candidate leaves an invalid baseline untouched; the
+next scheduled baseline run may quarantine and replace it.
+
+Only a scheduled `daily` run promotes its verified source to the next
+baseline. A manual PR run consumes the baseline but never advances it, even
+when its tests pass or fail, so concurrent PRs do not form an accidental
+rolling cache chain. Cache preparation and promotion hold a shared filesystem
+lock; each run applies its payload in a private transfer directory before
+copying it into the isolated run. The pre-existing `source-latest` snapshot is
+accepted as the initial daily baseline when this policy is first deployed.
+Build, install, and result directories are never reused, and tested code never
+executes from or writes into the source cache.
+
+The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
+because the selected GPU suites do not exercise them. After a successful
+build, three resource-homogeneous Slurm arrays submit all 48 cases in suites
+11/12/13/15/16 while a 2-node, 16-rank Si48 cuSolverMp RT-TDDFT smoke job runs in
+parallel. The arrays use one 1-GPU task, seven 2-GPU tasks, and forty 4-GPU
+tasks. The 1/2-GPU arrays use `flood-1o2gpu`; the 4-GPU array and multinode job
+use `flood-gpu`. Their per-class concurrent task caps are 2, 8, and 8,
+respectively. No job pins a node name or explicitly requests CPU resources.
+
+SAI's partition mapping scripts determine MPI placement and OpenMP threads.
+The validation keeps InfiniBand enabled and records effective MPI, UCX, NCCL,
+RDMA, dynamic-library, Slurm accounting, and per-case numerical results.
+Existing numerical references and thresholds are not relaxed. The currently
+known `16_SDFT_GPU/005_PW_SDFT_MALL_BPCG_GPU` numerical failure therefore
+makes the full workflow red until ABACUS fixes it. A case is retried exactly
+once only when its first attempt fails before MPI initialization with the
+observed PMIx shared-memory startup signature. Both attempt logs and retry
+metadata are retained. A second PMIx startup failure is reported as
+infrastructure rather than as an ABACUS numerical failure.
+
+## Artifacts and cleanup
+
+The GitHub artifact is retained for 30 days. It includes source/control commit
+IDs, build identity and linkage, complete coordinator and Slurm logs, terminal
+accounting, the 48-row case summary, per-case status, and ABACUS numerical
+outputs. Collection uses an explicit extension/name allowlist. A failed setup
+still uploads local workflow context instead of hiding the first error behind
+an undefined path.
+
+After GitHub confirms artifact upload, the remote run gets an atomic
+`.artifacts-uploaded` marker. `.github/workflows/sai-bootstrap.yml` has a
+read-only `probe` mode and an `install-cleanup` mode. Both are manual and use
+the protected manual Environment. Installation copies the cleanup program to
+`$HOME/.local/libexec/abacus-sai-ci` and installs this user crontab entry:
+
+```text
+15 7 * * * $HOME/.local/libexec/abacus-sai-ci/cleanup_sai_runs.sh --cron
+```
+
+Cleanup deletes uploaded runs 72 hours after their upload marker. Incomplete
+runs and directories explicitly marked `.ci-diagnostic` are deleted after 168
+hours. Bootstrap stages the cleanup program in one of these marked diagnostic
+directories and removes it after successful installation, so an interrupted
+install follows the same retention rule. It discovers relocatable project
+roots through a locked per-user registry, refuses roots outside HOME, and skips
+runs whose recorded Slurm jobs are active. Failure to query a recorded job is
+treated as unknown and also skipped. `--dry-run` prints the decisions without
+deleting anything. Cleanup logs are stored under
+`$HOME/.local/state/abacus-sai-ci` and rotate at 10 MiB.
+
+## Local verification
+
+The shell regression suite uses only temporary directories and mocked Slurm
+commands:
+
+```bash
+bash ci/sai/tests/test_sai_ci.sh
+```
+
+It covers SSH configuration, project-root containment and collision rejection,
+archive-cache reuse and mismatch rejection, empty/populated artifact
+collection, cleanup retention and job-query safety, and TERM/HUP cancellation
+including the Slurm submission launch window.
