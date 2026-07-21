@@ -100,6 +100,18 @@ jobs:
       - name: Verify SAI SSH and Slurm access
         run: |
           set -euo pipefail
+          connected=0
+          for attempt in {1..4}; do
+            if ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci; then
+              connected=1
+              break
+            fi
+            echo "SAI SSH master connection failed (attempt $attempt/4)" >&2
+            if [[ $attempt -lt 4 ]]; then
+              sleep $((attempt * 5))
+            fi
+          done
+          [[ $connected -eq 1 ]]
           ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s \
             < control/ci/sai/probe_remote_sai.sh
 
@@ -269,7 +281,11 @@ jobs:
 
       - name: Remove local SSH credentials
         if: always()
-        run: rm -rf "$RUNNER_TEMP/sai-ssh"
+        run: |
+          if [[ -f ${SAI_SSH_CONFIG:-} ]]; then
+            ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci 2>/dev/null || true
+          fi
+          rm -rf "$RUNNER_TEMP/sai-ssh"
 
       - name: Report validation result
         if: always()
