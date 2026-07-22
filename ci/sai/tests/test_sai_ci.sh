@@ -1458,6 +1458,8 @@ test_rt_tddft_scale_submission_policy() {
     assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]'
     assert_contains "$task" 'RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")'
     assert_contains "$task" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
+    assert_contains "$task" 'nvidia_smi=(nvidia-smi)'
+    assert_not_contains "$task" 'nvidia-smi -i'
 
     python3 - "$workflow" <<'PY'
 import pathlib

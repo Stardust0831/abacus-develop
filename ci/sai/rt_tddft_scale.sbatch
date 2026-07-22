@@ -135,7 +135,7 @@ env | grep -E '^(CUDA_VISIBLE_DEVICES|LD_LIBRARY_PATH|NCCL_|OMPI_|OMP_|PATH=|PRT
 gpu_selector=${SLURM_JOB_GPUS:-$CUDA_VISIBLE_DEVICES}
 IFS=',' read -r -a allocated_gpus <<< "$gpu_selector"
 [[ ${#allocated_gpus[@]} -eq 4 ]]
-nvidia_smi=(nvidia-smi -i "$gpu_selector")
+nvidia_smi=(nvidia-smi)
 "${nvidia_smi[@]}" -q > "$task_root/nvidia-smi-before.txt"
 
 monitor_file=$task_root/gpu-samples.csv
