@@ -1446,6 +1446,8 @@ test_rt_tddft_scale_submission_policy() {
     assert_contains "$remote" '--ntasks=4'
     assert_contains "$remote" '--gpus-per-node=4'
     assert_contains "$remote" '--time=01:00:00'
+    assert_contains "$remote" '--export=ALL'
+    assert_not_contains "$remote" 'ALL,RUN_ROOT='
     assert_not_contains "$remote" '--cpus-per-task'
     assert_not_contains "$remote" '--ntasks-per-node'
     assert_not_contains "$remote" '--mem='
@@ -1454,6 +1456,7 @@ test_rt_tddft_scale_submission_policy() {
     assert_not_contains "$task" '#SBATCH'
     assert_contains "$task" 'task-entered.tsv'
     assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]'
+    assert_contains "$task" 'RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")'
     assert_contains "$task" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
 
     python3 - "$workflow" <<'PY'
@@ -1519,6 +1522,7 @@ test_rt_tddft_scale_sbatch_invocation() {
     local run=$home/project/benchmarks/rt-tddft-4gpu/123-1
     local fake_bin=$root/bin
     local args_log=$root/sbatch-args.log
+    local pwd_log=$root/sbatch-pwd.log
     mkdir -p "$run/control" "$run/results" "$fake_bin"
     : > "$run/metadata.tsv"
     printf '0\t3x3x3\t3\t3\t3\t216\n1\t4x4x4\t4\t4\t4\t512\n' \
@@ -1531,6 +1535,7 @@ test_rt_tddft_scale_sbatch_invocation() {
     cat > "$fake_bin/sbatch" <<EOF
 #!/usr/bin/env bash
 printf '%s\n' "\$@" > "$args_log"
+pwd > "$pwd_log"
 if [[ " \$* " == *' --test-only '* ]]; then
     echo 'test-only accepted'
 else
@@ -1551,6 +1556,9 @@ EOF
     assert_contains "$args_log" '--ntasks=4'
     assert_contains "$args_log" '--gpus-per-node=4'
     assert_contains "$args_log" '--time=01:00:00'
+    assert_contains "$args_log" '--export=ALL'
+    assert_not_contains "$args_log" 'ALL,RUN_ROOT='
+    [[ $(<"$pwd_log") == "$run" ]]
     assert_not_exists "$run/slurm-job-id"
 
     PATH="$fake_bin:$original_path" HOME=$home \

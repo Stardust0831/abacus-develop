@@ -38,14 +38,17 @@ run_scale_sbatch() {
         --time=01:00:00
         --chdir="$run_root"
         --output="$run_root/results/slurm-%A_%a.out"
-        --export="ALL,RUN_ROOT=$run_root"
+        --export=ALL
     )
     if [[ $submit_mode == preflight ]]; then
         args+=(--test-only)
     else
         [[ $submit_mode == submit ]]
     fi
-    sbatch "${args[@]}" "$run_root/control/rt_tddft_scale.sbatch"
+    (
+        cd "$run_root"
+        sbatch "${args[@]}" "$run_root/control/rt_tddft_scale.sbatch"
+    )
 }
 
 case $mode in
