@@ -1426,6 +1426,141 @@ EOF
     assert_contains "$cancel_log" '802'
 }
 
+test_rt_tddft_scale_submission_policy() {
+    local workflow=.github/workflows/sai-rt-tddft-scale.yml
+    local remote=ci/sai/rt_tddft_scale_remote.sh
+    local task=ci/sai/rt_tddft_scale.sbatch
+
+    assert_contains "$workflow" \
+        'default: "3x3x3,4x4x4,5x5x4,5x5x5,6x6x5"'
+    assert_contains "$workflow" 'Validate Slurm submission'
+    assert_contains "$workflow" 'select_rt_tddft_scale_batch.sh'
+    assert_contains "$workflow" 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803'
+    assert_contains "$workflow" 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
+
+    assert_contains "$remote" 'preflight|submit)'
+    assert_contains "$remote" '--array="0-$((count - 1))%$count"'
+    assert_contains "$remote" '--partition=16V100'
+    assert_contains "$remote" '--qos=flood-gpu'
+    assert_contains "$remote" '--nodes=1'
+    assert_contains "$remote" '--ntasks=4'
+    assert_contains "$remote" '--gpus-per-node=4'
+    assert_contains "$remote" '--time=01:00:00'
+    assert_not_contains "$remote" '--cpus-per-task'
+    assert_not_contains "$remote" '--ntasks-per-node'
+    assert_not_contains "$remote" '--mem='
+    assert_not_contains "$remote" '--nodelist'
+
+    assert_not_contains "$task" '#SBATCH'
+    assert_contains "$task" 'task-entered.tsv'
+    assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]'
+    assert_contains "$task" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
+
+    python3 - "$workflow" <<'PY'
+import pathlib
+import sys
+
+text = pathlib.Path(sys.argv[1]).read_text()
+remove = text.index("- name: Remove local SSH credentials")
+upload = text.index("- name: Upload probe artifacts")
+if remove >= upload:
+    raise SystemExit("SSH credentials must be removed before artifact upload")
+PY
+}
+
+test_rt_tddft_scale_batch_selector() {
+    local root=$test_root/scale-selector
+    local selector=ci/sai/select_rt_tddft_scale_batch.sh
+    mkdir -p "$root"
+
+    cat > "$root/all-pass.tsv" <<'EOF'
+3x3x3	216	PASS
+4x4x4	512	PASS
+5x5x4	800	PASS
+5x5x5	1000	PASS
+6x6x5	1440	PASS
+EOF
+    bash "$selector" "$root/all-pass.tsv" > "$root/all-pass.out"
+    assert_contains "$root/all-pass.out" \
+        'NEXT_SUPERCELLS=6x6x6,6x6x7,6x7x7,7x7x7,7x7x8'
+    assert_contains "$root/all-pass.out" 'NEXT_REASON=search-above'
+
+    cat > "$root/bracket.tsv" <<'EOF'
+3x3x3	216	PASS
+4x4x4	512	PASS
+5x5x4	800	GPU_OOM
+5x5x5	1000	GPU_OOM
+6x6x5	1440	GPU_OOM
+EOF
+    bash "$selector" "$root/bracket.tsv" > "$root/bracket.out"
+    assert_contains "$root/bracket.out" 'NEXT_SUPERCELLS=4x4x5,4x4x6'
+    assert_contains "$root/bracket.out" 'NEXT_REASON=refine-capacity-boundary'
+
+    cat > "$root/no-pass.tsv" <<'EOF'
+3x3x3	216	GPU_OOM
+4x4x4	512	GPU_OOM
+EOF
+    bash "$selector" "$root/no-pass.tsv" > "$root/no-pass.out"
+    assert_contains "$root/no-pass.out" 'NEXT_SUPERCELLS=1x1x1,1x2x2,2x2x2,2x3x3'
+    assert_contains "$root/no-pass.out" 'NEXT_REASON=search-below'
+
+    cat > "$root/infra.tsv" <<'EOF'
+3x3x3	216	INFRA_CANCELLED
+4x4x4	512	PASS
+EOF
+    bash "$selector" "$root/infra.tsv" > "$root/infra.out"
+    assert_contains "$root/infra.out" 'NEXT_SUPERCELLS=3x3x3'
+    assert_contains "$root/infra.out" 'NEXT_REASON=repeat-ambiguous'
+}
+
+test_rt_tddft_scale_sbatch_invocation() {
+    local root=$test_root/scale-sbatch
+    local home=$root/home
+    local run=$home/project/benchmarks/rt-tddft-4gpu/123-1
+    local fake_bin=$root/bin
+    local args_log=$root/sbatch-args.log
+    mkdir -p "$run/control" "$run/results" "$fake_bin"
+    : > "$run/metadata.tsv"
+    printf '0\t3x3x3\t3\t3\t3\t216\n1\t4x4x4\t4\t4\t4\t512\n' \
+        > "$run/manifest.tsv"
+    cp ci/sai/rt_tddft_scale_remote.sh \
+        ci/sai/rt_tddft_scale.sbatch \
+        ci/sai/select_rt_tddft_scale_batch.sh "$run/control/"
+    chmod +x "$run/control/rt_tddft_scale_remote.sh" \
+        "$run/control/select_rt_tddft_scale_batch.sh"
+    cat > "$fake_bin/sbatch" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$@" > "$args_log"
+if [[ " \$* " == *' --test-only '* ]]; then
+    echo 'test-only accepted'
+else
+    echo 900001
+fi
+EOF
+    chmod +x "$fake_bin/sbatch"
+
+    PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$run/control/rt_tddft_scale_remote.sh" preflight "$run" \
+        > "$root/preflight.out"
+    assert_contains "$root/preflight.out" 'SLURM_PREFLIGHT_OK'
+    assert_contains "$args_log" '--test-only'
+    assert_contains "$args_log" '--array=0-1%2'
+    assert_contains "$args_log" '--partition=16V100'
+    assert_contains "$args_log" '--qos=flood-gpu'
+    assert_contains "$args_log" '--nodes=1'
+    assert_contains "$args_log" '--ntasks=4'
+    assert_contains "$args_log" '--gpus-per-node=4'
+    assert_contains "$args_log" '--time=01:00:00'
+    assert_not_exists "$run/slurm-job-id"
+
+    PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$run/control/rt_tddft_scale_remote.sh" submit "$run" \
+        > "$root/submit.out"
+    assert_contains "$root/submit.out" 'SLURM_JOB_ID=900001'
+    [[ $(<"$run/slurm-job-id") == 900001 ]]
+    assert_not_contains "$args_log" '--test-only'
+}
+
 run_test 'SSH client configuration' test_configure_ssh_client
 run_test 'source payload builder' test_build_source_payload
 run_test 'committed control snapshot' test_prepare_control_snapshot
@@ -1447,5 +1582,8 @@ run_test 'cleanup retention and active-job safety' test_cleanup_retention
 run_test 'cleanup cron installation safety' test_cleanup_cron_installation
 run_test 'Slurm TERM cancellation' test_slurm_signal_cancellation
 run_test 'Slurm launch-window HUP cancellation' test_slurm_launch_window_cancellation
+run_test 'RT-TDDFT scale submission policy' test_rt_tddft_scale_submission_policy
+run_test 'RT-TDDFT scale batch selector' test_rt_tddft_scale_batch_selector
+run_test 'RT-TDDFT scale sbatch invocation' test_rt_tddft_scale_sbatch_invocation
 
 echo "ALL TESTS PASSED ($tests_run)"
