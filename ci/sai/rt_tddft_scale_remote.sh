@@ -76,7 +76,17 @@ case $mode in
         [[ -f $run_root/control/rt_tddft_scale.sbatch ]]
         count=$(wc -l < "$run_root/manifest.tsv")
         (( count >= 1 && count <= 5 ))
-        job_id=$(sbatch --parsable --array="0-$((count - 1))%$count" \
+        run_key=${run_root##*/}
+        [[ $run_key =~ ^[0-9]+-[0-9]+$ ]]
+        job_id=$(sbatch --parsable \
+            --job-name="gha-scale-$run_key" \
+            --array="0-$((count - 1))%$count" \
+            --partition=16V100 \
+            --qos=flood-gpu \
+            --nodes=1 \
+            --ntasks=4 \
+            --gpus-per-node=4 \
+            --time=01:00:00 \
             --chdir="$run_root" \
             --output="$run_root/results/slurm-%A_%a.out" \
             --export=ALL,RUN_ROOT="$run_root" \
@@ -139,6 +149,7 @@ case $mode in
             exit 1
         }
         printf '%s\n' "$accounting_output" > "$results/slurm-sacct.tsv"
+        infra_count=0
         {
             echo "# SAI 4-GPU Si RT-TDDFT scale probe"
             echo
@@ -152,11 +163,14 @@ case $mode in
                     IFS=$'\t' read -r result rc elapsed basis peak_gpu peak_sum capacity peak_util peak_power < "$result_file"
                 else
                     state=${final_states[${job_id}_${index}]}
-                    if [[ $state == OUT_OF_MEMORY ]]; then
-                        result=HOST_OOM
-                    else
-                        result=$state
-                    fi
+                    case $state in
+                        OUT_OF_MEMORY) result=HOST_OOM ;;
+                        TIMEOUT) result=TIMEOUT ;;
+                        *)
+                            result=INFRA_$state
+                            infra_count=$((infra_count + 1))
+                            ;;
+                    esac
                     rc=-
                     elapsed=-
                     basis=$((atoms * 13))
@@ -174,6 +188,10 @@ case $mode in
             echo "A passing point proves completion of this two-step smoke input. GPU_OOM and HOST_OOM are separate capacity bounds; MEMORY_ERROR remains ambiguous and is not a bound without log inspection."
         } > "$results/summary.md"
         cat "$results/summary.md"
+        if [[ $infra_count -gt 0 ]]; then
+            echo "Scale probe had $infra_count task(s) without result evidence" >&2
+            exit 1
+        fi
         ;;
 
     collect)

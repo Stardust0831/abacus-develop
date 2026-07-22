@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=abacus-rt-tddft-scale
-#SBATCH --partition=16V100
-#SBATCH --qos=flood-gpu
-#SBATCH --nodes=1
-#SBATCH --ntasks=4
-#SBATCH --ntasks-per-node=4
-#SBATCH --gpus-per-node=4
-#SBATCH --time=01:00:00
 
 set -euo pipefail
 
