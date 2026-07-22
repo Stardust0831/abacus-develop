@@ -1574,14 +1574,14 @@ EOF
     [[ $(<"$run/slurm-job-id") == 900001 ]]
     assert_not_contains "$args_log" '--test-only'
 
-    mkdir -p "$run/results/tasks/0/case/OUT.ABACUS"
-    printf 'large generated output\n' > "$run/results/tasks/0/case/OUT.ABACUS/bulk.dat"
+    mkdir -p "$run/results/tasks/0/case/OUT.si216_4gpu"
+    printf 'large generated output\n' > "$run/results/tasks/0/case/OUT.si216_4gpu/bulk.dat"
     printf 'useful task log\n' > "$run/results/tasks/0/abacus.log"
     HOME=$home bash "$run/control/rt_tddft_scale_remote.sh" collect "$run" \
         > "$root/artifacts.tar.gz"
     tar -tzf "$root/artifacts.tar.gz" > "$root/artifacts.list"
     assert_contains "$root/artifacts.list" 'results/tasks/0/abacus.log'
-    assert_not_contains "$root/artifacts.list" 'OUT.ABACUS'
+    assert_not_contains "$root/artifacts.list" '/case/OUT.'
 }
 
 test_rt_tddft_efficiency_policy() {
@@ -1651,13 +1651,13 @@ test_rt_tddft_efficiency_sbatch_invocation() {
         '2 trial-32-si1000 5x5x5 2 32 16'; do
         read -r index label cell nodes ranks gpus <<< "$spec"
         case_root=$run/cases/$index-$label
-        mkdir -p "$case_root/results/tasks/0/case/OUT.ABACUS"
+        mkdir -p "$case_root/results/tasks/0/case/OUT.si1000_${ranks}gpu"
         : > "$case_root/metadata.tsv"
         : > "$case_root/manifest.tsv"
         printf '%s\t%s\t%s\t1\t1\t1\t1000\t%s\t%s\t%s\t%s\n' \
             "$index" "$label" "$cell" "$nodes" "$ranks" "$gpus" "$case_root" \
             >> "$run/benchmark.tsv"
-        printf 'generated\n' > "$case_root/results/tasks/0/case/OUT.ABACUS/data"
+        printf 'generated\n' > "$case_root/results/tasks/0/case/OUT.si1000_${ranks}gpu/data"
         printf 'useful\n' > "$case_root/results/tasks/0/abacus.log"
     done
     cp ci/sai/rt_tddft_efficiency_remote.sh ci/sai/rt_tddft_scale.sbatch \
@@ -1714,7 +1714,7 @@ EOF
         > "$root/partial-artifacts.tar.gz"
     tar -tzf "$root/partial-artifacts.tar.gz" > "$root/partial-artifacts.list"
     assert_contains "$root/partial-artifacts.list" 'jobs.tsv'
-    assert_not_contains "$root/partial-artifacts.list" 'OUT.ABACUS'
+    assert_not_contains "$root/partial-artifacts.list" '/case/OUT.'
 
     : > "$counter"
     : > "$args_log"
@@ -1729,7 +1729,7 @@ EOF
         > "$root/artifacts.tar.gz"
     tar -tzf "$root/artifacts.tar.gz" > "$root/artifacts.list"
     assert_contains "$root/artifacts.list" 'cases/0-trial-8-si1000/results/tasks/0/abacus.log'
-    assert_not_contains "$root/artifacts.list" 'OUT.ABACUS'
+    assert_not_contains "$root/artifacts.list" '/case/OUT.'
 }
 
 run_test 'SSH client configuration' test_configure_ssh_client
