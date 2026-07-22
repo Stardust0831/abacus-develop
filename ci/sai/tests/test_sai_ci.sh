@@ -1527,6 +1527,7 @@ test_rt_tddft_scale_sbatch_invocation() {
     local pwd_log=$root/sbatch-pwd.log
     mkdir -p "$run/control" "$run/results" "$fake_bin"
     : > "$run/metadata.tsv"
+    : > "$run/abacus.sha256"
     printf '0\t3x3x3\t3\t3\t3\t216\n1\t4x4x4\t4\t4\t4\t512\n' \
         > "$run/manifest.tsv"
     cp ci/sai/rt_tddft_scale_remote.sh \
@@ -1569,6 +1570,15 @@ EOF
     assert_contains "$root/submit.out" 'SLURM_JOB_ID=900001'
     [[ $(<"$run/slurm-job-id") == 900001 ]]
     assert_not_contains "$args_log" '--test-only'
+
+    mkdir -p "$run/results/tasks/0/case/OUT.ABACUS"
+    printf 'large generated output\n' > "$run/results/tasks/0/case/OUT.ABACUS/bulk.dat"
+    printf 'useful task log\n' > "$run/results/tasks/0/abacus.log"
+    HOME=$home bash "$run/control/rt_tddft_scale_remote.sh" collect "$run" \
+        > "$root/artifacts.tar.gz"
+    tar -tzf "$root/artifacts.tar.gz" > "$root/artifacts.list"
+    assert_contains "$root/artifacts.list" 'results/tasks/0/abacus.log'
+    assert_not_contains "$root/artifacts.list" 'OUT.ABACUS'
 }
 
 run_test 'SSH client configuration' test_configure_ssh_client
