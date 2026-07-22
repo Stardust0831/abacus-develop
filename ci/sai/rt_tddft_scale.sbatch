@@ -6,12 +6,11 @@ set -euo pipefail
 : "${SLURM_ARRAY_JOB_ID:?}"
 : "${SLURM_ARRAY_TASK_ID:?}"
 : "${SLURM_NTASKS:?}"
-[[ $SLURM_NTASKS -eq 4 ]]
-[[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]
 
 RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")
 [[ $RUN_ROOT == "$HOME/"* ]]
-[[ $RUN_ROOT == */benchmarks/rt-tddft-4gpu/* ]]
+[[ $RUN_ROOT == */benchmarks/rt-tddft-4gpu/* || \
+    $RUN_ROOT == */benchmarks/rt-tddft-efficiency/* ]]
 [[ -f $RUN_ROOT/metadata.tsv && -f $RUN_ROOT/manifest.tsv ]]
 
 entry_root=$RUN_ROOT/results/tasks/$SLURM_ARRAY_TASK_ID
@@ -29,6 +28,18 @@ manifest=$RUN_ROOT/manifest.tsv
 install_run_root=$(awk -F'\t' '$1 == "install_run_root" {print $2}' "$metadata")
 project_root=$(awk -F'\t' '$1 == "project_root" {print $2}' "$metadata")
 expected_abacus_sha256=$(awk -F'\t' '$1 == "expected_abacus_sha256" {print $2}' "$metadata")
+expected_nodes=$(awk -F'\t' '$1 == "expected_nodes" {print $2}' "$metadata")
+expected_ranks=$(awk -F'\t' '$1 == "expected_ranks" {print $2}' "$metadata")
+expected_gpus_per_node=$(awk -F'\t' '$1 == "expected_gpus_per_node" {print $2}' "$metadata")
+expected_nodes=${expected_nodes:-1}
+expected_ranks=${expected_ranks:-4}
+expected_gpus_per_node=${expected_gpus_per_node:-4}
+[[ $expected_nodes =~ ^[12]$ ]]
+[[ $expected_ranks =~ ^(4|8|16|32)$ ]]
+[[ $expected_gpus_per_node =~ ^(4|8|16)$ ]]
+[[ ${SLURM_NNODES:?} -eq $expected_nodes ]]
+[[ $SLURM_NTASKS -eq $expected_ranks ]]
+[[ ${SLURM_GPUS_ON_NODE:-} == "$expected_gpus_per_node" ]]
 [[ $install_run_root == "$project_root/runs/"* ]]
 abacus=$install_run_root/install/bin/abacus
 pp_orb=$install_run_root/source/tests/PP_ORB
@@ -43,7 +54,7 @@ task_root=$RUN_ROOT/results/tasks/$index
 case_root=$task_root/case
 mkdir -p "$case_root"
 cp "$RUN_ROOT/template/KPT" "$case_root/KPT"
-awk -v pp="$pp_orb" -v suffix="si${atoms}_4gpu" '
+awk -v pp="$pp_orb" -v suffix="si${atoms}_${expected_ranks}gpu" '
     $1 == "suffix" {printf "%-18s%s\n", "suffix", suffix; next}
     $1 == "pseudo_dir" {printf "%-18s%s\n", "pseudo_dir", pp; next}
     $1 == "orbital_dir" {printf "%-18s%s\n", "orbital_dir", pp; next}
@@ -134,7 +145,7 @@ env | grep -E '^(CUDA_VISIBLE_DEVICES|LD_LIBRARY_PATH|NCCL_|OMPI_|OMP_|PATH=|PRT
 : "${CUDA_VISIBLE_DEVICES:?Slurm did not expose the allocated GPUs}"
 gpu_selector=${SLURM_JOB_GPUS:-$CUDA_VISIBLE_DEVICES}
 IFS=',' read -r -a allocated_gpus <<< "$gpu_selector"
-[[ ${#allocated_gpus[@]} -eq 4 ]]
+[[ ${#allocated_gpus[@]} -eq $expected_gpus_per_node ]]
 nvidia_smi=(nvidia-smi)
 "${nvidia_smi[@]}" -q > "$task_root/nvidia-smi-before.txt"
 
@@ -159,16 +170,16 @@ trap stop_monitor EXIT HUP INT TERM
 ) > "$monitor_file" &
 monitor_pid=$!
 
-start_epoch=$(date +%s)
 cd "$case_root"
 attempt=1
 retried=0
 while true; do
     attempt_log=$task_root/abacus-attempt-${attempt}.log
+    start_epoch=$(date +%s)
     set +e
     /usr/bin/time -v -o "$task_root/time-attempt-${attempt}.txt" \
         timeout --signal=TERM --kill-after=30s 55m \
-        mpirun -np 4 "$abacus" > "$attempt_log" 2>&1
+        mpirun -np "$expected_ranks" "$abacus" > "$attempt_log" 2>&1
     rc=$?
     set -e
     if [[ $attempt -eq 1 && $rc -ne 0 && $rc -ne 124 && $rc -ne 137 && $rc -ne 143 ]] && \
@@ -238,6 +249,8 @@ result=FAIL
 if [[ $rc -eq 0 ]]; then
     result=PASS
 elif [[ $rc -eq 124 ]]; then
+    result=TIMEOUT
+elif [[ $rc -eq 137 && $elapsed -ge 3300 ]]; then
     result=TIMEOUT
 elif grep -aEqi 'CUDA_ERROR_OUT_OF_MEMORY|cudaErrorMemoryAllocation|CUDA error[^[:cntrl:]]*out of memory|cudaMalloc[^[:cntrl:]]*(out of memory|failed)' "$task_root/abacus.log"; then
     result=GPU_OOM

@@ -1455,11 +1455,15 @@ test_rt_tddft_scale_submission_policy() {
 
     assert_not_contains "$task" '#SBATCH'
     assert_contains "$task" 'task-entered.tsv'
-    assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]'
+    assert_contains "$task" 'expected_ranks=${expected_ranks:-4}'
+    assert_contains "$task" 'expected_gpus_per_node=${expected_gpus_per_node:-4}'
+    assert_contains "$task" '[[ $SLURM_NTASKS -eq $expected_ranks ]]'
+    assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == "$expected_gpus_per_node" ]]'
     assert_contains "$task" 'RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")'
     assert_contains "$task" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
     assert_contains "$task" 'nvidia_smi=(nvidia-smi)'
     assert_not_contains "$task" 'nvidia-smi -i'
+    assert_contains "$task" '[[ $rc -eq 137 && $elapsed -ge 3300 ]]'
 
     python3 - "$workflow" <<'PY'
 import pathlib
@@ -1546,7 +1550,6 @@ else
 fi
 EOF
     chmod +x "$fake_bin/sbatch"
-
     PATH="$fake_bin:$original_path" HOME=$home \
         bash "$run/control/rt_tddft_scale_remote.sh" preflight "$run" \
         > "$root/preflight.out"
@@ -1581,6 +1584,154 @@ EOF
     assert_not_contains "$root/artifacts.list" 'OUT.ABACUS'
 }
 
+test_rt_tddft_efficiency_policy() {
+    local workflow=.github/workflows/sai-rt-tddft-efficiency.yml
+    local remote=ci/sai/rt_tddft_efficiency_remote.sh
+
+    assert_contains "$workflow" 'name: SAI RT-TDDFT Scaling Benchmark'
+    assert_contains "$workflow" 'run_kind:'
+    assert_contains "$workflow" 'ci/sai/summarize_rt_tddft_efficiency.sh'
+    assert_contains "$workflow" "if: always() && env.SUBMISSION_STARTED == '1'"
+    assert_contains "$workflow" 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803'
+    assert_contains "$workflow" 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
+    assert_contains "$remote" '0 base-4-si1000 5x5x5 1 4 4'
+    assert_contains "$remote" '1 strong-8-si1000 5x5x5 1 8 8'
+    assert_contains "$remote" '2 strong-16-si1000 5x5x5 1 16 16'
+    assert_contains "$remote" '3 strong-32-si1000 5x5x5 2 32 16'
+    assert_contains "$remote" '4 weak-8-si2000 5x5x10 1 8 8'
+    assert_contains "$remote" '5 weak-16-si4000 5x10x10 1 16 16'
+    assert_contains "$remote" '6 weak-32-si8000 10x10x10 2 32 16'
+    assert_contains "$remote" '--qos=flood-gpu'
+    assert_contains "$remote" '--time=01:00:00'
+    assert_contains "$remote" '--export=ALL'
+    assert_not_contains "$remote" '--cpus-per-task'
+    assert_not_contains "$remote" '--ntasks-per-node'
+    assert_not_contains "$remote" '--mem='
+    assert_not_contains "$remote" '--nodelist'
+}
+
+test_rt_tddft_efficiency_summary() {
+    local root=$test_root/efficiency-summary
+    local input=$root/cases.tsv
+    local output=$root/summary.md
+    mkdir -p "$root"
+    cat > "$input" <<'EOF'
+base-4-si1000	1000	4	1	PASS	0	100	6000	16384	100	200
+strong-8-si1000	1000	8	1	PASS	0	60	4000	16384	100	200
+strong-16-si1000	1000	16	1	PASS	0	35	3000	16384	100	200
+strong-32-si1000	1000	32	2	PASS	0	25	2000	16384	100	200
+weak-8-si2000	2000	8	1	PASS	0	120	8000	16384	100	200
+weak-16-si4000	4000	16	1	PASS	0	150	12000	16384	100	200
+weak-32-si8000	8000	32	2	HOST_OOM	-	-	-	-	-	-
+EOF
+    bash ci/sai/summarize_rt_tddft_efficiency.sh "$input" > "$output"
+    assert_contains "$output" '| 8 | 60 | 1.667 | 83.3% |'
+    assert_contains "$output" '| 16 | 35 | 2.857 | 71.4% |'
+    assert_contains "$output" '| 32 | 25 | 4.000 | 50.0% |'
+    assert_contains "$output" '| 8 | 2000 | 120 | 83.3% |'
+    assert_contains "$output" '| 16 | 4000 | 150 | 66.7% |'
+    assert_not_contains "$output" '| 32 | 8000 |'
+}
+
+test_rt_tddft_efficiency_sbatch_invocation() {
+    local root=$test_root/efficiency-sbatch
+    local home=$root/home
+    local run=$home/project/benchmarks/rt-tddft-efficiency/456-1
+    local fake_bin=$root/bin
+    local args_log=$root/sbatch.log
+    local counter=$root/counter
+    local partial=$home/project/benchmarks/rt-tddft-efficiency/457-1
+    local index label cell nodes ranks gpus case_root partial_rc
+    mkdir -p "$run/control" "$run/results" "$run/cases" "$fake_bin"
+    : > "$run/metadata.tsv"
+    : > "$run/benchmark.tsv"
+    for spec in \
+        '0 trial-8-si1000 5x5x5 1 8 8' \
+        '1 trial-8-si2000 5x5x10 1 8 8' \
+        '2 trial-32-si1000 5x5x5 2 32 16'; do
+        read -r index label cell nodes ranks gpus <<< "$spec"
+        case_root=$run/cases/$index-$label
+        mkdir -p "$case_root/results/tasks/0/case/OUT.ABACUS"
+        : > "$case_root/metadata.tsv"
+        : > "$case_root/manifest.tsv"
+        printf '%s\t%s\t%s\t1\t1\t1\t1000\t%s\t%s\t%s\t%s\n' \
+            "$index" "$label" "$cell" "$nodes" "$ranks" "$gpus" "$case_root" \
+            >> "$run/benchmark.tsv"
+        printf 'generated\n' > "$case_root/results/tasks/0/case/OUT.ABACUS/data"
+        printf 'useful\n' > "$case_root/results/tasks/0/abacus.log"
+    done
+    cp ci/sai/rt_tddft_efficiency_remote.sh ci/sai/rt_tddft_scale.sbatch \
+        ci/sai/summarize_rt_tddft_efficiency.sh "$run/control/"
+    chmod +x "$run/control/rt_tddft_efficiency_remote.sh" \
+        "$run/control/summarize_rt_tddft_efficiency.sh"
+    cat > "$fake_bin/sbatch" <<EOF
+#!/usr/bin/env bash
+printf 'PWD=%s ARGS=%s\n' "\$PWD" "\$*" >> "$args_log"
+if [[ " \$* " == *' --test-only '* ]]; then
+    echo accepted
+else
+    value=0
+    [[ ! -f "$counter" ]] || value=\$(<"$counter")
+    value=\$((value + 1))
+    [[ \${FAIL_AT:-0} -ne \$value ]] || exit 1
+    printf '%s\n' "\$value" > "$counter"
+    printf '92%04d\n' "\$value"
+fi
+EOF
+    chmod +x "$fake_bin/sbatch"
+    cat > "$fake_bin/squeue" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+    chmod +x "$fake_bin/squeue"
+
+    PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$run/control/rt_tddft_efficiency_remote.sh" preflight "$run" \
+        > "$root/preflight.out"
+    assert_contains "$root/preflight.out" 'SLURM_PREFLIGHT_OK'
+    [[ $(grep -c -- '--test-only' "$args_log") -eq 3 ]]
+    assert_contains "$args_log" '--nodes=1 --ntasks=8 --gpus-per-node=8'
+    assert_contains "$args_log" '--nodes=2 --ntasks=32 --gpus-per-node=16'
+    assert_contains "$args_log" "PWD=$run/cases/2-trial-32-si1000"
+
+    cp -a "$run" "$partial"
+    sed -i "s#$run#$partial#g" "$partial/benchmark.tsv"
+    : > "$args_log"
+    set +e
+    FAIL_AT=2 PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$partial/control/rt_tddft_efficiency_remote.sh" submit "$partial" \
+        > "$root/partial-submit.out" 2>&1
+    partial_rc=$?
+    set -e
+    [[ $partial_rc -ne 0 ]]
+    [[ $(wc -l < "$partial/jobs.tsv") -eq 1 ]]
+    PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$partial/control/rt_tddft_efficiency_remote.sh" status "$partial" \
+        > "$root/partial-status.out"
+    assert_contains "$root/partial-status.out" 'SLURM_JOB_IDS=920001'
+    assert_contains "$root/partial-status.out" 'ACTIVE_TASKS=0'
+    HOME=$home bash "$partial/control/rt_tddft_efficiency_remote.sh" collect "$partial" \
+        > "$root/partial-artifacts.tar.gz"
+    tar -tzf "$root/partial-artifacts.tar.gz" > "$root/partial-artifacts.list"
+    assert_contains "$root/partial-artifacts.list" 'jobs.tsv'
+    assert_not_contains "$root/partial-artifacts.list" 'OUT.ABACUS'
+
+    : > "$counter"
+    : > "$args_log"
+    PATH="$fake_bin:$original_path" HOME=$home \
+        bash "$run/control/rt_tddft_efficiency_remote.sh" submit "$run" \
+        > "$root/submit.out"
+    [[ $(wc -l < "$run/jobs.tsv") -eq 3 ]]
+    assert_contains "$root/submit.out" 'SLURM_JOB_IDS=920001,920002,920003'
+    assert_not_contains "$args_log" '--test-only'
+
+    HOME=$home bash "$run/control/rt_tddft_efficiency_remote.sh" collect "$run" \
+        > "$root/artifacts.tar.gz"
+    tar -tzf "$root/artifacts.tar.gz" > "$root/artifacts.list"
+    assert_contains "$root/artifacts.list" 'cases/0-trial-8-si1000/results/tasks/0/abacus.log'
+    assert_not_contains "$root/artifacts.list" 'OUT.ABACUS'
+}
+
 run_test 'SSH client configuration' test_configure_ssh_client
 run_test 'source payload builder' test_build_source_payload
 run_test 'committed control snapshot' test_prepare_control_snapshot
@@ -1605,5 +1756,8 @@ run_test 'Slurm launch-window HUP cancellation' test_slurm_launch_window_cancell
 run_test 'RT-TDDFT scale submission policy' test_rt_tddft_scale_submission_policy
 run_test 'RT-TDDFT scale batch selector' test_rt_tddft_scale_batch_selector
 run_test 'RT-TDDFT scale sbatch invocation' test_rt_tddft_scale_sbatch_invocation
+run_test 'RT-TDDFT efficiency policy' test_rt_tddft_efficiency_policy
+run_test 'RT-TDDFT efficiency formulas' test_rt_tddft_efficiency_summary
+run_test 'RT-TDDFT efficiency sbatch invocation' test_rt_tddft_efficiency_sbatch_invocation
 
 echo "ALL TESTS PASSED ($tests_run)"
