@@ -21,6 +21,11 @@ on:
         required: false
         default: ""
         type: string
+      diagnose_job_id:
+        description: "Optional existing Slurm job ID to inspect without submitting work"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -40,6 +45,7 @@ jobs:
       INSTALL_RUN_INPUT: ${{ inputs.install_run }}
       ABACUS_SHA256_INPUT: ${{ inputs.abacus_sha256 }}
       SUPERCELLS_INPUT: ${{ inputs.supercells }}
+      DIAGNOSE_JOB_ID_INPUT: ${{ inputs.diagnose_job_id }}
       SAI_PROJECT_ROOT_DEFAULT: ${{ vars.SAI_PROJECT_ROOT }}
       SAI_SSH_HOST: ${{ vars.SAI_SSH_HOST }}
       SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
@@ -48,6 +54,7 @@ jobs:
       REMOTE_RUN_ROOT: ""
       SLURM_JOB_ID: ""
       ARTIFACT_ROOT: ""
+      DIAGNOSE_JOB_ID: ""
     steps:
       - name: Checkout trusted control plane
         uses: actions/checkout@v6
@@ -72,6 +79,9 @@ jobs:
             */./*|*/../*) exit 2 ;;
           esac
           [[ "$ABACUS_SHA256_INPUT" =~ ^[0-9a-f]{64}$ ]]
+          if [[ -n "$DIAGNOSE_JOB_ID_INPUT" ]]; then
+            [[ "$DIAGNOSE_JOB_ID_INPUT" =~ ^[0-9]+$ ]]
+          fi
 
           IFS=',' read -r -a cells <<< "$SUPERCELLS_INPUT"
           (( ${#cells[@]} >= 1 && ${#cells[@]} <= 5 ))
@@ -87,6 +97,7 @@ jobs:
             echo "INSTALL_RUN=$INSTALL_RUN_INPUT"
             echo "ABACUS_SHA256=$ABACUS_SHA256_INPUT"
             echo "SUPERCELLS=$SUPERCELLS_INPUT"
+            echo "DIAGNOSE_JOB_ID=$DIAGNOSE_JOB_ID_INPUT"
           } >> "$GITHUB_ENV"
 
       - name: Configure pinned SSH client
@@ -99,6 +110,7 @@ jobs:
           echo "SAI_SSH_CONFIG=$RUNNER_TEMP/sai-ssh/config" >> "$GITHUB_ENV"
 
       - name: Prepare isolated remote probe
+        if: env.DIAGNOSE_JOB_ID == ''
         run: |
           set -euo pipefail
           connected=0
@@ -123,7 +135,21 @@ jobs:
             ci/sai/rt_tddft_scale_remote.sh ci/sai/rt_tddft_scale.sbatch \
             "sai-ci:$run_root/control/"
 
+      - name: Inspect existing Slurm job
+        if: env.DIAGNOSE_JOB_ID != ''
+        run: |
+          set -euo pipefail
+          artifact_root="$RUNNER_TEMP/scale-artifacts"
+          mkdir -p "$artifact_root"
+          ssh -F "$SAI_SSH_CONFIG" -o ControlMaster=no \
+            -o ConnectionAttempts=4 sai-ci bash -s -- \
+            diagnose "$DIAGNOSE_JOB_ID" "$SAI_PROJECT_ROOT" \
+            < ci/sai/rt_tddft_scale_remote.sh \
+            | tee "$artifact_root/slurm-diagnose-$DIAGNOSE_JOB_ID.txt"
+          echo "ARTIFACT_ROOT=$artifact_root" >> "$GITHUB_ENV"
+
       - name: Submit one Slurm array
+        if: env.DIAGNOSE_JOB_ID == ''
         run: |
           set -euo pipefail
           output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash \
@@ -135,6 +161,7 @@ jobs:
           echo "SLURM_JOB_ID=$job_id" >> "$GITHUB_ENV"
 
       - name: Wait for the Slurm array
+        if: env.DIAGNOSE_JOB_ID == ''
         run: |
           set -euo pipefail
           for attempt in {1..105}; do
@@ -159,7 +186,7 @@ jobs:
           exit 1
 
       - name: Summarize probe
-        if: always() && env.REMOTE_RUN_ROOT != '' && env.SLURM_JOB_ID != ''
+        if: always() && env.DIAGNOSE_JOB_ID == '' && env.REMOTE_RUN_ROOT != '' && env.SLURM_JOB_ID != ''
         run: |
           set -euo pipefail
           for attempt in {1..4}; do
@@ -174,7 +201,7 @@ jobs:
           exit 1
 
       - name: Collect probe artifacts
-        if: always() && env.REMOTE_RUN_ROOT != ''
+        if: always() && env.DIAGNOSE_JOB_ID == '' && env.REMOTE_RUN_ROOT != ''
         run: |
           set -euo pipefail
           artifact_root="$RUNNER_TEMP/scale-artifacts"

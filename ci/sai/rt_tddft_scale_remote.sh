@@ -183,8 +183,61 @@ case $mode in
         tar -czf - -C "$run_root" metadata.tsv manifest.tsv abacus.sha256 slurm-job-id results
         ;;
 
+    diagnose)
+        [[ $# -eq 3 ]]
+        job_id=$2
+        project_root=$3
+        [[ $job_id =~ ^[0-9]+$ ]]
+        [[ $project_root == "$HOME/"* ]]
+        project_root=$(realpath -e "$project_root")
+        printf 'DIAGNOSE_JOB_ID=%s\nDIAGNOSE_HOST=%s\nDIAGNOSE_TIME=%s\n' \
+            "$job_id" "$(hostname)" "$(date -u +%FT%TZ)"
+
+        set +e
+        echo "===== scontrol show job ====="
+        scontrol show job --details "$job_id" 2>&1
+        echo "===== sacct allocations ====="
+        sacct --duplicates --jobs="$job_id" --noheader --allocations --parsable2 \
+            --format=JobID,JobIDRaw,JobName,Partition,QOS,State,ExitCode,DerivedExitCode,Elapsed,Timelimit,Submit,Eligible,Start,End,NodeList,ReqTRES,AllocTRES 2>&1
+        echo "===== sacct comments ====="
+        sacct --duplicates --jobs="$job_id" --noheader --allocations --parsable2 \
+            --format=JobID,State,Comment,AdminComment,SystemComment 2>&1
+        echo "===== partition ====="
+        scontrol show partition 16V100 2>&1
+        echo "===== qos ====="
+        sacctmgr --noheader --parsable2 show qos where name=flood-gpu 2>&1
+        echo "===== prolog configuration ====="
+        scontrol show config 2>&1 \
+            | grep -E '^(Prolog|Epilog|TaskPlugin|JobAcctGather|SchedulerParameters)' || true
+        set -e
+
+        job_file=
+        while IFS= read -r candidate; do
+            if [[ $(<"$candidate") == "$job_id" ]]; then
+                job_file=$candidate
+                break
+            fi
+        done < <(find "$project_root/benchmarks/rt-tddft-4gpu" \
+            -mindepth 2 -maxdepth 2 -type f -name slurm-job-id -print 2>/dev/null)
+        if [[ -n $job_file ]]; then
+            run_root=$(dirname "$job_file")
+            echo "===== remote run files ====="
+            printf 'RUN_ROOT=%s\n' "$run_root"
+            stat -c '%A %a %U:%G %s %n' \
+                "$run_root" "$run_root/control" \
+                "$run_root/control/rt_tddft_scale_remote.sh" \
+                "$run_root/control/rt_tddft_scale.sbatch"
+            find "$run_root/results" -mindepth 1 -maxdepth 3 \
+                -printf '%M %u:%g %s %TY-%Tm-%TdT%TH:%TM:%TS %p\n' | sort
+            sha256sum "$run_root/control/rt_tddft_scale.sbatch"
+            sed -n '1,16p' "$run_root/control/rt_tddft_scale.sbatch"
+        else
+            echo "RUN_ROOT=not-found"
+        fi
+        ;;
+
     *)
-        echo "Usage: $0 {prepare|submit|status|summarize|collect} ..." >&2
+        echo "Usage: $0 {prepare|submit|status|summarize|collect|diagnose} ..." >&2
         exit 2
         ;;
 esac
