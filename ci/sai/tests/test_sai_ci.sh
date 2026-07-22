@@ -91,10 +91,149 @@ test_configure_ssh_client() {
     assert_not_contains "$log" 'sai-ci-secret-marker'
 }
 
+test_build_source_payload() {
+    local root=$test_root/source-payload
+    local repository=$root/repository
+    local sha1 sha2 output
+    mkdir -p "$repository" "$root/full" "$root/delta"
+    git -C "$repository" init -q
+    git -C "$repository" config user.email ci@example.invalid
+    git -C "$repository" config user.name ci
+    printf 'first\n' > "$repository/data.txt"
+    git -C "$repository" add data.txt
+    git -C "$repository" commit -q -m first
+    sha1=$(git -C "$repository" rev-parse HEAD)
+    printf 'second\n' > "$repository/data.txt"
+    printf 'new\n' > "$repository/new.txt"
+    git -C "$repository" add data.txt new.txt
+    git -C "$repository" commit -q -m second
+    sha2=$(git -C "$repository" rev-parse HEAD)
+
+    output=$(bash ci/sai/build_source_payload.sh "$repository" "$sha1" none \
+        "$root/full/source-payload.gz" "$root/full/source-manifest.gz")
+    grep -Fxq 'SOURCE_PAYLOAD_MODE=full' <<< "$output"
+    cmp <(git -C "$repository" ls-tree -r -z --full-tree "$sha1") \
+        <(gzip -cd "$root/full/source-manifest.gz")
+    empty_tree=$(git -C "$repository" hash-object -t tree /dev/null)
+    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
+            "$empty_tree" "$sha1") \
+        <(gzip -cd "$root/full/source-payload.gz")
+
+    output=$(bash ci/sai/build_source_payload.sh "$repository" "$sha2" "$sha1" \
+        "$root/delta/source-payload.gz" "$root/delta/source-manifest.gz")
+    grep -Fxq 'SOURCE_PAYLOAD_MODE=delta' <<< "$output"
+    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
+            "$sha1" "$sha2") \
+        <(gzip -cd "$root/delta/source-payload.gz")
+}
+
+test_prepare_control_snapshot() {
+    local root=$test_root/control-snapshot
+    local repository=$root/repository
+    local output=$root/output
+    local control_sha result control_root
+    mkdir -p "$repository/ci/sai"
+    git -C "$repository" init -q
+    git -C "$repository" config user.email ci@example.invalid
+    git -C "$repository" config user.name ci
+    printf '*.log\n' > "$repository/.gitignore"
+    printf '#!/usr/bin/env bash\nexit 0\n' \
+        > "$repository/ci/sai/run_remote_ci.sh"
+    chmod +x "$repository/ci/sai/run_remote_ci.sh"
+    printf 'tracked\n' > "$repository/ci/sai/tracked.txt"
+    git -C "$repository" add .gitignore ci/sai
+    git -C "$repository" commit -q -m control
+    control_sha=$(git -C "$repository" rev-parse HEAD)
+    printf 'ignored secret\n' > "$repository/ci/sai/private.log"
+    printf 'untracked\n' > "$repository/ci/sai/untracked.txt"
+
+    result=$(bash ci/sai/prepare_control_snapshot.sh \
+        "$repository" "$control_sha" "$output")
+    control_root=$(awk -F= '$1 == "CONTROL_ROOT" {print $2}' <<< "$result")
+    [[ $control_root == "$output/ci/sai" ]]
+    assert_file "$control_root/run_remote_ci.sh"
+    assert_file "$control_root/tracked.txt"
+    [[ -x $control_root/run_remote_ci.sh ]]
+    assert_not_exists "$control_root/private.log"
+    assert_not_exists "$control_root/untracked.txt"
+}
+
+test_remote_probe_identity() {
+    local root=$test_root/remote-probe
+    local fake_bin=$root/bin
+    local command_name
+    mkdir -p "$fake_bin" "$root/home"
+    cat > "$fake_bin/id" <<'EOF'
+#!/usr/bin/env bash
+if [[ ${1:-} == -un ]]; then
+    echo localuser
+else
+    exec /usr/bin/id "$@"
+fi
+EOF
+    cat > "$fake_bin/sinfo" <<'EOF'
+#!/usr/bin/env bash
+echo '16V100 up 1 gpu:8'
+EOF
+    chmod +x "$fake_bin/id" "$fake_bin/sinfo"
+    for command_name in sbatch sacct squeue scancel crontab; do
+        cat > "$fake_bin/$command_name" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+        chmod +x "$fake_bin/$command_name"
+    done
+
+    PATH="$fake_bin:$original_path" HOME=$root/home \
+        bash ci/sai/probe_remote_sai.sh localuser > "$root/probe.log"
+    assert_contains "$root/probe.log" 'SAI_SSH_PROBE_OK user=localuser'
+    if PATH="$fake_bin:$original_path" HOME=$root/home \
+        bash ci/sai/probe_remote_sai.sh wronguser > /dev/null 2>&1; then
+        fail 'remote probe accepted the wrong expected user'
+    fi
+}
+
+test_local_client_probe() {
+    local root=$test_root/local-client
+    local fake_bin=$root/bin
+    local ssh_config=$root/ssh-config
+    local local_config=$root/local-run.env
+    local ssh_log=$root/ssh.log
+    mkdir -p "$fake_bin"
+    : > "$ssh_config"
+    cat > "$local_config" <<EOF
+SAI_SSH_CONFIG=$ssh_config
+SAI_SSH_TARGET=test-sai
+EOF
+    cat > "$fake_bin/ssh" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$ssh_log"
+case " \$* " in
+    *' -G '*) echo 'user localuser'; exit 0 ;;
+    *' -MNf '*) exit 0 ;;
+    *' -O exit '*) exit 0 ;;
+esac
+cat >/dev/null
+echo 'SAI_SSH_PROBE_OK user=localuser'
+EOF
+    chmod +x "$fake_bin/ssh"
+
+    PATH="$fake_bin:$original_path" \
+        bash ci/sai/run_local_ci.sh "$local_config" --probe-only \
+        > "$root/local-probe.log"
+    assert_contains "$root/local-probe.log" \
+        'SAI_LOCAL_PROBE_OK target=test-sai user=localuser'
+    assert_contains "$ssh_log" 'StrictHostKeyChecking=yes'
+    assert_contains "$ssh_log" 'ForwardAgent=no'
+    assert_contains "$ssh_log" 'ClearAllForwardings=yes'
+}
+
 test_workflow_security_policy() {
     local workflow=.github/workflows/sai-gpu-full.yml
     local bootstrap=.github/workflows/sai-bootstrap.yml
     local toolchain=ci/sai/toolchains/archive-mp09-sai-nccl2293.env.example
+    local payload_builder=ci/sai/build_source_payload.sh
+    local runtime_file
     assert_contains "$workflow" 'cron: "30 20 * * *"'
     assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
     assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
@@ -117,10 +256,11 @@ test_workflow_security_policy() {
     assert_not_contains "$toolchain" 'module load nccl/'
     assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
     assert_contains "$workflow" 'source_transfer_cache.sh'
-    assert_contains "$workflow" 'git -C source diff --binary --full-index --no-renames'
-    assert_contains "$workflow" 'empty_tree=$(git -C source hash-object -t tree /dev/null)'
-    assert_contains "$workflow" 'git -C source ls-tree -r -z --full-tree "$SOURCE_SHA"'
-    assert_contains "$workflow" '| gzip -1 > "$payload"'
+    assert_contains "$workflow" 'build_source_payload.sh'
+    assert_contains "$payload_builder" 'diff --binary --full-index --no-renames'
+    assert_contains "$payload_builder" 'empty_tree=$(git -C "$repository" hash-object -t tree /dev/null)'
+    assert_contains "$payload_builder" 'ls-tree -r -z --full-tree "$source_sha"'
+    assert_contains "$payload_builder" '| gzip -1 > "$payload"'
     assert_contains "$workflow" 'SOURCE_CACHE_BASE_SHA'
     assert_contains "$workflow" 'run_namespace=${RUN_NAMESPACE_INPUT:-manual}'
     assert_contains "$workflow" 'source_cache_role=baseline'
@@ -133,6 +273,22 @@ test_workflow_security_policy() {
     assert_contains "$workflow" '"sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"'
     assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
     assert_contains ci/sai/probe_remote_sai.sh 'rsync curl git gzip tar xz'
+    assert_contains "$workflow" 'bash -s -- "$SAI_SSH_USER"'
+    assert_contains "$bootstrap" 'bash -s -- "$SAI_SSH_USER"'
+    assert_not_contains ci/sai/probe_remote_sai.sh '1478400356'
+    for runtime_file in ci/sai/build_gpu.sh ci/sai/test_gpu.sbatch \
+        ci/sai/test_gpu_case.sh "$toolchain"; do
+        assert_contains "$runtime_file" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
+        assert_not_contains "$runtime_file" ':${LD_LIBRARY_PATH:-}'
+    done
+    assert_contains ci/sai/run_local_ci.sh 'source_transfer_cache.sh'
+    assert_contains ci/sai/run_local_ci.sh '"$source_sha" candidate'
+    assert_contains ci/sai/run_local_ci.sh 'status --porcelain --untracked-files=all'
+    assert_contains ci/sai/run_local_ci.sh 'prepare_control_snapshot.sh'
+    assert_contains ci/sai/run_local_ci.sh '"$control_root/"'
+    assert_contains ci/sai/run_local_ci.sh '< "$control_root/probe_remote_sai.sh"'
+    assert_not_contains ci/sai/run_local_ci.sh '< "$script_dir/probe_remote_sai.sh"'
+    assert_not_contains ci/sai/local-run.env.example 'PRIVATE KEY'
     if sed -n '/^on:/,/^permissions:/p' "$workflow" | grep -Eq '^[[:space:]]+pull_request:'; then
         fail 'GPU workflow must not run automatically for pull requests'
     fi
@@ -141,8 +297,11 @@ test_workflow_security_policy() {
 test_control_executable_modes() {
     local path mode
     for path in \
+        ci/sai/build_source_payload.sh \
         ci/sai/build_gpu.sbatch \
         ci/sai/mpirun_with_mapping.sh \
+        ci/sai/prepare_control_snapshot.sh \
+        ci/sai/run_local_ci.sh \
         ci/sai/run_slurm_job.sh \
         ci/sai/test_gpu.sbatch \
         ci/sai/test_gpu_case.sh; do
@@ -301,6 +460,31 @@ test_gpu_matrix_submission_policy() {
     assert_contains "$launcher" 'run_gpu_case_attempts.sh'
     assert_contains "$launcher" 'state=INFRA'
     assert_contains "$summary" '^(PASS|FAIL|TIMEOUT|INFRA)$'
+}
+
+test_gpu_case_symlink_rejection() {
+    local root=$test_root/gpu-case-symlink
+    local source=$root/source
+    local case_dir=$source/tests/suite/case
+    local manifest=$root/manifest.tsv
+    local outside=$root/outside
+    mkdir -p "$case_dir" "$source/tests/integrate" "$source/tests/PP_ORB" \
+        "$root/results" "$root/install" "$root/control"
+    printf 'outside\n' > "$outside"
+    ln -s "$outside" "$case_dir/INPUT"
+    printf 'suite\tcase\n' > "$manifest"
+
+    if CI_SOURCE=$source CONTROL_ROOT=$root/control \
+        INSTALL_ROOT=$root/install RESULT_ROOT=$root/results \
+        TOOLCHAIN_FILE=$root/missing-toolchain MP_PROFILE=test \
+        GPU_CASE_CLASS=gpu1 GPU_CASE_RANKS=1 \
+        GPU_CASE_MANIFEST=$manifest SLURM_ARRAY_JOB_ID=1 \
+        SLURM_ARRAY_TASK_ID=0 SLURM_NTASKS=1 SLURM_GPUS_ON_NODE=1 \
+        bash ci/sai/test_gpu_case.sh > "$root/case.log" 2>&1; then
+        fail 'GPU case launcher accepted a symbolic link'
+    fi
+    assert_contains "$root/case.log" 'GPU case contains a symbolic link'
+    [[ $(<"$outside") == outside ]]
 }
 
 test_prepare_cusolvermp_smoke() {
@@ -1243,10 +1427,15 @@ EOF
 }
 
 run_test 'SSH client configuration' test_configure_ssh_client
+run_test 'source payload builder' test_build_source_payload
+run_test 'committed control snapshot' test_prepare_control_snapshot
+run_test 'remote probe identity' test_remote_probe_identity
+run_test 'local client SSH probe' test_local_client_probe
 run_test 'workflow security policy' test_workflow_security_policy
 run_test 'control executable modes' test_control_executable_modes
 run_test 'PMIx startup retry policy' test_pmix_startup_retry
 run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
+run_test 'GPU case symlink rejection' test_gpu_case_symlink_rejection
 run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
 run_test 'compressed source snapshot cache' test_source_snapshot_cache

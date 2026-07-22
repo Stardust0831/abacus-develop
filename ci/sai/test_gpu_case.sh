@@ -40,9 +40,16 @@ mkdir -p "$work_root/tests/$suite" "$status_root" "$task_root/launcher"
 start_epoch=$(date +%s)
 echo "SAI_GPU_CASE_START class=$GPU_CASE_CLASS task=$SLURM_ARRAY_TASK_ID suite=$suite case=$case_name ranks=$GPU_CASE_RANKS"
 
+source_tests=$(realpath -e "$CI_SOURCE/tests")
+source_case=$(realpath -e "$CI_SOURCE/tests/$suite/$case_name")
+[[ $source_case == "$source_tests/$suite/$case_name" ]]
+if find "$source_case" -type l -print -quit | grep -q .; then
+    echo "GPU case contains a symbolic link: $suite/$case_name" >&2
+    exit 2
+fi
 ln -s "$CI_SOURCE/tests/integrate" "$work_root/tests/integrate"
 ln -s "$CI_SOURCE/tests/PP_ORB" "$work_root/tests/PP_ORB"
-rsync -a "$CI_SOURCE/tests/$suite/$case_name" "$work_root/tests/$suite/"
+rsync -a "$source_case" "$work_root/tests/$suite/"
 printf '%s\n' "$case_name" > "$work_root/tests/$suite/CASES.task.txt"
 
 source "$TOOLCHAIN_FILE"
@@ -55,7 +62,7 @@ SAI_SYSTEM_MPIRUN=$(command -v mpirun)
 export SAI_SYSTEM_MPIRUN MAP_OPT
 ln -s "$CONTROL_ROOT/mpirun_with_mapping.sh" "$task_root/launcher/mpirun"
 export PATH="$task_root/launcher:$PATH"
-export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NCCL_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64:${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NCCL_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 ABACUS="$INSTALL_ROOT/bin/abacus"
 [[ -x "$ABACUS" ]]

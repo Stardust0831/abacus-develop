@@ -130,7 +130,7 @@ jobs:
             fi
           done
           [[ $connected -eq 1 ]]
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s \
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$SAI_SSH_USER" \
             < control/ci/sai/probe_remote_sai.sh
 
       - name: Create isolated remote run
@@ -184,31 +184,18 @@ jobs:
           set -euo pipefail
           payload="$RUNNER_TEMP/source-payload.gz"
           manifest="$RUNNER_TEMP/source-manifest.gz"
-          git -C source ls-tree -r -z --full-tree "$SOURCE_SHA" \
-            | gzip -1 > "$manifest"
-          mode=full
-          if [[ "$SOURCE_CACHE_BASE_SHA" != none ]]; then
-            if git -C source cat-file -e "$SOURCE_CACHE_BASE_SHA^{commit}" 2>/dev/null || \
-              git -C source fetch --no-tags --depth=1 origin "$SOURCE_CACHE_BASE_SHA"; then
-              git -C source diff --binary --full-index --no-renames \
-                "$SOURCE_CACHE_BASE_SHA" "$SOURCE_SHA" | gzip -1 > "$payload"
-              mode=delta
-            else
-              echo "Cached SHA is unavailable from GitHub; sending a full snapshot"
-            fi
-          fi
-          if [[ "$mode" == full ]]; then
-            empty_tree=$(git -C source hash-object -t tree /dev/null)
-            git -C source diff --binary --full-index --no-renames \
-              "$empty_tree" "$SOURCE_SHA" | gzip -1 > "$payload"
-          fi
-          [[ -s "$payload" && -s "$manifest" ]]
+          output=$(bash control/ci/sai/build_source_payload.sh \
+            "$GITHUB_WORKSPACE/source" "$SOURCE_SHA" "$SOURCE_CACHE_BASE_SHA" \
+            "$payload" "$manifest")
+          printf '%s\n' "$output"
+          mode=$(awk -F= '$1 == "SOURCE_PAYLOAD_MODE" {print $2}' <<< "$output")
+          [[ "$mode" == full || "$mode" == delta ]]
           {
             echo "SOURCE_PAYLOAD=$payload"
             echo "SOURCE_MANIFEST=$manifest"
             echo "SOURCE_PAYLOAD_MODE=$mode"
           } >> "$GITHUB_ENV"
-          echo "SOURCE_PAYLOAD_READY mode=$mode base=$SOURCE_CACHE_BASE_SHA target=$SOURCE_SHA bytes=$(stat -c %s "$payload")"
+          echo "SOURCE_PAYLOAD_READY mode=$mode base=$SOURCE_CACHE_BASE_SHA target=$SOURCE_SHA"
 
       - name: Upload and apply compressed source payload
         run: |

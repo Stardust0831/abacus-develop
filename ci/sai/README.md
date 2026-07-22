@@ -87,6 +87,57 @@ rejects any path that escapes the account's canonical HOME. Only
 6. Submit the workflow. A required reviewer then opens the pending deployment,
    checks the requested SHA and directory, and approves `sai-ssh-manual`.
 
+### Direct local run
+
+Developers with their own SAI account may launch the same remote build and
+Slurm validation directly, without GitHub Actions. The local client uses an
+existing OpenSSH configuration and never reads or copies the private key
+itself. For example:
+
+```sshconfig
+Host SAI-abacus
+    HostName c0.sai.ai-4s.com
+    Port 12022
+    User your-sai-user
+    IdentityFile ~/.ssh/your-sai-key
+    IdentitiesOnly yes
+    StrictHostKeyChecking yes
+```
+
+Copy `ci/sai/local-run.env.example` outside the ABACUS checkout and set
+`SAI_SSH_CONFIG` to the OpenSSH configuration file, `SAI_SSH_TARGET` to its
+Host alias, and `SAI_PROJECT_ROOT` to an absolute directory below that remote
+account's HOME. Do not put the local configuration or private key in the
+repository. Validate access without creating a run:
+
+```bash
+bash ci/sai/run_local_ci.sh /path/to/local-run.env --probe-only
+```
+
+Run the full validation with:
+
+```bash
+bash ci/sai/run_local_ci.sh /path/to/local-run.env
+```
+
+The control checkout must have no tracked changes or non-ignored untracked
+files. The client materializes `ci/sai` from the recorded `CONTROL_SHA` with
+`git archive`, so ignored files and a check-to-upload working-tree race cannot
+alter or add remote control files. `SAI_SOURCE_SHA` defaults to `HEAD` and may
+name any commit already available in the local Git object database. The client
+uploads the same gzip-compressed Git delta and manifest used by the GitHub
+workflow, executes the same remote control scripts, and downloads the artifact
+bundle below `SAI_ARTIFACT_ROOT/<run-id>/`. A local run always has the
+`candidate` cache role: it may consume an existing daily baseline but never
+advances it.
+
+The OpenSSH Host entry determines the remote username and identity file. The
+client additionally forces batch mode, strict host-key checking, disabled
+agent/port forwarding, and a temporary multiplexed control socket. The local
+developer is responsible for reviewing `SAI_SOURCE_SHA`, because that commit's
+build system, integration scripts, and binaries execute with the permissions
+of the configured SAI account.
+
 The selected directory is a reusable project root, not a checkout directory.
 Each attempt uses a new
 `runs/<namespace>/<GitHub run ID>-<attempt>` subdirectory. Official NVIDIA

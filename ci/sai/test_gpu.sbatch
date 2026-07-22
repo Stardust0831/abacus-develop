@@ -43,7 +43,7 @@ launcher_dir="$RESULT_ROOT/launcher"
 mkdir -p "$launcher_dir"
 ln -sfn "$CONTROL_ROOT/mpirun_with_mapping.sh" "$launcher_dir/mpirun"
 export PATH="$launcher_dir:$PATH"
-export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NCCL_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64:${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="$SAI_MPI_ROOT/lib:$SAI_CUDA_ROOT/lib64:$SAI_CUSOLVERMP_ROOT/lib:$SAI_CUBLASMP_ROOT/lib:$SAI_NCCL_ROOT/lib:$SAI_NVHPC_ROOT/math_libs/12.9/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 echo "SAI runtime mapping: partition=$SLURM_JOB_PARTITION tasks=$SLURM_NTASKS map_by=$MAP_OPT omp_threads=$OMP_NUM_THREADS"
 scontrol show hostnames "$SLURM_JOB_NODELIST" | sed 's/^/SLURM_NODE=/'

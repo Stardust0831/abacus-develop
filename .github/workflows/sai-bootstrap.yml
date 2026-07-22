@@ -62,7 +62,8 @@ jobs:
             fi
           done
           [[ $connected -eq 1 ]]
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s < ci/sai/probe_remote_sai.sh
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$SAI_SSH_USER" \
+            < ci/sai/probe_remote_sai.sh
 
       - name: Install cleanup cron
         if: inputs.mode == 'install-cleanup'
