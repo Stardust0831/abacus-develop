@@ -2,12 +2,17 @@
 
 set -euo pipefail
 
-: "${RUN_ROOT:?}"
+: "${SLURM_SUBMIT_DIR:?}"
 : "${SLURM_ARRAY_JOB_ID:?}"
 : "${SLURM_ARRAY_TASK_ID:?}"
 : "${SLURM_NTASKS:?}"
 [[ $SLURM_NTASKS -eq 4 ]]
 [[ ${SLURM_GPUS_ON_NODE:-} == 4 ]]
+
+RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")
+[[ $RUN_ROOT == "$HOME/"* ]]
+[[ $RUN_ROOT == */benchmarks/rt-tddft-4gpu/* ]]
+[[ -f $RUN_ROOT/metadata.tsv && -f $RUN_ROOT/manifest.tsv ]]
 
 entry_root=$RUN_ROOT/results/tasks/$SLURM_ARRAY_TASK_ID
 mkdir -p "$entry_root"
