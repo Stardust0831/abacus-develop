@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+mode=${1:-}
+
+validate_run_root() {
+    local run_root=$1
+    [[ $run_root == "$HOME/"* ]]
+    [[ $run_root == */benchmarks/rt-tddft-4gpu/* ]]
+    [[ -d $run_root && -f $run_root/metadata.tsv && -f $run_root/manifest.tsv ]]
+}
+
+case $mode in
+    prepare)
+        [[ $# -eq 6 ]]
+        project_root=$2
+        install_run=$3
+        run_key=$4
+        supercells=$5
+        expected_abacus_sha256=$6
+        [[ $project_root == "$HOME/"* ]]
+        [[ $run_key =~ ^[0-9]+-[0-9]+$ ]]
+        project_root=$(realpath -e "$project_root")
+        install_run_root=$(realpath -e "$project_root/$install_run")
+        [[ $install_run_root == "$project_root/runs/"* ]]
+        [[ -x $install_run_root/install/bin/abacus ]]
+        [[ -d $install_run_root/source/tests/PP_ORB ]]
+        [[ -f $install_run_root/control/mpirun_with_mapping.sh ]]
+        base_case=$install_run_root/source/tests/15_rtTDDFT_GPU/19_NO_Si48_CUSOLVERMP_TDDFT_GPU
+        [[ -f $base_case/INPUT && -f $base_case/KPT ]]
+        toolchain=$install_run_root/control/toolchains/archive-mp09-sai-nccl2293.env.example
+        [[ -f $toolchain ]]
+        [[ $expected_abacus_sha256 =~ ^[0-9a-f]{64}$ ]]
+        actual_abacus_sha256=$(sha256sum "$install_run_root/install/bin/abacus" | awk '{print $1}')
+        [[ $actual_abacus_sha256 == "$expected_abacus_sha256" ]]
+
+        run_root=$project_root/benchmarks/rt-tddft-4gpu/$run_key
+        [[ ! -e $run_root ]]
+        mkdir -p "$run_root/control" "$run_root/results/tasks" "$run_root/template"
+        cp "$base_case/INPUT" "$base_case/KPT" "$run_root/template/"
+        cp "$toolchain" "$run_root/control/toolchain.env"
+        cp "$install_run_root/control/mpirun_with_mapping.sh" "$run_root/control/"
+
+        IFS=',' read -r -a cells <<< "$supercells"
+        : > "$run_root/manifest.tsv"
+        for index in "${!cells[@]}"; do
+            cell=${cells[$index]}
+            [[ $cell =~ ^([1-9][0-9]?)x([1-9][0-9]?)x([1-9][0-9]?)$ ]]
+            nx=${BASH_REMATCH[1]}
+            ny=${BASH_REMATCH[2]}
+            nz=${BASH_REMATCH[3]}
+            atoms=$((8 * nx * ny * nz))
+            printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$index" "$cell" "$nx" "$ny" "$nz" "$atoms" \
+                >> "$run_root/manifest.tsv"
+        done
+        printf '%s  %s\n' "$actual_abacus_sha256" "$install_run_root/install/bin/abacus" \
+            > "$run_root/abacus.sha256"
+        {
+            printf 'project_root\t%s\n' "$project_root"
+            printf 'install_run_root\t%s\n' "$install_run_root"
+            printf 'abacus\t%s\n' "$install_run_root/install/bin/abacus"
+            printf 'expected_abacus_sha256\t%s\n' "$expected_abacus_sha256"
+            printf 'supercells\t%s\n' "$supercells"
+            printf 'created_utc\t%s\n' "$(date -u +%FT%TZ)"
+        } > "$run_root/metadata.tsv"
+        printf 'RUN_ROOT=%s\n' "$run_root"
+        ;;
+
+    submit)
+        [[ $# -eq 2 ]]
+        run_root=$2
+        validate_run_root "$run_root"
+        [[ -x $run_root/control/rt_tddft_scale_remote.sh ]]
+        [[ -f $run_root/control/rt_tddft_scale.sbatch ]]
+        count=$(wc -l < "$run_root/manifest.tsv")
+        (( count >= 1 && count <= 5 ))
+        job_id=$(sbatch --parsable --array="0-$((count - 1))%$count" \
+            --chdir="$run_root" \
+            --output="$run_root/results/slurm-%A_%a.out" \
+            --export=ALL,RUN_ROOT="$run_root" \
+            "$run_root/control/rt_tddft_scale.sbatch")
+        job_id=${job_id%%;*}
+        [[ $job_id =~ ^[0-9]+$ ]]
+        printf '%s\n' "$job_id" > "$run_root/slurm-job-id"
+        printf 'SLURM_JOB_ID=%s\n' "$job_id"
+        ;;
+
+    status)
+        [[ $# -eq 3 ]]
+        run_root=$2
+        job_id=$3
+        validate_run_root "$run_root"
+        [[ $job_id =~ ^[0-9]+$ ]]
+        [[ $(<"$run_root/slurm-job-id") == "$job_id" ]]
+        active=$(squeue --noheader --jobs="$job_id" | wc -l)
+        printf 'SLURM_JOB_ID=%s\nACTIVE_TASKS=%s\n' "$job_id" "$active"
+        ;;
+
+    summarize)
+        [[ $# -eq 3 ]]
+        run_root=$2
+        job_id=$3
+        validate_run_root "$run_root"
+        [[ $job_id =~ ^[0-9]+$ ]]
+        [[ $(<"$run_root/slurm-job-id") == "$job_id" ]]
+        results=$run_root/results
+        terminal_states='BOOT_FAIL|CANCELLED|COMPLETED|DEADLINE|FAILED|NODE_FAIL|OUT_OF_MEMORY|PREEMPTED|REVOKED|SPECIAL_EXIT|TIMEOUT'
+        accounting_ready=0
+        accounting_output=
+        declare -A final_states=()
+        for accounting_attempt in {1..30}; do
+            if accounting_output=$(sacct --jobs="$job_id" --noheader --allocations \
+                --parsable2 --format=JobID,State,ExitCode,Elapsed,MaxRSS,MaxVMSize,AllocTRES); then
+                final_states=()
+                while IFS='|' read -r got_job_id got_state rest; do
+                    [[ -n ${got_job_id:-} ]] || continue
+                    got_state=${got_state%% *}
+                    got_state=${got_state%%+}
+                    final_states[$got_job_id]=$got_state
+                done <<< "$accounting_output"
+                accounting_ready=1
+                while IFS=$'\t' read -r index cell nx ny nz atoms; do
+                    state=${final_states[${job_id}_${index}]:-}
+                    if [[ ! $state =~ ^($terminal_states)$ ]]; then
+                        accounting_ready=0
+                        break
+                    fi
+                done < "$run_root/manifest.tsv"
+                [[ $accounting_ready -eq 0 ]] || break
+            else
+                echo "sacct failed while checking scale tasks (attempt $accounting_attempt/30)" >&2
+            fi
+            sleep 10
+        done
+        [[ $accounting_ready -eq 1 ]] || {
+            echo "Unable to prove a terminal Slurm state for every scale task" >&2
+            exit 1
+        }
+        printf '%s\n' "$accounting_output" > "$results/slurm-sacct.tsv"
+        {
+            echo "# SAI 4-GPU Si RT-TDDFT scale probe"
+            echo
+            echo "Slurm array: \`$job_id\` on \`flood-gpu\`; each task used one node, four MPI ranks and four GPUs."
+            echo
+            echo "| Task | Supercell | Atoms | Basis | Result | Exit | Elapsed (s) | Peak/GPU (MiB) | Peak sum (MiB) | Capacity/GPU (MiB) | Peak SM (%) | Peak power (W) |"
+            echo "|---:|:---:|---:|---:|:---:|---:|---:|---:|---:|---:|---:|---:|"
+            while IFS=$'\t' read -r index cell nx ny nz atoms; do
+                result_file=$results/tasks/$index/result.tsv
+                if [[ -f $result_file ]]; then
+                    IFS=$'\t' read -r result rc elapsed basis peak_gpu peak_sum capacity peak_util peak_power < "$result_file"
+                else
+                    state=${final_states[${job_id}_${index}]}
+                    if [[ $state == OUT_OF_MEMORY ]]; then
+                        result=HOST_OOM
+                    else
+                        result=$state
+                    fi
+                    rc=-
+                    elapsed=-
+                    basis=$((atoms * 13))
+                    peak_gpu=-
+                    peak_sum=-
+                    capacity=-
+                    peak_util=-
+                    peak_power=-
+                fi
+                printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n' \
+                    "$index" "$cell" "$atoms" "$basis" "$result" "$rc" \
+                    "$elapsed" "$peak_gpu" "$peak_sum" "$capacity" "$peak_util" "$peak_power"
+            done < "$run_root/manifest.tsv"
+            echo
+            echo "A passing point proves completion of this two-step smoke input. GPU_OOM and HOST_OOM are separate capacity bounds; MEMORY_ERROR remains ambiguous and is not a bound without log inspection."
+        } > "$results/summary.md"
+        cat "$results/summary.md"
+        ;;
+
+    collect)
+        [[ $# -eq 2 ]]
+        run_root=$2
+        validate_run_root "$run_root"
+        tar -czf - -C "$run_root" metadata.tsv manifest.tsv abacus.sha256 slurm-job-id results
+        ;;
+
+    *)
+        echo "Usage: $0 {prepare|submit|status|summarize|collect} ..." >&2
+        exit 2
+        ;;
+esac
