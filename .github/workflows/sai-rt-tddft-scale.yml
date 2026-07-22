@@ -1,0 +1,253 @@
+name: SAI RT-TDDFT 4-GPU Scale Probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      install_run:
+        description: "Existing successful SAI CI run, relative to the project root"
+        required: true
+        type: string
+      abacus_sha256:
+        description: "Expected SHA-256 of install/bin/abacus from the CI artifact"
+        required: true
+        type: string
+      supercells:
+        description: "One to five comma-separated Si supercells (NxMxK)"
+        required: true
+        default: "3x3x3,4x4x4,5x5x4,5x5x5,6x6x5"
+        type: string
+      project_root:
+        description: "Optional absolute project root below the SAI account HOME"
+        required: false
+        default: ""
+        type: string
+      diagnose_job_id:
+        description: "Optional existing Slurm job ID to inspect without submitting work"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sai-rt-tddft-scale-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  scale-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    environment:
+      name: sai-ssh-manual
+    env:
+      PROJECT_ROOT_INPUT: ${{ inputs.project_root }}
+      INSTALL_RUN_INPUT: ${{ inputs.install_run }}
+      ABACUS_SHA256_INPUT: ${{ inputs.abacus_sha256 }}
+      SUPERCELLS_INPUT: ${{ inputs.supercells }}
+      DIAGNOSE_JOB_ID_INPUT: ${{ inputs.diagnose_job_id }}
+      SAI_PROJECT_ROOT_DEFAULT: ${{ vars.SAI_PROJECT_ROOT }}
+      SAI_SSH_HOST: ${{ vars.SAI_SSH_HOST }}
+      SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
+      SAI_SSH_USER: ${{ vars.SAI_SSH_USER }}
+      SAI_SSH_CONFIG: ""
+      REMOTE_RUN_ROOT: ""
+      SLURM_JOB_ID: ""
+      ARTIFACT_ROOT: ""
+      DIAGNOSE_JOB_ID: ""
+    steps:
+      - name: Checkout trusted control plane
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Validate probe inputs
+        run: |
+          set -euo pipefail
+          project_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
+          : "${project_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
+          expected_prefix="/home/abacus-group/$SAI_SSH_USER/"
+          [[ "$project_root/" == "$expected_prefix"* ]]
+          [[ "$project_root" =~ ^/[A-Za-z0-9._/-]+$ ]]
+          case "/$project_root/" in
+            */./*|*/../*) exit 2 ;;
+          esac
+
+          [[ "$INSTALL_RUN_INPUT" =~ ^runs/[A-Za-z0-9._/-]+$ ]]
+          case "/$INSTALL_RUN_INPUT/" in
+            */./*|*/../*) exit 2 ;;
+          esac
+          [[ "$ABACUS_SHA256_INPUT" =~ ^[0-9a-f]{64}$ ]]
+          if [[ -n "$DIAGNOSE_JOB_ID_INPUT" ]]; then
+            [[ "$DIAGNOSE_JOB_ID_INPUT" =~ ^[0-9]+$ ]]
+          fi
+
+          IFS=',' read -r -a cells <<< "$SUPERCELLS_INPUT"
+          (( ${#cells[@]} >= 1 && ${#cells[@]} <= 5 ))
+          declare -A seen=()
+          for cell in "${cells[@]}"; do
+            [[ "$cell" =~ ^([1-9][0-9]?)x([1-9][0-9]?)x([1-9][0-9]?)$ ]]
+            (( BASH_REMATCH[1] <= 20 && BASH_REMATCH[2] <= 20 && BASH_REMATCH[3] <= 20 ))
+            [[ -z ${seen[$cell]+x} ]]
+            seen[$cell]=1
+          done
+          {
+            echo "SAI_PROJECT_ROOT=$project_root"
+            echo "INSTALL_RUN=$INSTALL_RUN_INPUT"
+            echo "ABACUS_SHA256=$ABACUS_SHA256_INPUT"
+            echo "SUPERCELLS=$SUPERCELLS_INPUT"
+            echo "DIAGNOSE_JOB_ID=$DIAGNOSE_JOB_ID_INPUT"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure pinned SSH client
+        env:
+          SAI_SSH_PRIVATE_KEY: ${{ secrets.SAI_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          bash ci/sai/configure_ssh_client.sh \
+            "$RUNNER_TEMP/sai-ssh" "$GITHUB_WORKSPACE/ci/sai/known_hosts"
+          echo "SAI_SSH_CONFIG=$RUNNER_TEMP/sai-ssh/config" >> "$GITHUB_ENV"
+
+      - name: Prepare isolated remote probe
+        if: env.DIAGNOSE_JOB_ID == ''
+        run: |
+          set -euo pipefail
+          connected=0
+          for attempt in {1..4}; do
+            if ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci; then
+              connected=1
+              break
+            fi
+            [[ $attempt -eq 4 ]] || sleep $((attempt * 5))
+          done
+          [[ $connected -eq 1 ]]
+          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+            prepare "$SAI_PROJECT_ROOT" "$INSTALL_RUN" "$run_key" "$SUPERCELLS" \
+            "$ABACUS_SHA256" \
+            < ci/sai/rt_tddft_scale_remote.sh)
+          printf '%s\n' "$output"
+          run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
+          [[ "$run_root" == "$SAI_PROJECT_ROOT/benchmarks/rt-tddft-4gpu/$run_key" ]]
+          echo "REMOTE_RUN_ROOT=$run_root" >> "$GITHUB_ENV"
+          rsync -az --timeout=600 -e "ssh -F $SAI_SSH_CONFIG" \
+            ci/sai/rt_tddft_scale_remote.sh ci/sai/rt_tddft_scale.sbatch \
+            ci/sai/select_rt_tddft_scale_batch.sh \
+            "sai-ci:$run_root/control/"
+
+      - name: Validate Slurm submission
+        if: env.DIAGNOSE_JOB_ID == ''
+        run: |
+          set -euo pipefail
+          ssh -F "$SAI_SSH_CONFIG" sai-ci bash \
+            "$REMOTE_RUN_ROOT/control/rt_tddft_scale_remote.sh" \
+            preflight "$REMOTE_RUN_ROOT"
+
+      - name: Inspect existing Slurm job
+        if: env.DIAGNOSE_JOB_ID != ''
+        run: |
+          set -euo pipefail
+          artifact_root="$RUNNER_TEMP/scale-artifacts"
+          mkdir -p "$artifact_root"
+          ssh -F "$SAI_SSH_CONFIG" -o ControlMaster=no \
+            -o ConnectionAttempts=4 sai-ci bash -s -- \
+            diagnose "$DIAGNOSE_JOB_ID" "$SAI_PROJECT_ROOT" \
+            < ci/sai/rt_tddft_scale_remote.sh \
+            | tee "$artifact_root/slurm-diagnose-$DIAGNOSE_JOB_ID.txt"
+          echo "ARTIFACT_ROOT=$artifact_root" >> "$GITHUB_ENV"
+
+      - name: Submit one Slurm array
+        if: env.DIAGNOSE_JOB_ID == ''
+        run: |
+          set -euo pipefail
+          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash \
+            "$REMOTE_RUN_ROOT/control/rt_tddft_scale_remote.sh" \
+            submit "$REMOTE_RUN_ROOT")
+          printf '%s\n' "$output"
+          job_id=$(awk -F= '$1 == "SLURM_JOB_ID" {print $2}' <<< "$output")
+          [[ "$job_id" =~ ^[0-9]+$ ]]
+          echo "SLURM_JOB_ID=$job_id" >> "$GITHUB_ENV"
+
+      - name: Wait for the Slurm array
+        if: env.DIAGNOSE_JOB_ID == ''
+        run: |
+          set -euo pipefail
+          for attempt in {1..105}; do
+            set +e
+            output=$(ssh -F "$SAI_SSH_CONFIG" -o ControlMaster=no \
+              -o ConnectionAttempts=4 sai-ci bash \
+              "$REMOTE_RUN_ROOT/control/rt_tddft_scale_remote.sh" \
+              status "$REMOTE_RUN_ROOT" "$SLURM_JOB_ID" 2>&1)
+            ssh_rc=$?
+            set -e
+            printf '%s\n' "$output"
+            if [[ $ssh_rc -eq 0 ]]; then
+              active=$(awk -F= '$1 == "ACTIVE_TASKS" {print $2}' <<< "$output")
+              [[ "$active" =~ ^[0-9]+$ ]]
+              [[ "$active" -eq 0 ]] && exit 0
+            else
+              echo "SAI status connection failed (attempt $attempt/105, rc=$ssh_rc)" >&2
+            fi
+            sleep 60
+          done
+          echo "Timed out waiting for Slurm array $SLURM_JOB_ID" >&2
+          exit 1
+
+      - name: Summarize probe
+        if: always() && env.DIAGNOSE_JOB_ID == '' && env.REMOTE_RUN_ROOT != '' && env.SLURM_JOB_ID != ''
+        run: |
+          set -euo pipefail
+          for attempt in {1..4}; do
+            if ssh -F "$SAI_SSH_CONFIG" -o ControlMaster=no \
+              -o ConnectionAttempts=4 sai-ci bash \
+              "$REMOTE_RUN_ROOT/control/rt_tddft_scale_remote.sh" \
+              summarize "$REMOTE_RUN_ROOT" "$SLURM_JOB_ID"; then
+              exit 0
+            fi
+            [[ $attempt -eq 4 ]] || sleep $((attempt * 10))
+          done
+          exit 1
+
+      - name: Collect probe artifacts
+        if: always() && env.DIAGNOSE_JOB_ID == '' && env.REMOTE_RUN_ROOT != ''
+        run: |
+          set -euo pipefail
+          artifact_root="$RUNNER_TEMP/scale-artifacts"
+          archive="$RUNNER_TEMP/scale-artifacts.tar.gz"
+          mkdir -p "$artifact_root"
+          collected=0
+          for attempt in {1..4}; do
+            rm -f "$archive"
+            if ssh -F "$SAI_SSH_CONFIG" -o ControlMaster=no \
+              -o ConnectionAttempts=4 sai-ci bash \
+              "$REMOTE_RUN_ROOT/control/rt_tddft_scale_remote.sh" \
+              collect "$REMOTE_RUN_ROOT" > "$archive" && tar -tzf "$archive" >/dev/null; then
+              collected=1
+              break
+            fi
+            [[ $attempt -eq 4 ]] || sleep $((attempt * 10))
+          done
+          [[ $collected -eq 1 ]]
+          tar -xzf "$archive" -C "$artifact_root"
+          echo "ARTIFACT_ROOT=$artifact_root" >> "$GITHUB_ENV"
+          if [[ -f "$artifact_root/results/summary.md" ]]; then
+            cat "$artifact_root/results/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Remove local SSH credentials
+        if: always()
+        run: |
+          if [[ -f ${SAI_SSH_CONFIG:-} ]]; then
+            ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci 2>/dev/null || true
+          fi
+          rm -rf "$RUNNER_TEMP/sai-ssh"
+
+      - name: Upload probe artifacts
+        if: always() && env.ARTIFACT_ROOT != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: sai-rt-tddft-scale-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.ARTIFACT_ROOT }}
+          if-no-files-found: error
+          retention-days: 30
