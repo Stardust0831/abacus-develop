@@ -296,7 +296,7 @@ case $mode in
         [[ $# -eq 2 ]]
         run_root=$2
         validate_run_root "$run_root"
-        tar -czf - --exclude='cases/*/results/tasks/*/case/OUT.ABACUS' \
+        tar -czf - --exclude='cases/*/results/tasks/*/case/OUT.*' \
             -C "$run_root" metadata.tsv benchmark.tsv jobs.tsv results cases
         ;;
 
