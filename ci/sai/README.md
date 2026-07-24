@@ -79,7 +79,8 @@ rejects any path that escapes the account's canonical HOME. Only
 3. Enter the reviewed SHA as `source_sha`.
 4. Leave `project_root` empty to use the manual Environment's
    `SAI_PROJECT_ROOT`, or enter another absolute directory below
-   `/home/abacus-group/abacususer01`, for example
+   `/home/abacus-group/abacususer01` or its canonical
+   `/org/abacus-group/abacususer01` path, for example
    `/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci_trial`.
 5. Set `run_namespace` to a short label such as `pr-7658`. Runs using the same
    project root share the daily source baseline, but keep build, install, and

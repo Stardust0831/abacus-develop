@@ -286,6 +286,10 @@ test_workflow_security_policy() {
     assert_not_contains ci/sai/probe_remote_sai.sh ' xz '
     assert_contains "$workflow" 'bash -s -- "$SAI_SSH_USER"'
     assert_contains "$bootstrap" 'bash -s -- "$SAI_SSH_USER"'
+    assert_contains "$workflow" \
+        '^/(home|org)/abacus-group/abacususer01/'
+    assert_contains "$bootstrap" \
+        '^/(home|org)/abacus-group/abacususer01/'
     assert_not_contains ci/sai/probe_remote_sai.sh '1478400356'
     for runtime_file in ci/sai/build_gpu.sh ci/sai/test_gpu.sbatch \
         ci/sai/test_gpu_case.sh "$toolchain"; do
@@ -296,6 +300,8 @@ test_workflow_security_policy() {
     assert_contains ci/sai/run_local_ci.sh '"$source_sha" candidate'
     assert_contains ci/sai/run_local_ci.sh 'status --porcelain --untracked-files=all'
     assert_contains ci/sai/run_local_ci.sh 'prepare_control_snapshot.sh'
+    assert_contains ci/sai/run_local_ci.sh \
+        'expected_org_project_root=/org/${SAI_PROJECT_ROOT#/home/}'
     assert_contains ci/sai/run_local_ci.sh '"$control_root/"'
     assert_contains ci/sai/run_local_ci.sh '< "$control_root/probe_remote_sai.sh"'
     assert_not_contains ci/sai/run_local_ci.sh '< "$script_dir/probe_remote_sai.sh"'
@@ -1396,6 +1402,8 @@ test_rt_tddft_scale_submission_policy() {
 
     assert_contains "$workflow" \
         'default: "3x3x3,4x4x4,5x5x4,5x5x5,6x6x5"'
+    assert_contains "$workflow" \
+        'expected_org_prefix="/org/abacus-group/$SAI_SSH_USER/"'
     assert_contains "$workflow" 'Validate Slurm submission'
     assert_contains "$workflow" 'select_rt_tddft_scale_batch.sh'
     assert_contains "$workflow" 'actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803'
@@ -1552,6 +1560,8 @@ test_rt_tddft_efficiency_policy() {
     local remote=ci/sai/rt_tddft_efficiency_remote.sh
 
     assert_contains "$workflow" 'name: SAI RT-TDDFT Scaling Benchmark'
+    assert_contains "$workflow" \
+        'expected_org_prefix="/org/abacus-group/$SAI_SSH_USER/"'
     assert_contains "$workflow" 'run_kind:'
     assert_contains "$workflow" 'ci/sai/summarize_rt_tddft_efficiency.sh'
     assert_contains "$workflow" "if: always() && env.SUBMISSION_STARTED == '1'"

@@ -129,7 +129,9 @@ output=$(run_remote_script "$control_root/prepare_remote_run.sh" \
 printf '%s\n' "$output"
 remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
 remote_run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
-[[ $remote_project_root == "$SAI_PROJECT_ROOT" ]]
+expected_org_project_root=/org/${SAI_PROJECT_ROOT#/home/}
+[[ $remote_project_root == "$SAI_PROJECT_ROOT" \
+    || $remote_project_root == "$expected_org_project_root" ]]
 [[ $remote_run_root == "$remote_project_root/runs/$SAI_RUN_NAMESPACE/$run_key" ]]
 
 RSYNC_RSH=$rsync_rsh rsync -az --delete --timeout=600 --stats \

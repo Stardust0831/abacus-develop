@@ -67,8 +67,10 @@ jobs:
           set -euo pipefail
           project_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
           : "${project_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
-          expected_prefix="/home/abacus-group/$SAI_SSH_USER/"
-          [[ "$project_root/" == "$expected_prefix"* ]]
+          expected_home_prefix="/home/abacus-group/$SAI_SSH_USER/"
+          expected_org_prefix="/org/abacus-group/$SAI_SSH_USER/"
+          [[ "$project_root/" == "$expected_home_prefix"* \
+            || "$project_root/" == "$expected_org_prefix"* ]]
           [[ "$project_root" =~ ^/[A-Za-z0-9._/-]+$ ]]
           case "/$project_root/" in
             */./*|*/../*) exit 2 ;;

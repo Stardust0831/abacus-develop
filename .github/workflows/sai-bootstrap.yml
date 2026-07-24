@@ -73,7 +73,7 @@ jobs:
           set -euo pipefail
           project_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
           : "${project_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
-          [[ "$project_root" =~ ^/home/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
+          [[ "$project_root" =~ ^/(home|org)/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
           case "/$project_root/" in
             */./*|*/../*)
               echo "Project root contains a dot path component: $project_root" >&2
@@ -87,7 +87,7 @@ jobs:
           printf '%s\n' "$output"
           remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
           staging_file=$(awk -F= '$1 == "CLEANUP_STAGING_FILE" {print $2}' <<< "$output")
-          [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
+          [[ "$remote_project_root" =~ ^/(home|org)/abacus-group/abacususer01/ ]]
           [[ "$staging_file" == "$remote_project_root/diagnostics/cleanup-$run_key/cleanup_sai_runs.sh" ]]
           rsync -az -e "ssh -F $SAI_SSH_CONFIG" \
             ci/sai/cleanup_sai_runs.sh \

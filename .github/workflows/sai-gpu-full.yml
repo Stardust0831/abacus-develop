@@ -65,7 +65,7 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           requested_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
           : "${requested_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
-          [[ "$requested_root" =~ ^/home/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
+          [[ "$requested_root" =~ ^/(home|org)/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
           case "/$requested_root/" in
             */./*|*/../*)
               echo "Project root contains a dot path component: $requested_root" >&2
@@ -144,7 +144,7 @@ jobs:
           printf '%s\n' "$output"
           remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
           remote_run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
-          [[ "$remote_project_root" =~ ^/home/abacus-group/abacususer01/ ]]
+          [[ "$remote_project_root" =~ ^/(home|org)/abacus-group/abacususer01/ ]]
           [[ "$remote_run_root" == "$remote_project_root/runs/$RUN_NAMESPACE/$run_key" ]]
           {
             echo "REMOTE_PROJECT_ROOT=$remote_project_root"
