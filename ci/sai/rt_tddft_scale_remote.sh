@@ -3,10 +3,11 @@
 set -euo pipefail
 
 mode=${1:-}
+canonical_home=$(cd "$HOME" && pwd -P)
 
 validate_run_root() {
     local run_root=$1
-    [[ $run_root == "$HOME/"* ]]
+    [[ $run_root == "$canonical_home/"* ]]
     [[ $run_root == */benchmarks/rt-tddft-4gpu/* ]]
     [[ -d $run_root && -f $run_root/metadata.tsv && -f $run_root/manifest.tsv ]]
 }
@@ -54,14 +55,13 @@ run_scale_sbatch() {
 case $mode in
     prepare)
         [[ $# -eq 6 ]]
-        project_root=$2
+        project_root=$(realpath -e "$2")
         install_run=$3
         run_key=$4
         supercells=$5
         expected_abacus_sha256=$6
-        [[ $project_root == "$HOME/"* ]]
+        [[ $project_root == "$canonical_home/"* ]]
         [[ $run_key =~ ^[0-9]+-[0-9]+$ ]]
-        project_root=$(realpath -e "$project_root")
         install_run_root=$(realpath -e "$project_root/$install_run")
         [[ $install_run_root == "$project_root/runs/"* ]]
         [[ -x $install_run_root/install/bin/abacus ]]
@@ -69,7 +69,7 @@ case $mode in
         [[ -f $install_run_root/control/mpirun_with_mapping.sh ]]
         base_case=$install_run_root/source/tests/15_rtTDDFT_GPU/19_NO_Si48_CUSOLVERMP_TDDFT_GPU
         [[ -f $base_case/INPUT && -f $base_case/KPT ]]
-        toolchain=$install_run_root/control/toolchains/archive-mp09-sai-nccl2293.env.example
+        toolchain=$install_run_root/control/toolchains/abacus-develop-git-079fd0c.env.example
         [[ -f $toolchain ]]
         [[ $expected_abacus_sha256 =~ ^[0-9a-f]{64}$ ]]
         actual_abacus_sha256=$(sha256sum "$install_run_root/install/bin/abacus" | awk '{print $1}')
@@ -244,10 +244,9 @@ case $mode in
     diagnose)
         [[ $# -eq 3 ]]
         job_id=$2
-        project_root=$3
+        project_root=$(realpath -e "$3")
         [[ $job_id =~ ^[0-9]+$ ]]
-        [[ $project_root == "$HOME/"* ]]
-        project_root=$(realpath -e "$project_root")
+        [[ $project_root == "$canonical_home/"* ]]
         printf 'DIAGNOSE_JOB_ID=%s\nDIAGNOSE_HOST=%s\nDIAGNOSE_TIME=%s\n' \
             "$job_id" "$(hostname)" "$(date -u +%FT%TZ)"
 

@@ -7,8 +7,9 @@ if [[ $# -ne 1 ]]; then
     exit 2
 fi
 
+canonical_home=$(cd "$HOME" && pwd -P)
 run_root=$(realpath -e "$1")
-[[ $run_root == "$HOME/"*'/runs/'* ]]
+[[ $run_root == "$canonical_home/"*'/runs/'* ]]
 cd "$run_root"
 
 list_file=$(mktemp "$run_root/.artifact-list.XXXXXX")

@@ -25,8 +25,9 @@ if [[ -n ${SAI_SLURM_NODELIST:-} ]]; then
     sbatch_args+=(--nodelist="$SAI_SLURM_NODELIST")
 fi
 
+canonical_home=$(cd "$HOME" && pwd -P)
 submit_dir=$(realpath -e "$(dirname "$submit_log")")
-[[ $submit_dir == "$HOME/"* ]]
+[[ $submit_dir == "$canonical_home/"* ]]
 job_id_file=$(mktemp "$submit_dir/.slurm-jobid.XXXXXX")
 
 cancel_job() {

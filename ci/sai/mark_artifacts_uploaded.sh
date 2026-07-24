@@ -6,8 +6,9 @@ if [[ $# -ne 1 ]]; then
     echo "Usage: $0 RUN_ROOT" >&2
     exit 2
 fi
+canonical_home=$(cd "$HOME" && pwd -P)
 run_root=$(realpath -e "$1")
-[[ $run_root == "$HOME/"*'/runs/'* ]]
+[[ $run_root == "$canonical_home/"*'/runs/'* ]]
 uploaded_tmp=$(mktemp "$run_root/.artifacts-uploaded.XXXXXX")
 trap 'rm -f "$uploaded_tmp"' EXIT
 {

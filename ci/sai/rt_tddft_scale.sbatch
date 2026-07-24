@@ -7,8 +7,9 @@ set -euo pipefail
 : "${SLURM_ARRAY_TASK_ID:?}"
 : "${SLURM_NTASKS:?}"
 
+canonical_home=$(cd "$HOME" && pwd -P)
 RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")
-[[ $RUN_ROOT == "$HOME/"* ]]
+[[ $RUN_ROOT == "$canonical_home/"* ]]
 [[ $RUN_ROOT == */benchmarks/rt-tddft-4gpu/* || \
     $RUN_ROOT == */benchmarks/rt-tddft-efficiency/* ]]
 [[ -f $RUN_ROOT/metadata.tsv && -f $RUN_ROOT/manifest.tsv ]]
@@ -99,7 +100,7 @@ export SAI_PROJECT_ROOT=$project_root
 unset SAI_CUSOLVERMP_ROOT SAI_CUBLASMP_ROOT
 # shellcheck source=/dev/null
 source "$RUN_ROOT/control/toolchain.env"
-[[ $SAI_PROFILE_NAME == archive-mp09-sai-nccl2293 ]]
+[[ $SAI_PROFILE_NAME == module-abacus-develop-git-079fd0c ]]
 sai_load_toolchain
 [[ ${NCCL_SAI_RAIL_BY_CHANNEL:-} == 1 ]]
 [[ -z ${LD_PRELOAD:-} ]]
@@ -131,8 +132,8 @@ loaded_nccl=$(readlink -f "$loaded_nccl")
 [[ $loaded_cusolvermp == "$expected_cusolvermp" ]]
 [[ $loaded_cublasmp == "$expected_cublasmp" ]]
 [[ $loaded_nccl == "$expected_nccl" ]]
-[[ $SAI_CUSOLVERMP_ROOT == *libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive ]]
-[[ $SAI_CUBLASMP_ROOT == *libcublasmp-linux-x86_64-0.9.1.3056_cuda12-archive ]]
+[[ $SAI_CUSOLVERMP_ROOT == /opt/devtools/nvidia/mp_libs ]]
+[[ $SAI_CUBLASMP_ROOT == /opt/devtools/nvidia/mp_libs ]]
 [[ $SAI_NCCL_ROOT == *nccl_2.29.3_cuda12.9_sai_v2.29.3-1-sai.1 ]]
 {
     printf 'libcusolverMp.so.0\t%s\n' "$loaded_cusolvermp"

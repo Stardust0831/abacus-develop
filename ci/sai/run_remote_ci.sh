@@ -23,7 +23,8 @@ export MP_PROFILE=module-abacus-develop-git-079fd0c
 export SAI_DISABLE_NCCL_IB=false
 unset GITHUB_ENV GITHUB_STEP_SUMMARY SAI_SLURM_NODELIST
 
-[[ $SAI_PROJECT_ROOT == "$HOME/"* ]]
+canonical_home=$(cd "$HOME" && pwd -P)
+[[ $SAI_PROJECT_ROOT == "$canonical_home/"* ]]
 [[ $RUN_ROOT == "$SAI_PROJECT_ROOT/runs/"* ]]
 run_parent=$(dirname "$RUN_ROOT")
 [[ $(dirname "$run_parent") == "$SAI_PROJECT_ROOT/runs" ]]

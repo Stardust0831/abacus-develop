@@ -306,6 +306,18 @@ test_workflow_security_policy() {
     assert_contains ci/sai/run_local_ci.sh '< "$control_root/probe_remote_sai.sh"'
     assert_not_contains ci/sai/run_local_ci.sh '< "$script_dir/probe_remote_sai.sh"'
     assert_not_contains ci/sai/local-run.env.example 'PRIVATE KEY'
+    for runtime_file in \
+        ci/sai/run_remote_ci.sh \
+        ci/sai/run_slurm_job.sh \
+        ci/sai/collect_remote_artifacts.sh \
+        ci/sai/mark_artifacts_uploaded.sh \
+        ci/sai/rt_tddft_scale_remote.sh \
+        ci/sai/rt_tddft_efficiency_remote.sh \
+        ci/sai/rt_tddft_scale.sbatch; do
+        assert_contains "$runtime_file" \
+            'canonical_home=$(cd "$HOME" && pwd -P)'
+        assert_not_contains "$runtime_file" '== "$HOME/"*'
+    done
     if sed -n '/^on:/,/^permissions:/p' "$workflow" | grep -Eq '^[[:space:]]+pull_request:'; then
         fail 'GPU workflow must not run automatically for pull requests'
     fi
@@ -1418,6 +1430,10 @@ test_rt_tddft_scale_submission_policy() {
     assert_contains "$remote" '--gpus-per-node=4'
     assert_contains "$remote" '--time=01:00:00'
     assert_contains "$remote" '--export=ALL'
+    assert_contains "$remote" \
+        'toolchains/abacus-develop-git-079fd0c.env.example'
+    assert_not_contains "$remote" \
+        'archive-mp09-sai-nccl2293.env.example'
     assert_not_contains "$remote" 'ALL,RUN_ROOT='
     assert_not_contains "$remote" '--cpus-per-task'
     assert_not_contains "$remote" '--ntasks-per-node'
@@ -1431,6 +1447,10 @@ test_rt_tddft_scale_submission_policy() {
     assert_contains "$task" '[[ $SLURM_NTASKS -eq $expected_ranks ]]'
     assert_contains "$task" '[[ ${SLURM_GPUS_ON_NODE:-} == "$expected_gpus_per_node" ]]'
     assert_contains "$task" 'RUN_ROOT=$(realpath -e "$SLURM_SUBMIT_DIR")'
+    assert_contains "$task" \
+        '[[ $SAI_PROFILE_NAME == module-abacus-develop-git-079fd0c ]]'
+    assert_contains "$task" \
+        '[[ $SAI_CUSOLVERMP_ROOT == /opt/devtools/nvidia/mp_libs ]]'
     assert_contains "$task" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
     assert_contains "$task" 'nvidia_smi=(nvidia-smi)'
     assert_not_contains "$task" 'nvidia-smi -i'
@@ -1577,6 +1597,10 @@ test_rt_tddft_efficiency_policy() {
     assert_contains "$remote" '--qos=flood-gpu'
     assert_contains "$remote" '--time=01:00:00'
     assert_contains "$remote" '--export=ALL'
+    assert_contains "$remote" \
+        'toolchains/abacus-develop-git-079fd0c.env.example'
+    assert_not_contains "$remote" \
+        'archive-mp09-sai-nccl2293.env.example'
     assert_not_contains "$remote" '--cpus-per-task'
     assert_not_contains "$remote" '--ntasks-per-node'
     assert_not_contains "$remote" '--mem='
