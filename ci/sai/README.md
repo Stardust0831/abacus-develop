@@ -83,8 +83,8 @@ rejects any path that escapes the account's canonical HOME. Only
    `/org/abacus-group/abacususer01` path, for example
    `/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci_trial`.
 5. Set `run_namespace` to a short label such as `pr-7658`. Runs using the same
-   project root share the daily source baseline, but keep build, install, and
-   result files in separate namespace directories.
+   project root share the daily source baseline, but keep source, build,
+   install, and result files in separate namespace directories.
 6. Submit the workflow. A required reviewer then opens the pending deployment,
    checks the requested SHA and directory, and approves `sai-ssh-manual`.
 
@@ -126,11 +126,11 @@ files. The client materializes `ci/sai` from the recorded `CONTROL_SHA` with
 `git archive`, so ignored files and a check-to-upload working-tree race cannot
 alter or add remote control files. `SAI_SOURCE_SHA` defaults to `HEAD` and may
 name any commit already available in the local Git object database. The client
-uploads the same gzip-compressed Git delta and manifest used by the GitHub
-workflow, executes the same remote control scripts, and downloads the artifact
-bundle below `SAI_ARTIFACT_ROOT/<run-id>/`. A local run always has the
-`candidate` cache role: it may consume an existing daily baseline but never
-advances it.
+uploads a gzip-compressed Git delta and manifest through SSH, executes the same
+remote build and validation scripts, and downloads the artifact bundle below
+`SAI_ARTIFACT_ROOT/<run-id>/`. This legacy local transport may consume an
+existing daily baseline but never advances it. GitHub-hosted runs instead use
+the reverse artifact download described below.
 
 The OpenSSH Host entry determines the remote username and identity file. The
 client additionally forces batch mode, strict host-key checking, disabled
@@ -185,26 +185,21 @@ versions, the resolved MP and SAI `libnccl.so.2` targets, and
 `NCCL_SAI_RAIL_BY_CHANNEL=1`. The workflow does not modify `/opt`, modules, or
 system configuration.
 
-Source transfer keeps one verified, non-executed daily baseline snapshot and
-its commit SHA under the selected project root. For the first run, GitHub sends
-a gzip-compressed full snapshot represented as a binary diff from Git's empty
-tree. Later runs ask SAI for that baseline SHA and send the same compressed
-diff format from the baseline to the requested commit. A canonical Git tree
-manifest accompanies every payload. SAI checks every path, file type,
-executable bit, symlink target and blob hash, and rejects extra filesystem
-entries before use. An invalid or unavailable cache pointer falls back to a
-full snapshot. A manual candidate leaves an invalid baseline untouched; the
-next scheduled baseline run may quarantine and replace it.
+GitHub-hosted runners do not upload the source payload over the slow SAI SSH
+path. The runner builds the same compressed Git delta and canonical tree
+manifest, stores the two files in a one-day Actions artifact without another
+compression pass, and exchanges its GitHub token for a short-lived Azure Blob
+download URL. Only that signed URL is sent to SAI; the GitHub token never
+leaves the runner and the URL is kept out of command arguments and logs. SAI
+downloads the artifact directly from Blob storage, validates its exact two
+entries, and feeds them into the existing manifest verification and isolated
+source-cache flow.
 
-Only a scheduled `daily` run promotes its verified source to the next
-baseline. A manual PR run consumes the baseline but never advances it, even
-when its tests pass or fail, so concurrent PRs do not form an accidental
-rolling cache chain. Cache preparation and promotion hold a shared filesystem
-lock; each run applies its payload in a private transfer directory before
-copying it into the isolated run. The pre-existing `source-latest` snapshot is
-accepted as the initial daily baseline when this policy is first deployed.
-Build, install, and result directories are never reused, and tested code never
-executes from or writes into the source cache.
+The project root is canonicalized first, so transfer caches and run directories
+use the physical `/org` path even when the login environment exposes a `/home`
+symlink. Scheduled runs still promote verified source baselines and manual
+runs only consume them. Source, build, install, and result directories remain
+isolated, and tested code never executes from or writes into the source cache.
 
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
 because the selected GPU suites do not exercise them. After a successful

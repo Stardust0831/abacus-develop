@@ -266,22 +266,37 @@ test_workflow_security_policy() {
     assert_not_contains "$toolchain" 'module load nccl/'
     assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
     assert_contains "$workflow" 'source_transfer_cache.sh'
-    assert_contains "$workflow" 'build_source_payload.sh'
+    assert_contains "$workflow" 'Build compressed source payload'
+    assert_contains "$workflow" 'Upload source payload artifact'
+    assert_contains "$workflow" 'Pull and apply source payload on SAI'
+    assert_contains "$workflow" 'actions: read'
+    assert_contains "$workflow" 'unset GH_TOKEN'
+    assert_contains "$workflow" '--dump-header - --output /dev/null --config -'
+    assert_not_contains "$workflow" '--header "Authorization: Bearer $GH_TOKEN"'
+    assert_contains "$workflow" 'compression-level: 0'
+    assert_contains "$workflow" 'retention-days: 1'
+    assert_contains "$workflow" 'download_source_artifact.sh'
+    assert_not_contains "$workflow" 'stage_source_from_git.sh'
     assert_contains "$payload_builder" 'diff --binary --full-index --no-renames'
     assert_contains "$payload_builder" 'empty_tree=$(git -C "$repository" hash-object -t tree /dev/null)'
     assert_contains "$payload_builder" 'ls-tree -r -z --full-tree "$source_sha"'
     assert_contains "$payload_builder" '| gzip -1 > "$payload"'
-    assert_contains "$workflow" 'SOURCE_CACHE_BASE_SHA'
     assert_contains "$workflow" 'run_namespace=${RUN_NAMESPACE_INPUT:-manual}'
     assert_contains "$workflow" 'source_cache_role=baseline'
     assert_contains "$workflow" 'source_cache_role=candidate'
     assert_contains "$workflow" \
         'runs/$RUN_NAMESPACE/$run_key'
-    assert_contains ci/sai/source_transfer_cache.sh 'flock 8'
-    assert_contains "$workflow" 'SOURCE_MANIFEST=$manifest'
-    assert_contains "$workflow" '"$SOURCE_PAYLOAD" "$SOURCE_MANIFEST"'
-    assert_contains "$workflow" '"sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"'
     assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
+    assert_contains ci/sai/download_source_artifact.sh \
+        '^https://[A-Za-z0-9.-]+\.blob\.core\.windows\.net/'
+    assert_contains ci/sai/download_source_artifact.sh \
+        "--proto '=https'"
+    assert_contains ci/sai/download_source_artifact.sh \
+        '--config - --output "$archive"'
+    assert_not_contains ci/sai/download_source_artifact.sh '--location'
+    assert_not_contains ci/sai/download_source_artifact.sh '.artifact-url.'
+    assert_not_contains ci/sai/download_source_artifact.sh \
+        'curl "$download_url"'
     assert_not_contains ci/sai/probe_remote_sai.sh ' curl '
     assert_not_contains ci/sai/probe_remote_sai.sh ' xz '
     assert_contains "$workflow" 'bash -s -- "$SAI_SSH_USER"'
@@ -332,6 +347,7 @@ test_control_executable_modes() {
         ci/sai/prepare_control_snapshot.sh \
         ci/sai/run_local_ci.sh \
         ci/sai/run_slurm_job.sh \
+        ci/sai/download_source_artifact.sh \
         ci/sai/test_gpu.sbatch \
         ci/sai/test_gpu_case.sh; do
         mode=$(git ls-files -s -- "$path" | awk 'NR == 1 {print $1}')
@@ -674,6 +690,119 @@ test_prepare_remote_run_paths() {
     [[ $(<"$root/registry-target") == registry-sentinel ]]
 }
 
+test_download_source_artifact() {
+    local root=$test_root/source-artifact
+    local physical_home=$root/org/abacus-group/abacususer01
+    local logical_home=$root/home/abacus-group/abacususer01
+    local project=$physical_home/agent/abacus_sai_gpu_ci
+    local logical_project=$logical_home/agent/abacus_sai_gpu_ci
+    local repository=$root/repository
+    local fake_bin=$root/bin
+    local artifact=$root/source-artifact.zip
+    local bad_artifact=$root/bad-source-artifact.zip
+    local sha output run logical_run transfer logical_transfer
+
+    mkdir -p "$physical_home" "$(dirname "$logical_home")" \
+        "$repository" "$fake_bin" "$root/payload"
+    ln -s "$physical_home" "$logical_home"
+    git -C "$repository" init -q
+    git -C "$repository" config user.email ci@example.invalid
+    git -C "$repository" config user.name ci
+    printf 'artifact source\n' > "$repository/source.txt"
+    git -C "$repository" add source.txt
+    git -C "$repository" commit -qm source
+    sha=$(git -C "$repository" rev-parse HEAD)
+
+    output=$(HOME=$logical_home bash ci/sai/prepare_remote_run.sh \
+        "$logical_project" manual 200-1 "$sha" \
+        89abcdef0123456789abcdef0123456789abcdef)
+    run=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
+    logical_run=${run/#$physical_home/$logical_home}
+    output=$(HOME=$logical_home bash ci/sai/source_transfer_cache.sh prepare \
+        "$logical_project" "$logical_run" "$sha" candidate)
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    logical_transfer=${transfer/#$physical_home/$logical_home}
+
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$(git -C "$repository" hash-object -t tree /dev/null)" "$sha" \
+        | gzip -1 > "$root/payload/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha" \
+        | gzip -1 > "$root/payload/source-manifest.gz"
+    zip -q -j "$artifact" "$root/payload/source-payload.gz" \
+        "$root/payload/source-manifest.gz"
+    mkdir -p "$root/bad-payload"
+    cp "$root/payload/source-manifest.gz" "$root/bad-payload/source-manifest.gz"
+    printf 'not gzip\n' > "$root/bad-payload/source-payload.gz"
+    zip -q -j "$bad_artifact" "$root/bad-payload/source-payload.gz" \
+        "$root/bad-payload/source-manifest.gz"
+
+    cat > "$fake_bin/curl" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+output=
+config=
+args=("$@")
+for ((index=0; index<${#args[@]}; index++)); do
+    case ${args[$index]} in
+        --output) output=${args[$((index + 1))]} ;;
+        --config) config=${args[$((index + 1))]} ;;
+        *sig=secret*) exit 91 ;;
+    esac
+done
+: "${output:?}" "${config:?}"
+[[ $config == - ]]
+cat > "$FAKE_CURL_CONFIG_LOG"
+printf '%s\n' "$*" > "$FAKE_CURL_ARGS_LOG"
+cp "$FAKE_ARTIFACT" "$output"
+EOF
+    chmod +x "$fake_bin/curl"
+
+    if printf '%s\n' \
+        'https://productionresultssa0.blob.core.windows.net/actions-results/source.zip?sig=secret' \
+        | PATH="$fake_bin:$original_path" HOME=$logical_home \
+            FAKE_ARTIFACT=$bad_artifact \
+            FAKE_CURL_CONFIG_LOG=$root/curl.config \
+            FAKE_CURL_ARGS_LOG=$root/curl.args \
+            bash ci/sai/download_source_artifact.sh \
+            "$logical_project" "$logical_run" "$logical_transfer" \
+            > /dev/null 2>&1; then
+        fail 'source artifact downloader accepted an invalid gzip payload'
+    fi
+    assert_not_exists "$transfer/source-payload.gz"
+    assert_not_exists "$transfer/source-manifest.gz"
+
+    output=$(printf '%s\n' \
+        'https://productionresultssa0.blob.core.windows.net/actions-results/source.zip?sig=secret' \
+        | PATH="$fake_bin:$original_path" HOME=$logical_home \
+            FAKE_ARTIFACT=$artifact \
+            FAKE_CURL_CONFIG_LOG=$root/curl.config \
+            FAKE_CURL_ARGS_LOG=$root/curl.args \
+            bash ci/sai/download_source_artifact.sh \
+            "$logical_project" "$logical_run" "$logical_transfer")
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_ARTIFACT_DOWNLOADED=1'
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_ARTIFACT_BYTES='
+    assert_contains <(printf '%s\n' "$output") \
+        'SOURCE_ARTIFACT_DOWNLOAD_SECONDS='
+    assert_file "$transfer/source-payload.gz"
+    assert_file "$transfer/source-manifest.gz"
+    assert_contains "$root/curl.config" 'sig=secret'
+    assert_not_contains "$root/curl.args" 'sig=secret'
+
+    if printf '%s\n' 'https://github.com/not-blob' \
+        | HOME=$logical_home bash ci/sai/download_source_artifact.sh \
+            "$logical_project" "$logical_run" "$logical_transfer" \
+            > /dev/null 2>&1; then
+        fail 'source artifact downloader accepted a non-Blob URL'
+    fi
+
+    HOME=$logical_home bash ci/sai/source_transfer_cache.sh receive \
+        "$logical_project" "$logical_run" "$logical_transfer" full "$sha" \
+        > "$root/receive.log"
+    HOME=$logical_home bash ci/sai/source_transfer_cache.sh finalize \
+        "$logical_project" "$logical_run" "$logical_transfer" "$sha" \
+        > "$root/finalize.log"
+    assert_contains "$run/source/source.txt" 'artifact source'
+}
 test_source_snapshot_cache() {
     local root=$test_root/source-cache
     local home=$root/home
@@ -1741,6 +1870,7 @@ run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
 run_test 'GPU case symlink rejection' test_gpu_case_symlink_rejection
 run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
+run_test 'source artifact reverse download' test_download_source_artifact
 run_test 'compressed source snapshot cache' test_source_snapshot_cache
 run_test 'cleanup staging containment and collision' test_prepare_cleanup_install
 run_test 'artifact collection whitelist' test_artifact_collection
