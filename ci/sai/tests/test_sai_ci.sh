@@ -187,6 +187,9 @@ EOF
     PATH="$fake_bin:$original_path" HOME=$root/home \
         bash ci/sai/probe_remote_sai.sh localuser > "$root/probe.log"
     assert_contains "$root/probe.log" 'SAI_SSH_PROBE_OK user=localuser'
+    assert_contains ci/sai/probe_remote_sai.sh \
+        'expected_canonical_home=/org/abacus-group/$expected_user'
+    assert_contains ci/sai/probe_remote_sai.sh 'Unexpected canonical HOME'
     if PATH="$fake_bin:$original_path" HOME=$root/home \
         bash ci/sai/probe_remote_sai.sh wronguser > /dev/null 2>&1; then
         fail 'remote probe accepted the wrong expected user'
