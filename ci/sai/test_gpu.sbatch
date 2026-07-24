@@ -1,11 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --job-name=abacus-cusolvermp-multinode-ci
 #SBATCH --partition=16V100
-#SBATCH --qos=flood-gpu
 #SBATCH --nodes=2
-#SBATCH --ntasks=16
+#SBATCH --ntasks=16         # Nodes * GPUs-per-node * Ranks-per-GPU
+#SBATCH --gpus-per-node=8   # Specify the GPUs-per-node
+#SBATCH --qos=flood-gpu     # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]
 #SBATCH --ntasks-per-node=8
-#SBATCH --gpus-per-node=8
 #SBATCH --time=00:40:00
 
 set -euo pipefail

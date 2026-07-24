@@ -18,12 +18,9 @@ export CONTROL_ROOT=$RUN_ROOT/control
 export BUILD_ROOT=$RUN_ROOT/build
 export INSTALL_ROOT=$RUN_ROOT/install
 export RESULT_ROOT=$RUN_ROOT/results
-export TOOLCHAIN_FILE=$CONTROL_ROOT/toolchains/archive-mp09-sai-nccl2293.env.example
-export MP_PROFILE=archive-mp09-sai-nccl2293
+export TOOLCHAIN_FILE=$CONTROL_ROOT/toolchains/abacus-develop-git-079fd0c.env.example
+export MP_PROFILE=module-abacus-develop-git-079fd0c
 export SAI_DISABLE_NCCL_IB=false
-export SAI_NVIDIA_MP_ROOT=$SAI_PROJECT_ROOT/vendor/nvidia-mp-0.9-archive
-export SAI_CUSOLVERMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive
-export SAI_CUBLASMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcublasmp-linux-x86_64-0.9.1.3056_cuda12-archive
 unset GITHUB_ENV GITHUB_STEP_SUMMARY SAI_SLURM_NODELIST
 
 [[ $SAI_PROJECT_ROOT == "$HOME/"* ]]
@@ -36,8 +33,8 @@ run_namespace=${run_parent##*/}
    -d $INSTALL_ROOT && -d $RESULT_ROOT ]]
 [[ $source_sha =~ ^[0-9a-fA-F]{40}$ ]]
 [[ $control_sha =~ ^[0-9a-fA-F]{40}$ ]]
-for control_file in prepare_nvidia_mp.sh prepare_cusolvermp_smoke.sh \
-    run_slurm_job.sh run_gpu_case_attempts.sh build_gpu.sbatch \
+for control_file in prepare_cusolvermp_smoke.sh run_slurm_job.sh \
+    run_gpu_case_attempts.sh build_gpu.sbatch \
     run_gpu_validation.sh; do
     [[ -f $CONTROL_ROOT/$control_file ]]
 done
@@ -83,8 +80,6 @@ trap cancel_child EXIT
     printf 'project_root\t%s\n' "$SAI_PROJECT_ROOT"
     printf 'run_namespace\t%s\n' "$run_namespace"
 } > "$RESULT_ROOT/remote-run-metadata.tsv"
-
-bash "$CONTROL_ROOT/prepare_nvidia_mp.sh"
 
 child_active=1
 bash "$CONTROL_ROOT/run_slurm_job.sh" \

@@ -231,7 +231,7 @@ EOF
 test_workflow_security_policy() {
     local workflow=.github/workflows/sai-gpu-full.yml
     local bootstrap=.github/workflows/sai-bootstrap.yml
-    local toolchain=ci/sai/toolchains/archive-mp09-sai-nccl2293.env.example
+    local toolchain=ci/sai/toolchains/abacus-develop-git-079fd0c.env.example
     local payload_builder=ci/sai/build_source_payload.sh
     local runtime_file
     assert_contains "$workflow" 'cron: "30 20 * * *"'
@@ -248,10 +248,17 @@ test_workflow_security_policy() {
     assert_contains "$workflow" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
     assert_contains "$bootstrap" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
     assert_contains ci/sai/run_remote_ci.sh \
-        'export SAI_CUSOLVERMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive'
-    assert_contains ci/sai/run_remote_ci.sh \
-        'export SAI_CUBLASMP_ROOT=$SAI_NVIDIA_MP_ROOT/libcublasmp-linux-x86_64-0.9.1.3056_cuda12-archive'
-    assert_contains "$toolchain" 'module load nvhpc/26.3-gnu-cuda12-tuned'
+        'toolchains/abacus-develop-git-079fd0c.env.example'
+    assert_not_contains ci/sai/run_remote_ci.sh 'prepare_nvidia_mp.sh'
+    assert_contains "$toolchain" \
+        'export SAI_ABACUS_MODULE=abacus/develop-git-079fd0c-260724-sm70-auto'
+    assert_contains "$toolchain" \
+        'export SAI_ABACUS_MODULE_COMMIT=079fd0cff4e91abc25b6e2809114cfbeac94720e'
+    assert_contains "$toolchain" 'export SAI_CUSOLVERMP_ROOT=/opt/devtools/nvidia/mp_libs'
+    assert_contains "$toolchain" 'export SAI_CUBLASMP_ROOT=/opt/devtools/nvidia/mp_libs'
+    assert_contains "$toolchain" 'module load "$SAI_ABACUS_MODULE"'
+    assert_not_contains "$toolchain" 'module load nvhpc/'
+    assert_not_contains "$toolchain" 'module load nvmplibs/'
     assert_contains "$toolchain" 'export SAI_NCCL_ROOT=$NCCL_ROOT'
     assert_not_contains "$toolchain" 'module load nccl/'
     assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
@@ -272,7 +279,8 @@ test_workflow_security_policy() {
     assert_contains "$workflow" '"$SOURCE_PAYLOAD" "$SOURCE_MANIFEST"'
     assert_contains "$workflow" '"sai-ci:$REMOTE_SOURCE_TRANSFER_ROOT/"'
     assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
-    assert_contains ci/sai/probe_remote_sai.sh 'rsync curl git gzip tar xz'
+    assert_not_contains ci/sai/probe_remote_sai.sh ' curl '
+    assert_not_contains ci/sai/probe_remote_sai.sh ' xz '
     assert_contains "$workflow" 'bash -s -- "$SAI_SSH_USER"'
     assert_contains "$bootstrap" 'bash -s -- "$SAI_SSH_USER"'
     assert_not_contains ci/sai/probe_remote_sai.sh '1478400356'
@@ -441,20 +449,49 @@ test_gpu_matrix_submission_policy() {
     assert_contains "$script" 'export GPU_CASE_CLASS=$class'
     assert_contains "$script" 'export GPU_CASE_RANKS=${ranks[$class]}'
     assert_contains "$script" 'export GPU_CASE_MANIFEST=$manifest'
-    assert_contains "$script" '--export=ALL'
-    assert_not_contains "$script" '--export="ALL,'
+    assert_not_contains "$script" '--export'
     assert_contains "$script" 'declare -A ranks=([gpu1]=1 [gpu2]=2 [gpu4]=4)'
     assert_contains "$script" 'declare -A qos=([gpu1]=flood-1o2gpu [gpu2]=flood-1o2gpu [gpu4]=flood-gpu)'
     assert_contains "$script" '--ntasks="${ranks[$class]}"'
     assert_contains "$script" '--gpus-per-node="${ranks[$class]}"'
     assert_contains "$script" '"$CONTROL_ROOT/test_gpu_case.sh"'
     assert_not_contains "$script" '--cpus-per-task'
+    assert_not_contains ci/sai/run_slurm_job.sh '--export'
     assert_contains "$multinode" 'prepare_cusolvermp_smoke.sh'
     assert_not_contains "$multinode" 'CASES_CUSOLVERMP_16GPU.txt'
     assert_contains "$multinode" '#SBATCH --nodes=2'
     assert_contains "$multinode" '#SBATCH --ntasks=16'
-    assert_contains "$multinode" '#SBATCH --ntasks-per-node=8'
     assert_contains "$multinode" '#SBATCH --gpus-per-node=8'
+    assert_contains "$multinode" '#SBATCH --ntasks-per-node=8'
+    assert_contains "$multinode" '#SBATCH --time=00:40:00'
+    assert_not_contains "$multinode" '#SBATCH --mem'
+    assert_not_contains "$multinode" '#SBATCH --cpus-per-task'
+    assert_contains ci/sai/build_gpu.sbatch '#SBATCH --time=01:00:00'
+    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --mem'
+    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --cpus-per-task'
+    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --export'
+    diff -u \
+        <(printf '%s\n' \
+            '#!/bin/bash' \
+            '#SBATCH --job-name=abacus-cusolvermp-multinode-ci' \
+            '#SBATCH --partition=16V100' \
+            '#SBATCH --nodes=2' \
+            '#SBATCH --ntasks=16         # Nodes * GPUs-per-node * Ranks-per-GPU' \
+            '#SBATCH --gpus-per-node=8   # Specify the GPUs-per-node' \
+            '#SBATCH --qos=flood-gpu     # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]') \
+        <(sed -n '1,7p' "$multinode") \
+        || fail "$multinode does not match the SAI template header"
+    diff -u \
+        <(printf '%s\n' \
+            '#!/bin/bash' \
+            '#SBATCH --job-name=abacus-sai-build' \
+            '#SBATCH --partition=16V100' \
+            '#SBATCH --nodes=1' \
+            '#SBATCH --ntasks=4          # Nodes * GPUs-per-node * Ranks-per-GPU' \
+            '#SBATCH --gpus-per-node=4   # Specify the GPUs-per-node' \
+            '#SBATCH --qos=huge-gpu      # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]') \
+        <(sed -n '1,7p' ci/sai/build_gpu.sbatch) \
+        || fail 'ci/sai/build_gpu.sbatch does not match the SAI template header'
     assert_contains "$multinode" '19_NO_Si48_CUSOLVERMP_TDDFT_GPU'
     assert_not_contains "$multinode" 'Autotest.sh'
     assert_contains "$launcher" 'run_gpu_case_attempts.sh'
@@ -966,83 +1003,6 @@ test_prepare_cleanup_install() {
         fail 'cleanup staging accepted a registry leaf symlink'
     fi
     [[ $(<"$root/registry-target") == registry-sentinel ]]
-}
-
-make_cached_archive() {
-    local destination=$1
-    local sha=$2
-    local header=$3
-    local library=$4
-    mkdir -p "$destination/include" "$destination/lib"
-    : > "$destination/include/$header"
-    : > "$destination/lib/$library"
-    printf '%s\n' "$sha" > "$destination/.archive-sha256"
-}
-
-test_nvidia_archive_cache() {
-    local root=$test_root/archive-cache
-    local project=$root/project
-    local vendor=$project/vendor/nvidia-mp-0.9-archive
-    local cusolver=$vendor/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive
-    local cublas=$vendor/libcublasmp-linux-x86_64-0.9.1.3056_cuda12-archive
-    local fake_bin=$root/bin
-    local curl_called=$root/curl-called
-    local tarlink_project=$root/tarlink-project
-    local tarlink_downloads=$tarlink_project/vendor/downloads
-    local tarlink_outside=$root/tarlink-outside
-    mkdir -p "$fake_bin" "$project/vendor/downloads"
-    printf 'lock-sentinel\n' > "$root/lock-target"
-    ln -s "$root/lock-target" \
-        "$project/vendor/downloads/.nvidia-mp-download.lock"
-    make_cached_archive "$cusolver" \
-        3b071ce69c6a6a6bb7add8784e6a3fc54e9a64a8f2c1c7da40b03bcde39eb57c \
-        cusolverMp.h libcusolverMp.so.0
-    make_cached_archive "$cublas" \
-        35fea4df2bb08a496981f34c0d486f0753d3766a31d60dbe6daa6f16673cd1cc \
-        cublasmp.h libcublasmp.so.0
-    cat > "$fake_bin/curl" <<EOF
-#!/usr/bin/env bash
-touch "$curl_called"
-exit 99
-EOF
-    chmod +x "$fake_bin/curl"
-
-    PATH="$fake_bin:$original_path" HOME=$root TMPDIR=$root/missing-tmp \
-    SAI_PROJECT_ROOT=$project \
-        bash ci/sai/prepare_nvidia_mp.sh > "$root/reuse.log"
-    assert_not_exists "$curl_called"
-    assert_contains "$root/reuse.log" 'NVIDIA_MP_ARCHIVES_READY'
-    [[ $(<"$root/lock-target") == lock-sentinel ]]
-
-    printf '%s\n' bad-sha > "$cublas/.archive-sha256"
-    if PATH="$fake_bin:$original_path" HOME=$root TMPDIR=$root/missing-tmp \
-        SAI_PROJECT_ROOT=$project \
-        bash ci/sai/prepare_nvidia_mp.sh > /dev/null 2> "$root/mismatch.err"; then
-        fail 'mismatched extracted archive cache was accepted'
-    fi
-    assert_contains "$root/mismatch.err" 'cache'
-    assert_not_exists "$curl_called"
-
-    mkdir -p "$tarlink_downloads" "$tarlink_outside"
-    ln -s "$tarlink_outside" \
-        "$tarlink_downloads/libcusolvermp-linux-x86_64-0.9.0.6427_cuda12-archive.tar.xz"
-    if PATH="$fake_bin:$original_path" HOME=$root TMPDIR=$root/missing-tmp \
-        SAI_PROJECT_ROOT=$tarlink_project \
-        bash ci/sai/prepare_nvidia_mp.sh > /dev/null 2> "$root/tarlink.err"; then
-        fail 'tarball cache symlink to an outside directory was accepted'
-    fi
-    assert_contains "$root/tarlink.err" 'tarball cache'
-    assert_not_exists "$curl_called"
-    [[ -z $(find "$tarlink_outside" -mindepth 1 -print -quit) ]]
-
-    mkdir -p "$root/escaped-project" "$root/outside-vendor"
-    ln -s "$root/outside-vendor" "$root/escaped-project/vendor"
-    if PATH="$fake_bin:$original_path" HOME=$root TMPDIR=$root/missing-tmp \
-        SAI_PROJECT_ROOT=$root/escaped-project \
-        bash ci/sai/prepare_nvidia_mp.sh > /dev/null 2> "$root/escape.err"; then
-        fail 'vendor symlink escape was accepted'
-    fi
-    assert_not_exists "$curl_called"
 }
 
 test_artifact_collection() {
@@ -1746,7 +1706,6 @@ run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
 run_test 'compressed source snapshot cache' test_source_snapshot_cache
 run_test 'cleanup staging containment and collision' test_prepare_cleanup_install
-run_test 'NVIDIA archive cache reuse and rejection' test_nvidia_archive_cache
 run_test 'artifact collection whitelist' test_artifact_collection
 run_test 'uploaded marker atomic replacement' test_mark_artifacts_uploaded
 run_test 'cleanup retention and active-job safety' test_cleanup_retention

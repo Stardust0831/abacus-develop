@@ -12,7 +12,7 @@ remote_user=$(id -un)
 [[ $remote_user == "$expected_user" ]]
 canonical_home=$(cd "$HOME" && pwd -P)
 [[ $canonical_home == "$HOME" ]]
-for command_name in sbatch sacct squeue scancel rsync curl git gzip tar xz \
+for command_name in sbatch sacct squeue scancel rsync git gzip tar \
     realpath flock crontab; do
     command -v "$command_name" >/dev/null
 done

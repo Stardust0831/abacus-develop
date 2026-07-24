@@ -82,8 +82,8 @@ rejects any path that escapes the account's canonical HOME. Only
    `/home/abacus-group/abacususer01`, for example
    `/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci_trial`.
 5. Set `run_namespace` to a short label such as `pr-7658`. Runs using the same
-   project root share the daily source baseline and NVIDIA archive cache, but
-   keep build, install, and result files in separate namespace directories.
+   project root share the daily source baseline, but keep build, install, and
+   result files in separate namespace directories.
 6. Submit the workflow. A required reviewer then opens the pending deployment,
    checks the requested SHA and directory, and approves `sai-ssh-manual`.
 
@@ -140,14 +140,13 @@ of the configured SAI account.
 
 The selected directory is a reusable project root, not a checkout directory.
 Each attempt uses a new
-`runs/<namespace>/<GitHub run ID>-<attempt>` subdirectory. Official NVIDIA
-archives are cached under `vendor/`, and the user-level cleanup service
-discovers every selected project root through its registry. A scheduled run
-has no input form, always uses namespace `daily`, and uses the scheduled
-Environment's `SAI_PROJECT_ROOT` with the current default-branch SHA. Choosing
-a different project root intentionally creates an independent source baseline
-and vendor cache; use a namespace below the default project root when sharing
-those caches is desired.
+`runs/<namespace>/<GitHub run ID>-<attempt>` subdirectory, and the user-level
+cleanup service discovers every selected project root through its registry. A
+scheduled run has no input form, always uses namespace `daily`, and uses the
+scheduled Environment's `SAI_PROJECT_ROOT` with the current default-branch
+SHA. Choosing a different project root intentionally creates an independent
+source baseline; use a namespace below the default project root when sharing
+that baseline is desired.
 
 The SSH client disables agent and port forwarding, uses `BatchMode`, requires
 the repository-pinned SAI host key, and enables transport compression for all
@@ -167,30 +166,23 @@ jobs to avoid leaving orphan allocations.
 
 Each attempt creates a collision-resistant directory at
 `$SAI_PROJECT_ROOT/runs/$RUN_NAMESPACE/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT`.
-The project root also holds a shared, locked cache of the SHA256-pinned
-official NVIDIA archives:
 
-```text
-cuSolverMp 0.9.0.6427 (CUDA 12)
-cuBLASMp 0.9.1.3056 (CUDA 12)
-```
+The active `module-abacus-develop-git-079fd0c` profile loads the site-managed
+`abacus/develop-git-079fd0c-260724-sm70-auto` module. That module provides the
+validated NVHPC 26.3, Open MPI 5.0.10, CUDA 12.9.1, ELPA, SAIBLAS, SAI NCCL
+2.29.3, cuSolverMp 0.9.0, and cuBLASMp 0.9.1 environment. It loads
+`nvmplibs/26.7-tmp` after the other runtime dependencies so
+`/opt/devtools/nvidia/mp_libs` takes precedence over the older MP libraries
+bundled with NVHPC 26.3.
 
-An extracted archive is reused only when its `.archive-sha256` marker equals
-the pinned digest. Unexpected, symlinked, or mismatched cache directories are
-rejected rather than overwritten. First extraction uses a temporary directory
-and an atomic rename.
-
-The active `archive-mp09-sai-nccl2293` profile combines those NVIDIA archives
-with SAI's NCCL 2.29.3 library and the NVHPC/Open MPI/CUDA 12.9 toolchain. It
-loads `nvhpc/26.3-gnu-cuda12-tuned`, whose SAI modulefile exports the same
-`NCCL_ROOT` as `nccl/2.29.3-sai-cuda12.9`. The two modules intentionally
-conflict because the tuned NVHPC module already includes that SAI NCCL stack;
-the workflow therefore must not load both. The SAI NCCL build derives from
-NVIDIA NCCL 2.29.3 and adds the operator's dual-rail channel policy; it is not
-an unmodified NVIDIA binary.
-Runtime checks require the expected `libnccl.so.2`,
-`NCCL_SAI_RAIL_BY_CHANNEL=1`, cuSolverMp 0.9.0, cuBLASMp 0.9.1, and NCCL
-2.29.3. The workflow does not modify `/opt`, modules, or system configuration.
+The installed ABACUS named by the site module is a toolchain anchor only. The
+workflow still rebuilds the approved `SOURCE_SHA` into the current run's
+isolated build and install directories and executes that newly built binary.
+The loader verifies the module's full `ABACUS_COMMIT`. Subsequent build and
+runtime checks verify the required MPI, CUDA, cuSolverMp, cuBLASMp, and NCCL
+versions, the resolved MP and SAI `libnccl.so.2` targets, and
+`NCCL_SAI_RAIL_BY_CHANNEL=1`. The workflow does not modify `/opt`, modules, or
+system configuration.
 
 Source transfer keeps one verified, non-executed daily baseline snapshot and
 its commit SHA under the selected project root. For the first run, GitHub sends
@@ -273,6 +265,6 @@ bash ci/sai/tests/test_sai_ci.sh
 ```
 
 It covers SSH configuration, project-root containment and collision rejection,
-archive-cache reuse and mismatch rejection, empty/populated artifact
-collection, cleanup retention and job-query safety, and TERM/HUP cancellation
-including the Slurm submission launch window.
+site-module and Slurm submission policy, empty/populated artifact collection,
+cleanup retention and job-query safety, and TERM/HUP cancellation including
+the Slurm submission launch window.

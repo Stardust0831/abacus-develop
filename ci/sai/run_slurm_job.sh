@@ -72,7 +72,7 @@ trap terminate HUP INT TERM
 trap cancel_job EXIT
 
 job_active=1
-sbatch --parsable --export=ALL --job-name="$job_name" \
+sbatch --parsable --job-name="$job_name" \
     --chdir="${CI_SOURCE:?}" \
     --output="$output_pattern" "${sbatch_args[@]}" \
     "$job_script" > "$job_id_file" &

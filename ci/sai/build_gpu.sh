@@ -19,6 +19,8 @@ sai_load_toolchain
 : "${SAI_CUSOLVERMP_ROOT:?}"
 : "${SAI_CUBLASMP_ROOT:?}"
 : "${SAI_NCCL_ROOT:?}"
+: "${SAI_ABACUS_MODULE:?}"
+: "${SAI_ABACUS_MODULE_COMMIT:?}"
 
 MPI_CC=$(command -v mpicc)
 MPI_CXX=$(command -v mpicxx)
@@ -131,6 +133,8 @@ EOF
 summary="$BUILD_ROOT/toolchain-summary.txt"
 {
     echo "TOOLCHAIN_FILE=$TOOLCHAIN_FILE"
+    echo "ABACUS_MODULE=$SAI_ABACUS_MODULE"
+    echo "ABACUS_MODULE_COMMIT=$SAI_ABACUS_MODULE_COMMIT"
     echo "MPI_ROOT=$SAI_MPI_ROOT"
     echo "MPI_RUN=$MPI_RUN"
     echo "CUDA_ROOT=$SAI_CUDA_ROOT"
@@ -195,8 +199,13 @@ if grep -q "not found" "$INSTALL_ROOT/ldd.txt"; then
     echo "ABACUS has unresolved runtime dependencies" >&2
     exit 1
 fi
-grep -q "$SAI_CUSOLVERMP_ROOT" "$INSTALL_ROOT/ldd.txt"
-grep -q "$SAI_CUBLASMP_ROOT" "$INSTALL_ROOT/ldd.txt"
+CUSOLVERMP_LOADED_PATH=$(awk '$1 == "libcusolverMp.so.0" {print $3; exit}' "$INSTALL_ROOT/ldd.txt")
+CUBLASMP_LOADED_PATH=$(awk '$1 == "libcublasmp.so.0" {print $3; exit}' "$INSTALL_ROOT/ldd.txt")
+[[ -n "$CUSOLVERMP_LOADED_PATH" && -n "$CUBLASMP_LOADED_PATH" ]]
+[[ $(readlink -f "$CUSOLVERMP_LOADED_PATH") == \
+   $(readlink -f "$SAI_CUSOLVERMP_ROOT/lib/libcusolverMp.so.0") ]]
+[[ $(readlink -f "$CUBLASMP_LOADED_PATH") == \
+   $(readlink -f "$SAI_CUBLASMP_ROOT/lib/libcublasmp.so.0") ]]
 NCCL_LOADED_PATH=$(awk '$1 == "libnccl.so.2" {print $3; exit}' "$INSTALL_ROOT/ldd.txt")
 [[ -n "$NCCL_LOADED_PATH" ]]
 [[ $(readlink -f "$NCCL_LOADED_PATH") == "$NCCL_RUNTIME_LIBRARY" ]]

@@ -108,7 +108,6 @@ for class in "${classes[@]}"; do
         --time=00:15:00 \
         --chdir="$CI_SOURCE" \
         --output="$log_root/${class}-%A_%a.out" \
-        --export=ALL \
         "$CONTROL_ROOT/test_gpu_case.sh" > "$job_id_file" &
     submit_pid=$!
     wait "$submit_pid"
