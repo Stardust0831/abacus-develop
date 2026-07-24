@@ -193,7 +193,9 @@ download URL. Only that signed URL is sent to SAI; the GitHub token never
 leaves the runner and the URL is kept out of command arguments and logs. SAI
 downloads the artifact directly from Blob storage, validates its exact two
 entries, and feeds them into the existing manifest verification and isolated
-source-cache flow.
+source-cache flow. To work around the low single-connection throughput, SAI
+downloads eight bounded byte ranges in parallel, verifies every range and the
+REST-reported total archive size, then reconstructs the ZIP before extraction.
 
 The project root is canonicalized first, so transfer caches and run directories
 use the physical `/org` path even when the login environment exposes a `/home`

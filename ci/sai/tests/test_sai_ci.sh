@@ -271,6 +271,7 @@ test_workflow_security_policy() {
     assert_contains "$workflow" 'Pull and apply source payload on SAI'
     assert_contains "$workflow" 'actions: read'
     assert_contains "$workflow" 'unset GH_TOKEN'
+    assert_contains "$workflow" 'size_in_bytes'
     assert_contains "$workflow" '--dump-header - --output /dev/null --config -'
     assert_not_contains "$workflow" '--header "Authorization: Bearer $GH_TOKEN"'
     assert_contains "$workflow" 'compression-level: 0'
@@ -291,8 +292,8 @@ test_workflow_security_policy() {
         '^https://[A-Za-z0-9.-]+\.blob\.core\.windows\.net/'
     assert_contains ci/sai/download_source_artifact.sh \
         "--proto '=https'"
-    assert_contains ci/sai/download_source_artifact.sh \
-        '--config - --output "$archive"'
+    assert_contains ci/sai/download_source_artifact.sh 'part_count=8'
+    assert_contains ci/sai/download_source_artifact.sh '--range "$first-$last"'
     assert_not_contains ci/sai/download_source_artifact.sh '--location'
     assert_not_contains ci/sai/download_source_artifact.sh '.artifact-url.'
     assert_not_contains ci/sai/download_source_artifact.sh \
@@ -741,19 +742,24 @@ test_download_source_artifact() {
 set -euo pipefail
 output=
 config=
+range=
 args=("$@")
 for ((index=0; index<${#args[@]}; index++)); do
     case ${args[$index]} in
         --output) output=${args[$((index + 1))]} ;;
         --config) config=${args[$((index + 1))]} ;;
+        --range) range=${args[$((index + 1))]} ;;
         *sig=secret*) exit 91 ;;
     esac
 done
-: "${output:?}" "${config:?}"
+: "${output:?}" "${config:?}" "${range:?}"
 [[ $config == - ]]
 cat > "$FAKE_CURL_CONFIG_LOG"
 printf '%s\n' "$*" > "$FAKE_CURL_ARGS_LOG"
-cp "$FAKE_ARTIFACT" "$output"
+first=${range%-*}
+last=${range#*-}
+dd if="$FAKE_ARTIFACT" of="$output" bs=1 skip="$first" \
+    count=$((last - first + 1)) status=none
 EOF
     chmod +x "$fake_bin/curl"
 
@@ -765,6 +771,7 @@ EOF
             FAKE_CURL_ARGS_LOG=$root/curl.args \
             bash ci/sai/download_source_artifact.sh \
             "$logical_project" "$logical_run" "$logical_transfer" \
+            "$(stat -c %s "$bad_artifact")" \
             > /dev/null 2>&1; then
         fail 'source artifact downloader accepted an invalid gzip payload'
     fi
@@ -778,7 +785,8 @@ EOF
             FAKE_CURL_CONFIG_LOG=$root/curl.config \
             FAKE_CURL_ARGS_LOG=$root/curl.args \
             bash ci/sai/download_source_artifact.sh \
-            "$logical_project" "$logical_run" "$logical_transfer")
+            "$logical_project" "$logical_run" "$logical_transfer" \
+            "$(stat -c %s "$artifact")")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_ARTIFACT_DOWNLOADED=1'
     assert_contains <(printf '%s\n' "$output") 'SOURCE_ARTIFACT_BYTES='
     assert_contains <(printf '%s\n' "$output") \
@@ -790,7 +798,7 @@ EOF
 
     if printf '%s\n' 'https://github.com/not-blob' \
         | HOME=$logical_home bash ci/sai/download_source_artifact.sh \
-            "$logical_project" "$logical_run" "$logical_transfer" \
+            "$logical_project" "$logical_run" "$logical_transfer" 1 \
             > /dev/null 2>&1; then
         fail 'source artifact downloader accepted a non-Blob URL'
     fi
