@@ -19,7 +19,6 @@ scf_nmax          100
 #Parameters (LCAO)
 basis_type        pw
 ks_solver         cg
-device            gpu
 chg_extrap        second-order
 pw_diag_thr       0.00001
 
