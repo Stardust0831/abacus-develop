@@ -69,6 +69,13 @@ jobs:
     if: needs.admit.outputs.accepted == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 240
+    outputs:
+      artifact_url: ${{ steps.artifact_upload.outputs.artifact-url }}
+      case_summary_available: ${{ steps.case_summary.outputs.available }}
+      gpu_failed: ${{ steps.case_summary.outputs.failed }}
+      gpu_infrastructure: ${{ steps.case_summary.outputs.infrastructure }}
+      gpu_passed: ${{ steps.case_summary.outputs.passed }}
+      multinode_result: ${{ steps.case_summary.outputs.multinode }}
     permissions:
       actions: read
       checks: write
@@ -352,15 +359,53 @@ jobs:
             | tar -xzf - -C "$ARTIFACT_ROOT"
 
       - name: Publish GPU case summary
+        id: case_summary
         if: always()
         run: |
           set -euo pipefail
-          summary="$ARTIFACT_ROOT/results/case-matrix/gpu-case-summary.md"
-          if [[ -f "$summary" ]]; then
+          available=false
+          passed=
+          failed=
+          infrastructure=
+          multinode=unavailable
+          summary=${ARTIFACT_ROOT:+$ARTIFACT_ROOT/results/case-matrix/gpu-case-summary.md}
+          components=${ARTIFACT_ROOT:+$ARTIFACT_ROOT/results/gpu-validation-components.tsv}
+          if [[ -n "$summary" && -f "$summary" ]]; then
             cat "$summary" >> "$GITHUB_STEP_SUMMARY"
+            counts=$(sed -n \
+              's/^Passed: \*\*\([0-9][0-9]*\)\*\*; Failed: \*\*\([0-9][0-9]*\)\*\*; Infrastructure: \*\*\([0-9][0-9]*\)\*\*$/\1 \2 \3/p' \
+              "$summary")
+            if [[ "$counts" =~ ^[0-9]+\ [0-9]+\ [0-9]+$ ]]; then
+              read -r passed failed infrastructure <<< "$counts"
+              count_re='^([0-9]|[1-3][0-9]|4[0-8])$'
+              if [[ "$passed" =~ $count_re && "$failed" =~ $count_re && \
+                    "$infrastructure" =~ $count_re ]] && \
+                 (( passed + failed + infrastructure == 48 )); then
+                available=true
+              fi
+            fi
           else
             echo "## SAI GPU validation produced no case summary" >> "$GITHUB_STEP_SUMMARY"
           fi
+          if [[ -n "$components" && -f "$components" ]]; then
+            multinode_rc=$(awk -F '\t' \
+              '$1 == "cusolvermp-multinode" && $2 ~ /^[0-9]+$/ { print $2 }' \
+              "$components")
+            if [[ "$multinode_rc" =~ ^[0-9]+$ ]]; then
+              if [[ "$multinode_rc" == 0 ]]; then
+                multinode=passed
+              else
+                multinode=failed
+              fi
+            fi
+          fi
+          {
+            echo "available=$available"
+            echo "passed=$passed"
+            echo "failed=$failed"
+            echo "infrastructure=$infrastructure"
+            echo "multinode=$multinode"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload SAI logs
         id: artifact_upload
@@ -407,10 +452,17 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       checks: write
+      issues: write
     steps:
       - name: Complete requested PR check
         env:
+          ARTIFACT_URL: ${{ needs.rebuild-and-test.outputs.artifact_url }}
+          CASE_SUMMARY_AVAILABLE: ${{ needs.rebuild-and-test.outputs.case_summary_available }}
           CHECK_RUN_ID: ${{ needs.admit.outputs.check_run_id }}
+          GPU_FAILED: ${{ needs.rebuild-and-test.outputs.gpu_failed }}
+          GPU_INFRASTRUCTURE: ${{ needs.rebuild-and-test.outputs.gpu_infrastructure }}
+          GPU_PASSED: ${{ needs.rebuild-and-test.outputs.gpu_passed }}
+          MULTINODE_RESULT: ${{ needs.rebuild-and-test.outputs.multinode_result }}
           PR_NUMBER: ${{ needs.admit.outputs.pr_number }}
           SAI_RESULT: ${{ needs.rebuild-and-test.result }}
           SOURCE_SHA: ${{ needs.admit.outputs.source_sha }}
@@ -431,14 +483,56 @@ jobs:
           esac
           details_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           summary="SAI GPU validation for PR #$PR_NUMBER at \`$SOURCE_SHA\` completed with workflow result **$SAI_RESULT**. [Open the Actions run]($details_url) for the case summary and retained logs."
-          jq -n \
-            --arg conclusion "$conclusion" \
-            --arg completed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg title "SAI GPU validation: $SAI_RESULT" \
-            --arg summary "$summary" \
-            '{status: "completed", conclusion: $conclusion,
-              completed_at: $completed_at,
-              output: {title: $title, summary: $summary}}' \
-            | gh api --method PATCH \
-                "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_RUN_ID" \
-                --input - >/dev/null
+          check_request=$(python3 - "$conclusion" \
+            "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            "SAI GPU validation: $SAI_RESULT" "$summary" <<'PY'
+          import json
+          import sys
+
+          conclusion, completed_at, title, summary = sys.argv[1:]
+          print(json.dumps({
+              "status": "completed",
+              "conclusion": conclusion,
+              "completed_at": completed_at,
+              "output": {"title": title, "summary": summary},
+          }))
+          PY
+          )
+          gh api --method PATCH \
+            "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_RUN_ID" \
+            --input - <<< "$check_request" >/dev/null
+
+          case_summary='GPU case summary unavailable.'
+          if [[ "$CASE_SUMMARY_AVAILABLE" == true ]]; then
+            count_re='^([0-9]|[1-3][0-9]|4[0-8])$'
+            [[ "$GPU_PASSED" =~ $count_re ]]
+            [[ "$GPU_FAILED" =~ $count_re ]]
+            [[ "$GPU_INFRASTRUCTURE" =~ $count_re ]]
+            (( GPU_PASSED + GPU_FAILED + GPU_INFRASTRUCTURE == 48 ))
+            case_summary="GPU cases: **$GPU_PASSED passed, $GPU_FAILED failed, $GPU_INFRASTRUCTURE infrastructure**."
+          fi
+          case "$MULTINODE_RESULT" in
+            passed) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **passed**.' ;;
+            failed) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **failed**.' ;;
+            *) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **result unavailable**.' ;;
+          esac
+          artifact_summary='Raw test files were not uploaded.'
+          if [[ -n "$ARTIFACT_URL" ]]; then
+            [[ "$ARTIFACT_URL" =~ ^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/[0-9]+/artifacts/[0-9]+$ ]]
+            artifact_summary="[Download raw test files]($ARTIFACT_URL) (retained for 30 days)."
+          fi
+          comment=$(printf '%s\n\n%s\n%s\n\n%s | %s\n\nCandidate: `%s`' \
+            "## SAI GPU validation: $SAI_RESULT" \
+            "$case_summary" "$multinode_summary" \
+            "[Open the Actions run]($details_url)" "$artifact_summary" \
+            "$SOURCE_SHA")
+          comment_request=$(python3 - "$comment" <<'PY'
+          import json
+          import sys
+
+          print(json.dumps({"body": sys.argv[1]}))
+          PY
+          )
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --input - <<< "$comment_request" >/dev/null
