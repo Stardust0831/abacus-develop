@@ -57,6 +57,42 @@ wait_for_file() {
     fail "timed out waiting for $path"
 }
 
+extract_workflow_run_script() {
+    local step_name=$1
+    local output=$2
+    python3 - .github/workflows/sai-gpu-full.yml "$step_name" "$output" <<'PY'
+import sys
+
+workflow, step_name, output = sys.argv[1:]
+with open(workflow, encoding="utf-8") as handle:
+    lines = handle.readlines()
+
+step_marker = f"      - name: {step_name}\n"
+try:
+    step_start = lines.index(step_marker)
+except ValueError as error:
+    raise SystemExit(f"workflow step not found: {step_name}") from error
+
+run_start = None
+for index in range(step_start + 1, len(lines)):
+    if lines[index] == "        run: |\n":
+        run_start = index + 1
+        break
+    if lines[index].startswith("      - name:"):
+        break
+if run_start is None:
+    raise SystemExit(f"run block not found for workflow step: {step_name}")
+
+script = []
+for line in lines[run_start:]:
+    if line.strip() and not line.startswith("          "):
+        break
+    script.append(line[10:] if line.startswith("          ") else line)
+with open(output, "w", encoding="utf-8") as handle:
+    handle.writelines(script)
+PY
+}
+
 test_configure_ssh_client() {
     local root=$test_root/ssh
     local key=$root/input-key
@@ -327,6 +363,32 @@ assert request["details_url"] == "https://github.com/Stardust0831/abacus-develop
 PY
     assert_contains "$summary" 'Pull request: #17'
 
+    python3 - "$event" '/abacus-ci sai-gpu' triager 20 <<'PY'
+import json
+import sys
+
+path, command, login, number = sys.argv[1:]
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump({
+        "comment": {"body": command, "user": {"login": login}},
+        "issue": {"number": int(number), "pull_request": {}},
+        "repository": {"default_branch": "develop"},
+    }, handle)
+PY
+    : > "$output"
+    : > "$summary"
+    PATH="$fake_bin:$original_path" \
+    FAKE_PERMISSION=triage FAKE_ROLE=triage FAKE_HEAD_SHA=$sha \
+    FAKE_CHECK_REQUEST=$root/triage-check.json \
+    GITHUB_EVENT_NAME=issue_comment GITHUB_EVENT_PATH=$event \
+    GITHUB_OUTPUT=$output GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_RUN_ID=98768 GITHUB_SERVER_URL=https://github.com \
+    GITHUB_STEP_SUMMARY=$summary \
+        bash ci/sai/authorize_pr_comment.sh
+    assert_contains "$output" 'accepted=true'
+    assert_contains "$output" 'pr_number=20'
+    assert_file "$root/triage-check.json"
+
     python3 - "$event" '/abacus-ci sai-gpu' reader 18 <<'PY'
 import json
 import sys
@@ -379,6 +441,108 @@ PY
     assert_not_exists "$root/wrong-command-check.json"
 }
 
+test_pr_result_comment() {
+    local root=$test_root/pr-result-comment
+    local artifact_root=$root/artifacts
+    local fake_bin=$root/bin
+    local summary_script=$root/publish-summary.sh
+    local report_script=$root/report-result.sh
+    local summary_output=$root/summary-output
+    local step_summary=$root/step-summary.md
+    local check_request=$root/check-request.json
+    local comment_request=$root/comment-request.json
+    local sha=1111111111111111111111111111111111111111
+    mkdir -p "$artifact_root/results/case-matrix" "$fake_bin"
+
+    cat > "$artifact_root/results/case-matrix/gpu-case-summary.md" <<'EOF'
+## SAI GPU case matrix
+
+Passed: **47**; Failed: **1**; Infrastructure: **0**
+EOF
+    printf 'component\texit_code\ncase-matrix\t1\ncusolvermp-multinode\t0\n' \
+        > "$artifact_root/results/gpu-validation-components.tsv"
+
+    extract_workflow_run_script 'Publish GPU case summary' "$summary_script"
+    ARTIFACT_ROOT=$artifact_root GITHUB_OUTPUT=$summary_output \
+    GITHUB_STEP_SUMMARY=$step_summary bash "$summary_script"
+    assert_contains "$summary_output" 'available=true'
+    assert_contains "$summary_output" 'passed=47'
+    assert_contains "$summary_output" 'failed=1'
+    assert_contains "$summary_output" 'infrastructure=0'
+    assert_contains "$summary_output" 'multinode=passed'
+
+    cat > "$artifact_root/results/case-matrix/gpu-case-summary.md" <<'EOF'
+## SAI GPU case matrix
+
+Passed: **18446744073709551664**; Failed: **0**; Infrastructure: **0**
+EOF
+    ARTIFACT_ROOT=$artifact_root GITHUB_OUTPUT=$root/overflow-summary-output \
+    GITHUB_STEP_SUMMARY=$root/overflow-step-summary.md bash "$summary_script"
+    assert_contains "$root/overflow-summary-output" 'available=false'
+
+    cat > "$fake_bin/gh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+case " $* " in
+    *'check-runs/12345'*) cat > "$FAKE_CHECK_REQUEST" ;;
+    *'issues/17/comments'*) cat > "$FAKE_COMMENT_REQUEST" ;;
+    *)
+        echo "Unexpected fake gh invocation: $*" >&2
+        exit 2
+        ;;
+esac
+EOF
+    chmod +x "$fake_bin/gh"
+    extract_workflow_run_script 'Complete requested PR check' "$report_script"
+    PATH="$fake_bin:$original_path" \
+    FAKE_CHECK_REQUEST=$check_request FAKE_COMMENT_REQUEST=$comment_request \
+    ARTIFACT_URL=https://github.com/Stardust0831/abacus-develop/actions/runs/98765/artifacts/24680 \
+    CASE_SUMMARY_AVAILABLE=true CHECK_RUN_ID=12345 \
+    GPU_FAILED=1 GPU_INFRASTRUCTURE=0 GPU_PASSED=47 \
+    MULTINODE_RESULT=passed PR_NUMBER=17 SAI_RESULT=failure SOURCE_SHA=$sha \
+    GH_TOKEN=test-token GITHUB_RUN_ID=98765 \
+    GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_SERVER_URL=https://github.com \
+        bash "$report_script"
+
+    python3 - "$check_request" "$comment_request" "$sha" <<'PY'
+import json
+import sys
+
+check_path, comment_path, source_sha = sys.argv[1:]
+with open(check_path, encoding="utf-8") as handle:
+    check = json.load(handle)
+with open(comment_path, encoding="utf-8") as handle:
+    comment = json.load(handle)
+assert check["status"] == "completed"
+assert check["conclusion"] == "failure"
+body = comment["body"]
+assert "## SAI GPU validation: failure" in body
+assert "47 passed, 1 failed, 0 infrastructure" in body
+assert "Multinode Si48 cuSolverMp RT-TDDFT: **passed**" in body
+assert "actions/runs/98765" in body
+assert "actions/runs/98765/artifacts/24680" in body
+assert source_sha in body
+PY
+
+    set +e
+    PATH="$fake_bin:$original_path" \
+    FAKE_CHECK_REQUEST=$root/overflow-check-request.json \
+    FAKE_COMMENT_REQUEST=$root/overflow-comment-request.json \
+    ARTIFACT_URL=https://github.com/Stardust0831/abacus-develop/actions/runs/98765/artifacts/24680 \
+    CASE_SUMMARY_AVAILABLE=true CHECK_RUN_ID=12345 \
+    GPU_FAILED=0 GPU_INFRASTRUCTURE=0 GPU_PASSED=18446744073709551664 \
+    MULTINODE_RESULT=passed PR_NUMBER=17 SAI_RESULT=failure SOURCE_SHA=$sha \
+    GH_TOKEN=test-token GITHUB_RUN_ID=98765 \
+    GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_SERVER_URL=https://github.com \
+        bash "$report_script" > "$root/overflow-report.log" 2>&1
+    overflow_rc=$?
+    set -e
+    [[ $overflow_rc -ne 0 ]]
+    assert_not_exists "$root/overflow-comment-request.json"
+}
+
 test_workflow_security_policy() {
     local workflow=.github/workflows/sai-gpu-full.yml
     local bootstrap=.github/workflows/sai-bootstrap.yml
@@ -392,6 +556,7 @@ test_workflow_security_policy() {
     assert_contains "$workflow" "if: needs.admit.outputs.accepted == 'true'"
     assert_contains "$workflow" 'repository: ${{ env.SOURCE_REPOSITORY }}'
     assert_contains "$workflow" 'checks: write'
+    assert_contains "$workflow" 'issues: write'
     assert_contains "$workflow" 'pull-requests: read'
     assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
     assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
@@ -431,6 +596,11 @@ test_workflow_security_policy() {
     assert_not_contains "$workflow" '--header "Authorization: Bearer $GH_TOKEN"'
     assert_contains "$workflow" 'compression-level: 0'
     assert_contains "$workflow" 'retention-days: 1'
+    assert_contains "$workflow" 'retention-days: 30'
+    assert_contains "$workflow" 'steps.artifact_upload.outputs.artifact-url'
+    assert_contains "$workflow" 'GPU cases: **$GPU_PASSED passed, $GPU_FAILED failed, $GPU_INFRASTRUCTURE infrastructure**.'
+    assert_contains "$workflow" '[Download raw test files]($ARTIFACT_URL) (retained for 30 days).'
+    assert_contains "$workflow" 'issues/$PR_NUMBER/comments'
     assert_contains "$workflow" 'download_source_artifact.sh'
     assert_not_contains "$workflow" 'stage_source_from_git.sh'
     assert_contains "$payload_builder" 'diff --binary --full-index --no-renames'
@@ -2028,6 +2198,7 @@ run_test 'committed control snapshot' test_prepare_control_snapshot
 run_test 'remote probe identity' test_remote_probe_identity
 run_test 'local client SSH probe' test_local_client_probe
 run_test 'pull request comment authorization' test_authorize_pr_comment
+run_test 'pull request result comment' test_pr_result_comment
 run_test 'workflow security policy' test_workflow_security_policy
 run_test 'control executable modes' test_control_executable_modes
 run_test 'PMIx startup retry policy' test_pmix_startup_retry

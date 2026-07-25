@@ -76,7 +76,8 @@ PY
         permission=${permission_fields[0]}
         role=${permission_fields[1]}
         if [[ "$permission" != admin && "$permission" != write && \
-              "$role" != admin && "$role" != maintain && "$role" != write ]]; then
+              "$permission" != triage && "$role" != admin && \
+              "$role" != maintain && "$role" != write && "$role" != triage ]]; then
             echo "Ignoring SAI request from $commenter: repository role is $role ($permission)." >&2
             source_sha=0000000000000000000000000000000000000000
             run_namespace=unauthorized
