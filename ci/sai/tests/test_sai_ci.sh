@@ -548,7 +548,7 @@ test_workflow_security_policy() {
     local bootstrap=.github/workflows/sai-bootstrap.yml
     local toolchain=ci/sai/toolchains/abacus-develop-git-079fd0c.env.example
     local payload_builder=ci/sai/build_source_payload.sh
-    local runtime_file
+    local runtime_file report_job
     assert_contains "$workflow" 'cron: "30 20 * * *"'
     assert_contains "$workflow" 'issue_comment:'
     assert_contains "$workflow" "github.event.comment.body == '/abacus-ci sai-gpu'"
@@ -558,6 +558,8 @@ test_workflow_security_policy() {
     assert_contains "$workflow" 'checks: write'
     assert_contains "$workflow" 'issues: write'
     assert_contains "$workflow" 'pull-requests: read'
+    report_job=$(sed -n '/^  report-pr-check:/,$p' "$workflow")
+    assert_contains <(printf '%s\n' "$report_job") 'pull-requests: write'
     assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
     assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
     assert_not_contains "$workflow" 'group: sai-gpu-rebuild'

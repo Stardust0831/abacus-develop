@@ -453,6 +453,7 @@ jobs:
     permissions:
       checks: write
       issues: write
+      pull-requests: write
     steps:
       - name: Complete requested PR check
         env:
