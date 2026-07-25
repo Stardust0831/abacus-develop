@@ -13,6 +13,8 @@ TRANSFER_ROOT=
 TRANSFER_SOURCE=
 TRANSFER_MARKER=
 CACHE_ROLE=
+CACHE_POINTER_NAME=
+CACHE_POINTER_ROLE=
 
 resolve_run() {
     local canonical_home requested_project=$1 requested_run=$2 run_parent
@@ -67,6 +69,25 @@ verify_marker() {
 lock_cache() {
     exec 8<"$CACHE_ROOT"
     flock 8
+}
+
+read_cache_pointer() {
+    local pointer=$1 name=''
+    CACHE_POINTER_NAME=
+    CACHE_POINTER_ROLE=
+    [[ -f $pointer && ! -L $pointer ]] || return 1
+    IFS= read -r name < "$pointer" || true
+    [[ $name =~ ^[0-9a-f]{40}\.[0-9]+-[0-9]+$ ]] || return 1
+    if printf '%s\n' "$name" | cmp -s - "$pointer"; then
+        CACHE_POINTER_ROLE=baseline
+    elif printf '%s\nrole=baseline\n' "$name" | cmp -s - "$pointer"; then
+        CACHE_POINTER_ROLE=baseline
+    elif printf '%s\nrole=candidate\n' "$name" | cmp -s - "$pointer"; then
+        CACHE_POINTER_ROLE=candidate
+    else
+        return 1
+    fi
+    CACHE_POINTER_NAME=$name
 }
 
 verify_tree() {
@@ -225,9 +246,9 @@ prepare_transfer() {
     latest="$CACHE_ROOT/source-latest"
     if [[ -e $latest || -L $latest ]]; then
         if [[ -f $latest && ! -L $latest ]]; then
-            IFS= read -r latest_name < "$latest" || true
-            if [[ $latest_name =~ ^([0-9a-f]{40})\.([0-9]+-[0-9]+)$ ]] &&
-                printf '%s\n' "$latest_name" | cmp -s - "$latest"; then
+            if read_cache_pointer "$latest"; then
+                latest_name=$CACHE_POINTER_NAME
+                [[ $latest_name =~ ^([0-9a-f]{40})\.([0-9]+-[0-9]+)$ ]]
                 base_sha=${BASH_REMATCH[1]}
                 base_snapshot="$SNAPSHOT_ROOT/$latest_name"
                 manifest="$SNAPSHOT_ROOT/$latest_name.manifest.gz"
@@ -311,7 +332,7 @@ receive_payload() {
 finalize_transfer() {
     local requested_project=$1 requested_run=$2 requested_transfer=$3
     local source_sha=$4 snapshot_name snapshot manifest snapshot_manifest
-    local latest_tmp
+    local latest latest_tmp promotion=baseline
     [[ $source_sha =~ ^[0-9a-f]{40}$ ]]
     resolve_run "$requested_project" "$requested_run"
     resolve_transfer "$requested_transfer"
@@ -324,12 +345,21 @@ finalize_transfer() {
     cp -a "$TRANSFER_SOURCE/." "$RUN_SOURCE/"
 
     if [[ $CACHE_ROLE == candidate ]]; then
-        rm -rf --one-file-system -- "$TRANSFER_SOURCE"
-        rm -f "$manifest" "$TRANSFER_MARKER"
-        rmdir "$TRANSFER_ROOT"
-        printf 'SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=%s\n' \
-            "$source_sha"
-        return
+        latest="$CACHE_ROOT/source-latest"
+        if [[ -e $latest || -L $latest ]]; then
+            if ! read_cache_pointer "$latest" ||
+                [[ $CACHE_POINTER_ROLE != candidate ]]; then
+                rm -rf --one-file-system -- "$TRANSFER_SOURCE"
+                rm -f "$manifest" "$TRANSFER_MARKER"
+                rmdir "$TRANSFER_ROOT"
+                printf 'SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=%s\n' \
+                    "$source_sha"
+                return
+            fi
+            promotion=refresh
+        else
+            promotion=bootstrap
+        fi
     fi
 
     snapshot_name="$source_sha.$RUN_NAME"
@@ -340,13 +370,18 @@ finalize_transfer() {
     mv -T "$TRANSFER_SOURCE" "$snapshot"
     mv -T "$manifest" "$snapshot_manifest"
     latest_tmp=$(mktemp "$CACHE_ROOT/.source-latest.XXXXXX")
-    printf '%s\n' "$snapshot_name" > "$latest_tmp"
+    printf '%s\nrole=%s\n' "$snapshot_name" "$CACHE_ROLE" > "$latest_tmp"
     mv -T "$latest_tmp" "$CACHE_ROOT/source-latest"
     rm -f "$TRANSFER_MARKER"
     rmdir "$TRANSFER_ROOT"
 
     cleanup_orphan_snapshots "$snapshot_name"
-    printf 'SOURCE_CACHE_PROMOTED_SHA=%s\n' "$source_sha"
+    if [[ $promotion == bootstrap || $promotion == refresh ]]; then
+        printf 'SOURCE_CACHE_PROMOTION=%s role=candidate source_sha=%s\n' \
+            "$promotion" "$source_sha"
+    else
+        printf 'SOURCE_CACHE_PROMOTED_SHA=%s\n' "$source_sha"
+    fi
     printf 'SOURCE_CACHE_SNAPSHOT=%s\n' "$snapshot"
 }
 
