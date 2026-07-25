@@ -1154,6 +1154,7 @@ test_source_snapshot_cache() {
     local run9=$project/runs/108-1
     local candidate=$project/runs/pr-7658/109-1
     local invalid_candidate=$project/runs/pr-invalid/110-1
+    local legacy_candidate=$project/runs/pr-legacy/111-1
     local output transfer snapshot snapshot_name inode_run inode_cache orphan
     mkdir -p "$repository"
     git -C "$repository" init -q
@@ -1178,7 +1179,7 @@ test_source_snapshot_cache() {
     touch "$run1/.ci-created"
 
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
-        "$project" "$run1" "$sha1" baseline)
+        "$project" "$run1" "$sha1" candidate)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
     assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_BASE_SHA=none'
     [[ $transfer == "$project/cache/source-transfers/100-1" ]]
@@ -1192,8 +1193,11 @@ test_source_snapshot_cache() {
     HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
         "$project" "$run1" "$transfer" "$sha1" > "$root/finalize1.log"
     assert_contains "$run1/source/keep.txt" 'unchanged'
+    assert_contains "$root/finalize1.log" \
+        "SOURCE_CACHE_PROMOTION=bootstrap role=candidate source_sha=$sha1"
     assert_file "$project/cache/source-latest"
     assert_contains "$project/cache/source-latest" "$sha1.100-1"
+    assert_contains "$project/cache/source-latest" 'role=candidate'
     snapshot=$project/cache/source-snapshots/$sha1.100-1
     assert_file "$snapshot/keep.txt"
     assert_file "$snapshot.manifest.gz"
@@ -1236,10 +1240,36 @@ test_source_snapshot_cache() {
         > "$root/finalize-candidate.log"
     assert_contains "$candidate/source/keep.txt" 'changed'
     assert_contains "$root/finalize-candidate.log" \
-        "SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=$sha2"
-    assert_contains "$project/cache/source-latest" "$sha1.100-1"
+        "SOURCE_CACHE_PROMOTION=refresh role=candidate source_sha=$sha2"
+    assert_contains "$project/cache/source-latest" "$sha2.109-1"
+    assert_contains "$project/cache/source-latest" 'role=candidate'
+    assert_not_exists "$snapshot"
+    snapshot=$project/cache/source-snapshots/$sha2.109-1
     assert_file "$snapshot/keep.txt"
     assert_not_exists "$transfer"
+
+    printf '%s\n' "$sha2.109-1" > "$project/cache/source-latest"
+    mkdir -p "$legacy_candidate/source" "$legacy_candidate/control" \
+        "$legacy_candidate/build" "$legacy_candidate/install" \
+        "$legacy_candidate/results"
+    touch "$legacy_candidate/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$legacy_candidate" "$sha2" candidate)
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha2"
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha2" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$legacy_candidate" "$transfer" delta "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$legacy_candidate" "$transfer" "$sha2" \
+        > "$root/finalize-legacy-candidate.log"
+    assert_contains "$root/finalize-legacy-candidate.log" \
+        "SOURCE_CACHE_PROMOTION=skipped role=candidate source_sha=$sha2"
+    printf '%s\n' "$sha2.109-1" \
+        | cmp -s - "$project/cache/source-latest"
 
     mkdir -p "$run2/source" "$run2/control" "$run2/build" \
         "$run2/install" "$run2/results"
@@ -1247,11 +1277,11 @@ test_source_snapshot_cache() {
     output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
         "$project" "$run2" "$sha2" baseline)
     transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
-    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha1"
-    assert_contains "$transfer/source/keep.txt" 'unchanged'
-    assert_file "$transfer/source/delete.txt"
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha2"
+    assert_contains "$transfer/source/keep.txt" 'changed'
+    assert_not_exists "$transfer/source/delete.txt"
     git -C "$repository" diff --binary --full-index --no-renames \
-        "$sha1" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+        "$sha2" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
     git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
         | gzip -1 > "$transfer/source-manifest.gz"
     HOME=$home bash ci/sai/source_transfer_cache.sh receive \
@@ -1265,6 +1295,7 @@ test_source_snapshot_cache() {
     [[ $(readlink "$run2/source/link") == data.bin ]]
     cmp "$repository/data.bin" "$run2/source/data.bin"
     assert_contains "$project/cache/source-latest" "$sha2.101-1"
+    assert_contains "$project/cache/source-latest" 'role=baseline'
     assert_not_exists "$snapshot"
     assert_not_exists "$snapshot.manifest.gz"
 
@@ -1290,7 +1321,7 @@ test_source_snapshot_cache() {
     HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
         "$project" "$run3" "$transfer" "$sha2" > /dev/null
 
-    snapshot_name=$(<"$project/cache/source-latest")
+    IFS= read -r snapshot_name < "$project/cache/source-latest"
     snapshot="$project/cache/source-snapshots/$snapshot_name"
     printf 'cache drift\n' > "$snapshot/keep.txt"
 
@@ -1341,7 +1372,7 @@ test_source_snapshot_cache() {
     HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
         "$project" "$run4" "$transfer" "$sha2" > /dev/null
 
-    snapshot_name=$(<"$project/cache/source-latest")
+    IFS= read -r snapshot_name < "$project/cache/source-latest"
     snapshot="$project/cache/source-snapshots/$snapshot_name"
     printf 'extra\n' > "$snapshot/untracked.txt"
     mkdir -p "$run5/source" "$run5/control" "$run5/build" \

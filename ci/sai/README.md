@@ -161,8 +161,10 @@ name any commit already available in the local Git object database. The client
 uploads a gzip-compressed Git delta and manifest through SSH, executes the same
 remote build and validation scripts, and downloads the artifact bundle below
 `SAI_ARTIFACT_ROOT/<run-id>/`. This legacy local transport may consume an
-existing daily baseline but never advances it. GitHub-hosted runs instead use
-the reverse artifact download described below.
+existing daily baseline. If no source baseline exists yet, verified manual
+candidates maintain a fallback baseline until a scheduled run replaces it;
+manual candidates never replace a scheduled baseline.
+GitHub-hosted runs instead use the reverse artifact download described below.
 
 The OpenSSH Host entry determines the remote username and identity file. The
 client additionally forces batch mode, strict host-key checking, disabled
@@ -232,7 +234,10 @@ REST-reported total archive size, then reconstructs the ZIP before extraction.
 The project root is canonicalized first, so transfer caches and run directories
 use the physical `/org` path even when the login environment exposes a `/home`
 symlink. Scheduled runs still promote verified source baselines and manual
-runs only consume them. Source, build, install, and result directories remain
+runs consume scheduled baselines without replacement. Until the first
+scheduled baseline is available, verified manual runs maintain a fallback
+baseline so later runs can send a delta.
+Source, build, install, and result directories remain
 isolated, and tested code never executes from or writes into the source cache.
 
 The build disables DeePMD, Torch/DeepKS, PEXSI, DFT-D4, LibRI, NEP, and cnpy
