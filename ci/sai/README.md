@@ -21,13 +21,18 @@ Scheduled runs test the default-branch commit supplied by GitHub and use the
 `sai-ssh-scheduled` Environment. That Environment has no required reviewer and
 allows deployments only from the default branch.
 
-Manual dispatch requires an exact 40-character source commit SHA and uses the
-protected `sai-ssh-manual` Environment. Configure `Stardust0831` as its required
-reviewer and leave self-approval enabled. The reviewer must inspect the commit
+Manual requests use the protected `sai-ssh-manual` Environment. A request may
+be dispatched with an exact 40-character source commit SHA or submitted by an
+authorized maintainer commenting `/abacus-ci sai-gpu` on an open pull request
+against the default branch. The comment workflow resolves and records the
+pull request's current head SHA; it does not accept a SHA or directory from the
+comment. Configure `Stardust0831` as the Environment's required reviewer and
+leave self-approval enabled. The reviewer must inspect the recorded commit
 before approval because its code will execute on SAI with all permissions of
 `abacususer01`. External contributors only submit pull requests; a maintainer
-reviews the pull request and then dispatches its exact commit when GPU testing
-is warranted. Do not add an automatic `pull_request` trigger.
+with repository write, maintain, or admin permission reviews the code and
+requests GPU testing when warranted. Do not add an automatic `pull_request`
+trigger.
 
 Different manually approved commits may run concurrently. Scheduled runs share
 one `daily` concurrency group and therefore serialize with other scheduled
@@ -87,6 +92,33 @@ rejects any path that escapes the account's canonical HOME. Only
    install, and result files in separate namespace directories.
 6. Submit the workflow. A required reviewer then opens the pending deployment,
    checks the requested SHA and directory, and approves `sai-ssh-manual`.
+
+### Pull request comment
+
+An authorized maintainer may place this exact command on its own line in an
+open pull request against the default branch:
+
+```text
+/abacus-ci sai-gpu
+```
+
+GitHub first verifies the commenter's current repository permission and reads
+the pull request metadata without using the SAI Environment or SSH secret. An
+accepted request creates a queued `SAI GPU Case Matrix` Check Run on the pull
+request's immutable head SHA. The protected SAI job then waits for the normal
+`sai-ssh-manual` approval. Its run namespace is derived as `pr-<number>`, and
+its per-attempt run directory remains unique through the GitHub run ID.
+
+The Check Run links to the Actions run and is completed with the final SAI job
+result. Full case summaries and logs retain the same Actions artifact policy as
+manual dispatches. Unrelated comments, issue comments, commands with extra
+arguments, pull requests against another branch, and comments from users
+without write-equivalent repository permission cannot enter the protected
+Environment.
+
+The `issue_comment` workflow definition must already exist on the repository's
+default branch. Consequently, this command can test subsequent pull requests,
+but it cannot bootstrap the pull request that first introduces the command.
 
 ### Direct local run
 

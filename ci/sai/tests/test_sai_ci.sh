@@ -231,6 +231,154 @@ EOF
     assert_contains "$ssh_log" 'ClearAllForwardings=yes'
 }
 
+test_authorize_pr_comment() {
+    local root=$test_root/pr-comment
+    local fake_bin=$root/bin
+    local event=$root/event.json
+    local output=$root/output
+    local summary=$root/summary
+    local check_request=$root/check-request.json
+    local sha=1111111111111111111111111111111111111111
+    mkdir -p "$fake_bin"
+
+    : > "$output"
+    : > "$summary"
+    GITHUB_EVENT_NAME=schedule GITHUB_OUTPUT=$output \
+    GITHUB_REPOSITORY=Stardust0831/abacus-develop GITHUB_SHA=$sha \
+    GITHUB_STEP_SUMMARY=$summary \
+        bash ci/sai/authorize_pr_comment.sh
+    assert_contains "$output" 'accepted=true'
+    assert_contains "$output" 'run_namespace=daily'
+    assert_contains "$output" "source_sha=$sha"
+
+    : > "$output"
+    : > "$summary"
+    GITHUB_EVENT_NAME=workflow_dispatch GITHUB_OUTPUT=$output \
+    GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_STEP_SUMMARY=$summary MANUAL_RUN_NAMESPACE=manual-trial \
+    MANUAL_SOURCE_SHA=$sha \
+        bash ci/sai/authorize_pr_comment.sh
+    assert_contains "$output" 'accepted=true'
+    assert_contains "$output" 'run_namespace=manual-trial'
+    assert_contains "$output" "source_sha=$sha"
+
+    cat > "$fake_bin/gh" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+case " $* " in
+    *'/collaborators/'*'/permission '*)
+        printf '{"permission":"%s","role_name":"%s"}\n' \
+            "$FAKE_PERMISSION" "$FAKE_ROLE"
+        ;;
+    *'/pulls/'*)
+        printf '{"state":"open","base":{"ref":"develop","repo":{"full_name":"Stardust0831/abacus-develop"}},"head":{"sha":"%s","repo":{"full_name":"contributor/abacus-develop"}}}\n' \
+            "$FAKE_HEAD_SHA"
+        ;;
+    *'/check-runs '*)
+        cat > "$FAKE_CHECK_REQUEST"
+        printf '12345\n'
+        ;;
+    *)
+        echo "Unexpected fake gh invocation: $*" >&2
+        exit 2
+        ;;
+esac
+EOF
+    chmod +x "$fake_bin/gh"
+
+    python3 - "$event" '/abacus-ci sai-gpu' maintainer 17 <<'PY'
+import json
+import sys
+
+path, command, login, number = sys.argv[1:]
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump({
+        "comment": {"body": command, "user": {"login": login}},
+        "issue": {"number": int(number), "pull_request": {}},
+        "repository": {"default_branch": "develop"},
+    }, handle)
+PY
+    : > "$output"
+    : > "$summary"
+    PATH="$fake_bin:$original_path" \
+    FAKE_PERMISSION=write FAKE_ROLE=maintain FAKE_HEAD_SHA=$sha \
+    FAKE_CHECK_REQUEST=$check_request \
+    GITHUB_EVENT_NAME=issue_comment GITHUB_EVENT_PATH=$event \
+    GITHUB_OUTPUT=$output GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_RUN_ID=98765 GITHUB_SERVER_URL=https://github.com \
+    GITHUB_STEP_SUMMARY=$summary \
+        bash ci/sai/authorize_pr_comment.sh
+
+    assert_contains "$output" 'accepted=true'
+    assert_contains "$output" 'check_run_id=12345'
+    assert_contains "$output" 'pr_number=17'
+    assert_contains "$output" 'run_namespace=pr-17'
+    assert_contains "$output" 'source_repository=contributor/abacus-develop'
+    assert_contains "$output" "source_sha=$sha"
+    python3 - "$check_request" "$sha" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    request = json.load(handle)
+assert request["head_sha"] == sys.argv[2]
+assert request["status"] == "queued"
+assert request["details_url"] == "https://github.com/Stardust0831/abacus-develop/actions/runs/98765"
+PY
+    assert_contains "$summary" 'Pull request: #17'
+
+    python3 - "$event" '/abacus-ci sai-gpu' reader 18 <<'PY'
+import json
+import sys
+
+path, command, login, number = sys.argv[1:]
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump({
+        "comment": {"body": command, "user": {"login": login}},
+        "issue": {"number": int(number), "pull_request": {}},
+        "repository": {"default_branch": "develop"},
+    }, handle)
+PY
+    : > "$output"
+    : > "$summary"
+    PATH="$fake_bin:$original_path" \
+    FAKE_PERMISSION=read FAKE_ROLE=read FAKE_HEAD_SHA=$sha \
+    FAKE_CHECK_REQUEST=$root/unauthorized-check.json \
+    GITHUB_EVENT_NAME=issue_comment GITHUB_EVENT_PATH=$event \
+    GITHUB_OUTPUT=$output GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+    GITHUB_RUN_ID=98766 GITHUB_SERVER_URL=https://github.com \
+    GITHUB_STEP_SUMMARY=$summary \
+        bash ci/sai/authorize_pr_comment.sh 2> "$root/unauthorized.err"
+    assert_contains "$output" 'accepted=false'
+    assert_contains "$output" 'run_namespace=unauthorized'
+    assert_not_exists "$root/unauthorized-check.json"
+    assert_contains "$root/unauthorized.err" 'repository role is read (read)'
+
+    python3 - "$event" '/abacus-ci sai-gpu full' maintainer 19 <<'PY'
+import json
+import sys
+
+path, command, login, number = sys.argv[1:]
+with open(path, "w", encoding="utf-8") as handle:
+    json.dump({
+        "comment": {"body": command, "user": {"login": login}},
+        "issue": {"number": int(number), "pull_request": {}},
+        "repository": {"default_branch": "develop"},
+    }, handle)
+PY
+    if PATH="$fake_bin:$original_path" \
+        FAKE_PERMISSION=write FAKE_ROLE=maintain FAKE_HEAD_SHA=$sha \
+        FAKE_CHECK_REQUEST=$root/wrong-command-check.json \
+        GITHUB_EVENT_NAME=issue_comment GITHUB_EVENT_PATH=$event \
+        GITHUB_OUTPUT=$output GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+        GITHUB_RUN_ID=98767 GITHUB_SERVER_URL=https://github.com \
+        GITHUB_STEP_SUMMARY=$summary \
+            bash ci/sai/authorize_pr_comment.sh >/dev/null 2>&1; then
+        fail 'comment authorization accepted a command with extra arguments'
+    fi
+    assert_not_exists "$root/wrong-command-check.json"
+}
+
 test_workflow_security_policy() {
     local workflow=.github/workflows/sai-gpu-full.yml
     local bootstrap=.github/workflows/sai-bootstrap.yml
@@ -238,6 +386,13 @@ test_workflow_security_policy() {
     local payload_builder=ci/sai/build_source_payload.sh
     local runtime_file
     assert_contains "$workflow" 'cron: "30 20 * * *"'
+    assert_contains "$workflow" 'issue_comment:'
+    assert_contains "$workflow" "github.event.comment.body == '/abacus-ci sai-gpu'"
+    assert_contains "$workflow" 'run: bash control/ci/sai/authorize_pr_comment.sh'
+    assert_contains "$workflow" "if: needs.admit.outputs.accepted == 'true'"
+    assert_contains "$workflow" 'repository: ${{ env.SOURCE_REPOSITORY }}'
+    assert_contains "$workflow" 'checks: write'
+    assert_contains "$workflow" 'pull-requests: read'
     assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
     assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
     assert_not_contains "$workflow" 'group: sai-gpu-rebuild'
@@ -342,6 +497,7 @@ test_workflow_security_policy() {
 test_control_executable_modes() {
     local path mode
     for path in \
+        ci/sai/authorize_pr_comment.sh \
         ci/sai/build_source_payload.sh \
         ci/sai/build_gpu.sbatch \
         ci/sai/mpirun_with_mapping.sh \
@@ -1871,6 +2027,7 @@ run_test 'source payload builder' test_build_source_payload
 run_test 'committed control snapshot' test_prepare_control_snapshot
 run_test 'remote probe identity' test_remote_probe_identity
 run_test 'local client SSH probe' test_local_client_probe
+run_test 'pull request comment authorization' test_authorize_pr_comment
 run_test 'workflow security policy' test_workflow_security_policy
 run_test 'control executable modes' test_control_executable_modes
 run_test 'PMIx startup retry policy' test_pmix_startup_retry
