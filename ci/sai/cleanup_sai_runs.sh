@@ -56,16 +56,38 @@ load_active_jobs() {
 }
 
 has_active_jobs() {
-    local run_root=$1 jobs job_id
-    jobs=$({
-        if [[ -d $run_root/results ]]; then
-            find "$run_root/results" -type f -name '*submit.log' -exec \
-                awk -F= '$1 == "SLURM_JOB_ID" && $2 ~ /^[0-9]+$/ {print $2}' {} +
-            find "$run_root/results" -type f -name array-jobs.tsv -exec \
-                awk -F '\t' '$2 ~ /^[0-9]+$/ {print $2}' {} +
-        fi
-    } | sort -u | paste -sd, -)
-    [[ -n $jobs ]] || return 1
+    local run_root=$1 ledger=$1/results/jobs.json jobs job_id
+    [[ -e $ledger || -L $ledger ]] || return 1
+    if [[ ! -f $ledger || -L $ledger ]]; then
+        echo "SKIP invalid_job_ledger run=$run_root"
+        return 0
+    fi
+    if ! jobs=$(python3 - "$ledger" 2>/dev/null <<'PY'
+import json
+import re
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    ledger = json.load(handle)
+if not isinstance(ledger, dict) or set(ledger) != {"protocol", "jobs"} or ledger["protocol"] != 1:
+    raise SystemExit(1)
+if not isinstance(ledger["jobs"], list) or not ledger["jobs"]:
+    raise SystemExit(1)
+ids = []
+for job in ledger["jobs"]:
+    if not isinstance(job, dict) or set(job) != {"job_id", "name", "label", "array_count", "argv"}:
+        raise SystemExit(1)
+    if not isinstance(job["job_id"], str) or not re.fullmatch(r"[0-9]+", job["job_id"]):
+        raise SystemExit(1)
+    ids.append(job["job_id"])
+if len(set(ids)) != len(ids):
+    raise SystemExit(1)
+print(",".join(ids))
+PY
+    ); then
+        echo "SKIP invalid_job_ledger run=$run_root"
+        return 0
+    fi
     load_active_jobs
     if [[ $squeue_ok -ne 1 ]]; then
         echo "SKIP squeue_failed run=$run_root jobs=$jobs"

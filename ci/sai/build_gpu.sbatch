@@ -1,14 +1,18 @@
-#!/bin/bash
-#SBATCH --job-name=abacus-sai-build
-#SBATCH --partition=16V100
-#SBATCH --nodes=1
-#SBATCH --ntasks=4          # Nodes * GPUs-per-node * Ranks-per-GPU
-#SBATCH --gpus-per-node=4   # Specify the GPUs-per-node
-#SBATCH --qos=huge-gpu      # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]
-#SBATCH --time=01:00:00
-
+#!/usr/bin/env bash
 set -euo pipefail
 
-: "${CI_SOURCE:?}"
-: "${CONTROL_ROOT:?}"
+if [[ $# -ne 7 ]]; then
+    echo "Usage: $0 HOME SOURCE CONTROL BUILD INSTALL TOOLCHAIN PROFILE" >&2
+    exit 2
+fi
+export HOME=$1
+export USER=${SLURM_JOB_USER:?}
+export LOGNAME=$USER
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export CI_SOURCE=$2
+export CONTROL_ROOT=$3
+export BUILD_ROOT=$4
+export INSTALL_ROOT=$5
+export TOOLCHAIN_FILE=$6
+export MP_PROFILE=$7
 bash "$CONTROL_ROOT/build_gpu.sh"

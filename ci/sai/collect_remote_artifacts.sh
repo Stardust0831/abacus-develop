@@ -33,7 +33,8 @@ done
 if [[ -d results ]]; then
     find results -type f \( \
         -name '*.log' -o -name '*.out' -o -name '*.txt' -o \
-        -name '*.tsv' -o -name '*.md' -o -name '*.sha256' \
+        -name '*.tsv' -o -name '*.md' -o -name '*.json' -o \
+        -name '*.sha256' \
     \) -print0 >> "$list_file"
 fi
 if [[ -d source/tests ]]; then
