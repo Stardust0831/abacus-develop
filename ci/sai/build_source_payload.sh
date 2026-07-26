@@ -17,7 +17,7 @@ manifest=$5
 [[ $source_sha =~ ^[0-9a-f]{40}$ ]]
 [[ $base_sha == none || $base_sha =~ ^[0-9a-f]{40}$ ]]
 [[ $payload != "$manifest" ]]
-git -C "$repository" cat-file -e "$source_sha^{commit}"
+git -C "$repository" cat-file -e "$source_sha^{tree}"
 
 mkdir -p "$(dirname "$payload")" "$(dirname "$manifest")"
 git -C "$repository" ls-tree -r -z --full-tree "$source_sha" \
@@ -25,7 +25,7 @@ git -C "$repository" ls-tree -r -z --full-tree "$source_sha" \
 
 mode="full"
 if [[ $base_sha != none ]]; then
-    if git -C "$repository" cat-file -e "$base_sha^{commit}" 2>/dev/null || \
+    if git -C "$repository" cat-file -e "$base_sha^{tree}" 2>/dev/null || \
         git -C "$repository" fetch --no-tags --depth=1 origin "$base_sha"; then
         git -C "$repository" diff --binary --full-index --no-renames \
             "$base_sha" "$source_sha" | gzip -1 > "$payload"

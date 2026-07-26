@@ -130,7 +130,7 @@ test_configure_ssh_client() {
 test_build_source_payload() {
     local root=$test_root/source-payload
     local repository=$root/repository
-    local sha1 sha2 output
+    local sha1 sha2 tree output
     mkdir -p "$repository" "$root/full" "$root/delta"
     git -C "$repository" init -q
     git -C "$repository" config user.email ci@example.invalid
@@ -161,6 +161,133 @@ test_build_source_payload() {
     cmp <(git -C "$repository" diff --binary --full-index --no-renames \
             "$sha1" "$sha2") \
         <(gzip -cd "$root/delta/source-payload.gz")
+
+    printf 'working tree\n' > "$repository/data.txt"
+    output=$(bash ci/sai/resolve_local_source.sh \
+        "$repository" --working-tree)
+    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
+    output=$(bash ci/sai/build_source_payload.sh "$repository" "$tree" "$sha2" \
+        "$root/delta/tree-payload.gz" "$root/delta/tree-manifest.gz")
+    grep -Fxq 'SOURCE_PAYLOAD_MODE=delta' <<< "$output"
+    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
+            "$sha2" "$tree") \
+        <(gzip -cd "$root/delta/tree-payload.gz")
+    cmp <(git -C "$repository" ls-tree -r -z --full-tree "$tree") \
+        <(gzip -cd "$root/delta/tree-manifest.gz")
+}
+
+test_resolve_local_source() {
+    local root=$test_root/local-source
+    local repository=$root/repository
+    local base tree output status_before status_after index_before index_after
+    mkdir -p "$repository/ci/sai"
+    git -C "$repository" init -q
+    git -C "$repository" config user.email ci@example.invalid
+    git -C "$repository" config user.name ci
+    printf '*.ignored\n' > "$repository/.gitignore"
+    printf 'committed\n' > "$repository/tracked.txt"
+    printf 'tracked despite ignore\n' > "$repository/legacy.ignored"
+    printf 'rename source\n' > "$repository/rename-source.txt"
+    printf 'control committed\n' > "$repository/ci/sai/control.txt"
+    git -C "$repository" add .
+    git -C "$repository" add -f legacy.ignored
+    git -C "$repository" commit -qm base
+    base=$(git -C "$repository" rev-parse HEAD)
+
+    printf 'staged\n' > "$repository/tracked.txt"
+    git -C "$repository" add tracked.txt
+    printf 'working tree\n' > "$repository/tracked.txt"
+    printf 'staged new\n' > "$repository/staged-new.txt"
+    git -C "$repository" add staged-new.txt
+    printf 'staged new working tree\n' > "$repository/staged-new.txt"
+    printf 'control working tree\n' > "$repository/ci/sai/control.txt"
+    printf 'untracked\n' > "$repository/untracked.txt"
+    printf 'ignored\n' > "$repository/private.ignored"
+    printf 'force-staged ignored\n' > "$repository/staged-secret.ignored"
+    git -C "$repository" add -f staged-secret.ignored
+    git -C "$repository" mv -f rename-source.txt renamed-secret.ignored
+    printf 'modified rename\n' >> "$repository/renamed-secret.ignored"
+    git -C "$repository" add -f renamed-secret.ignored
+    git -C "$repository" update-index --assume-unchanged tracked.txt
+    printf 'assume-unchanged working tree\n' > "$repository/tracked.txt"
+    status_before=$(git -C "$repository" status --porcelain=v1 \
+        --untracked-files=all)
+    index_before=$(sha256sum "$repository/.git/index" | awk '{print $1}')
+
+    output=$(bash ci/sai/resolve_local_source.sh \
+        "$repository" --source-ref HEAD)
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_MODE=commit'
+    assert_contains <(printf '%s\n' "$output") "SOURCE_ID=$base"
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_DIRTY=false'
+
+    output=$(bash ci/sai/resolve_local_source.sh \
+        "$repository" --working-tree 2> "$root/working-tree.err")
+    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
+    [[ $tree =~ ^[0-9a-f]{40}$ ]]
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_MODE=working-tree'
+    assert_contains <(printf '%s\n' "$output") "SOURCE_ID=$tree"
+    assert_contains <(printf '%s\n' "$output") "SOURCE_BASE_COMMIT=$base"
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_DIRTY=true'
+    assert_contains <(printf '%s\n' "$output") \
+        'SOURCE_INCLUDE_UNTRACKED=false'
+    [[ $(git -C "$repository" show "$tree:tracked.txt") == \
+       'assume-unchanged working tree' ]]
+    [[ $(git -C "$repository" show "$tree:staged-new.txt") == \
+       'staged new working tree' ]]
+    [[ $(git -C "$repository" show "$tree:ci/sai/control.txt") == \
+       'control working tree' ]]
+    if git -C "$repository" cat-file -e "$tree:untracked.txt" 2>/dev/null; then
+        fail 'working-tree snapshot included untracked content by default'
+    fi
+    if git -C "$repository" cat-file -e "$tree:private.ignored" 2>/dev/null; then
+        fail 'working-tree snapshot included ignored content'
+    fi
+    if git -C "$repository" cat-file -e \
+        "$tree:staged-secret.ignored" 2>/dev/null; then
+        fail 'working-tree snapshot included a force-staged ignored addition'
+    fi
+    if git -C "$repository" cat-file -e \
+        "$tree:renamed-secret.ignored" 2>/dev/null; then
+        fail 'working-tree snapshot included an ignored rename destination'
+    fi
+    [[ $(git -C "$repository" show "$tree:legacy.ignored") == \
+       'tracked despite ignore' ]]
+    assert_contains "$root/working-tree.err" 'untracked.txt'
+    assert_contains "$root/working-tree.err" 'staged-secret.ignored'
+    assert_contains "$root/working-tree.err" 'renamed-secret.ignored'
+
+    status_after=$(git -C "$repository" status --porcelain=v1 \
+        --untracked-files=all)
+    index_after=$(sha256sum "$repository/.git/index" | awk '{print $1}')
+    [[ $status_after == "$status_before" ]]
+    [[ $index_after == "$index_before" ]]
+
+    output=$(bash ci/sai/resolve_local_source.sh \
+        "$repository" --working-tree --include-untracked)
+    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") \
+        'SOURCE_INCLUDE_UNTRACKED=true'
+    [[ $(git -C "$repository" show "$tree:untracked.txt") == 'untracked' ]]
+    if git -C "$repository" cat-file -e "$tree:private.ignored" 2>/dev/null; then
+        fail 'include-untracked snapshot included ignored content'
+    fi
+    if git -C "$repository" cat-file -e \
+        "$tree:staged-secret.ignored" 2>/dev/null; then
+        fail 'include-untracked snapshot included a force-staged ignored addition'
+    fi
+    if git -C "$repository" cat-file -e \
+        "$tree:renamed-secret.ignored" 2>/dev/null; then
+        fail 'include-untracked snapshot included an ignored rename destination'
+    fi
+    [[ $(git -C "$repository" show "$tree:legacy.ignored") == \
+       'tracked despite ignore' ]]
+    [[ $(sha256sum "$repository/.git/index" | awk '{print $1}') == \
+       "$index_before" ]]
+
+    if bash ci/sai/resolve_local_source.sh "$repository" \
+        --source-ref HEAD --include-untracked > /dev/null 2>&1; then
+        fail '--include-untracked was accepted outside working-tree mode'
+    fi
 }
 
 test_prepare_control_snapshot() {
@@ -265,6 +392,12 @@ EOF
     assert_contains "$ssh_log" 'StrictHostKeyChecking=yes'
     assert_contains "$ssh_log" 'ForwardAgent=no'
     assert_contains "$ssh_log" 'ClearAllForwardings=yes'
+
+    if PATH="$fake_bin:$original_path" \
+        bash ci/sai/run_local_ci.sh "$local_config" --probe-only \
+        --working-tree > /dev/null 2>&1; then
+        fail 'local client accepted source selection with --probe-only'
+    fi
 }
 
 test_authorize_pr_comment() {
@@ -640,8 +773,17 @@ test_workflow_security_policy() {
         assert_not_contains "$runtime_file" ':${LD_LIBRARY_PATH:-}'
     done
     assert_contains ci/sai/run_local_ci.sh 'source_transfer_cache.sh'
-    assert_contains ci/sai/run_local_ci.sh '"$source_sha" candidate'
-    assert_contains ci/sai/run_local_ci.sh 'status --porcelain --untracked-files=all'
+    assert_contains ci/sai/run_local_ci.sh 'resolve_local_source.sh'
+    assert_contains ci/sai/run_local_ci.sh 'source_cache_role=candidate'
+    assert_contains ci/sai/run_local_ci.sh 'source_cache_role=ephemeral'
+    assert_contains ci/sai/run_local_ci.sh '"$source_cache_role"'
+    assert_contains ci/sai/run_local_ci.sh \
+        'Commit local SAI launcher changes before starting a remote run'
+    assert_contains ci/sai/run_local_ci.sh \
+        '--path="$local_control_path"'
+    assert_not_contains ci/sai/run_local_ci.sh 'diff --quiet HEAD'
+    assert_not_contains ci/sai/run_local_ci.sh \
+        'status --porcelain --untracked-files=all'
     assert_contains ci/sai/run_local_ci.sh 'prepare_control_snapshot.sh'
     assert_contains ci/sai/run_local_ci.sh \
         'expected_org_project_root=/org/${SAI_PROJECT_ROOT#/home/}'
@@ -674,6 +816,7 @@ test_control_executable_modes() {
         ci/sai/build_gpu.sbatch \
         ci/sai/mpirun_with_mapping.sh \
         ci/sai/prepare_control_snapshot.sh \
+        ci/sai/resolve_local_source.sh \
         ci/sai/run_local_ci.sh \
         ci/sai/run_slurm_job.sh \
         ci/sai/download_source_artifact.sh \
@@ -1157,6 +1300,7 @@ test_source_snapshot_cache() {
     local candidate=$project/runs/pr-7658/109-1
     local invalid_candidate=$project/runs/pr-invalid/110-1
     local legacy_candidate=$project/runs/pr-legacy/111-1
+    local ephemeral=$project/runs/local-dirty/112-1
     local output transfer snapshot snapshot_name inode_run inode_cache orphan
     mkdir -p "$repository"
     git -C "$repository" init -q
@@ -1222,6 +1366,30 @@ test_source_snapshot_cache() {
     git -C "$repository" add -A
     git -C "$repository" commit -qm target
     sha2=$(git -C "$repository" rev-parse HEAD)
+
+    mkdir -p "$ephemeral/source" "$ephemeral/control" "$ephemeral/build" \
+        "$ephemeral/install" "$ephemeral/results"
+    touch "$ephemeral/.ci-created"
+    output=$(HOME=$home bash ci/sai/source_transfer_cache.sh prepare \
+        "$project" "$ephemeral" "$sha2" ephemeral)
+    transfer=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
+    assert_contains <(printf '%s\n' "$output") "SOURCE_CACHE_BASE_SHA=$sha1"
+    assert_contains <(printf '%s\n' "$output") 'SOURCE_CACHE_ROLE=ephemeral'
+    git -C "$repository" diff --binary --full-index --no-renames \
+        "$sha1" "$sha2" | gzip -1 > "$transfer/source-payload.gz"
+    git -C "$repository" ls-tree -r -z --full-tree "$sha2" \
+        | gzip -1 > "$transfer/source-manifest.gz"
+    HOME=$home bash ci/sai/source_transfer_cache.sh receive \
+        "$project" "$ephemeral" "$transfer" delta "$sha2" > /dev/null
+    HOME=$home bash ci/sai/source_transfer_cache.sh finalize \
+        "$project" "$ephemeral" "$transfer" "$sha2" \
+        > "$root/finalize-ephemeral.log"
+    assert_contains "$ephemeral/source/keep.txt" 'changed'
+    assert_contains "$root/finalize-ephemeral.log" \
+        "SOURCE_CACHE_PROMOTION=skipped role=ephemeral source_sha=$sha2"
+    assert_contains "$project/cache/source-latest" "$sha1.100-1"
+    assert_contains "$project/cache/source-latest" 'role=candidate'
+    assert_not_exists "$transfer"
 
     mkdir -p "$candidate/source" "$candidate/control" "$candidate/build" \
         "$candidate/install" "$candidate/results"
@@ -2227,6 +2395,7 @@ EOF
 
 run_test 'SSH client configuration' test_configure_ssh_client
 run_test 'source payload builder' test_build_source_payload
+run_test 'local source resolver' test_resolve_local_source
 run_test 'committed control snapshot' test_prepare_control_snapshot
 run_test 'remote probe identity' test_remote_probe_identity
 run_test 'local client SSH probe' test_local_client_probe

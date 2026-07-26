@@ -62,7 +62,7 @@ verify_marker() {
     grep -Fxq "run_root=$RUN_ROOT" "$TRANSFER_MARKER"
     grep -Fxq "source_sha=$source_sha" "$TRANSFER_MARKER"
     role=$(awk -F= '$1 == "cache_role" {print $2}' "$TRANSFER_MARKER")
-    [[ $role == baseline || $role == candidate ]]
+    [[ $role == baseline || $role == candidate || $role == ephemeral ]]
     CACHE_ROLE=$role
 }
 
@@ -221,7 +221,8 @@ prepare_transfer() {
     local base_sha=none latest latest_name='' base_snapshot manifest cache_missing
     local latest_valid=0 cache_invalid=0
     [[ $source_sha =~ ^[0-9a-f]{40}$ ]]
-    [[ $cache_role == baseline || $cache_role == candidate ]]
+    [[ $cache_role == baseline || $cache_role == candidate || \
+       $cache_role == ephemeral ]]
     resolve_run "$requested_project" "$requested_run"
     [[ -z $(find "$RUN_SOURCE" -mindepth 1 -maxdepth 1 -print -quit) ]]
 
@@ -264,7 +265,8 @@ prepare_transfer() {
                     if [[ $cache_role == baseline ]]; then
                         quarantine_latest "$latest" content_or_manifest_mismatch
                     else
-                        echo "SOURCE_CACHE_INVALID reason=content_or_manifest_mismatch role=candidate" >&2
+                        printf 'SOURCE_CACHE_INVALID reason=content_or_manifest_mismatch role=%s\n' \
+                            "$cache_role" >&2
                     fi
                 fi
             else
@@ -272,7 +274,8 @@ prepare_transfer() {
                 if [[ $cache_role == baseline ]]; then
                     quarantine_latest "$latest" malformed_pointer
                 else
-                    echo "SOURCE_CACHE_INVALID reason=malformed_pointer role=candidate" >&2
+                    printf 'SOURCE_CACHE_INVALID reason=malformed_pointer role=%s\n' \
+                        "$cache_role" >&2
                 fi
             fi
         else
@@ -280,7 +283,8 @@ prepare_transfer() {
             if [[ $cache_role == baseline ]]; then
                 quarantine_latest "$latest" unsafe_pointer_type
             else
-                echo "SOURCE_CACHE_INVALID reason=unsafe_pointer_type role=candidate" >&2
+                printf 'SOURCE_CACHE_INVALID reason=unsafe_pointer_type role=%s\n' \
+                    "$cache_role" >&2
             fi
         fi
     fi
@@ -344,6 +348,15 @@ finalize_transfer() {
     verify_tree "$TRANSFER_SOURCE" "$manifest"
     cp -a "$TRANSFER_SOURCE/." "$RUN_SOURCE/"
 
+    if [[ $CACHE_ROLE == ephemeral ]]; then
+        rm -rf --one-file-system -- "$TRANSFER_SOURCE"
+        rm -f "$manifest" "$TRANSFER_MARKER"
+        rmdir "$TRANSFER_ROOT"
+        printf 'SOURCE_CACHE_PROMOTION=skipped role=ephemeral source_sha=%s\n' \
+            "$source_sha"
+        return
+    fi
+
     if [[ $CACHE_ROLE == candidate ]]; then
         latest="$CACHE_ROOT/source-latest"
         if [[ -e $latest || -L $latest ]]; then
@@ -388,7 +401,7 @@ finalize_transfer() {
 command=${1:-}
 case $command in
     prepare)
-        [[ $# -eq 5 ]] || { echo "Usage: $0 prepare PROJECT_ROOT RUN_ROOT SOURCE_SHA baseline|candidate" >&2; exit 2; }
+        [[ $# -eq 5 ]] || { echo "Usage: $0 prepare PROJECT_ROOT RUN_ROOT SOURCE_SHA baseline|candidate|ephemeral" >&2; exit 2; }
         prepare_transfer "$2" "$3" "$4" "$5"
         ;;
     receive)

@@ -153,25 +153,61 @@ Run the full validation with:
 bash ci/sai/run_local_ci.sh /path/to/local-run.env
 ```
 
-The control checkout must have no tracked changes or non-ignored untracked
-files. The client materializes `ci/sai` from the recorded `CONTROL_SHA` with
-`git archive`, so ignored files and a check-to-upload working-tree race cannot
-alter or add remote control files. `SAI_SOURCE_SHA` defaults to `HEAD` and may
-name any commit already available in the local Git object database. The client
-uploads a gzip-compressed Git delta and manifest through SSH, executes the same
-remote build and validation scripts, and downloads the artifact bundle below
-`SAI_ARTIFACT_ROOT/<run-id>/`. This legacy local transport may consume an
-existing daily baseline. If no source baseline exists yet, verified manual
-candidates maintain a fallback baseline until a scheduled run replaces it;
-manual candidates never replace a scheduled baseline.
+By default, the client tests the commit named by `SAI_SOURCE_REF`, the legacy
+`SAI_SOURCE_SHA`, or `HEAD`, in that order. A command-line ref takes
+precedence:
+
+```bash
+bash ci/sai/run_local_ci.sh /path/to/local-run.env --source-ref my-branch
+```
+
+To test tracked working-tree changes without staging or committing them, use:
+
+```bash
+bash ci/sai/run_local_ci.sh /path/to/local-run.env --working-tree
+```
+
+This mode creates a deterministic Git tree object from the current contents of
+tracked files. Non-ignored untracked files are listed and excluded by default;
+include them explicitly when they are required by the build or test:
+
+```bash
+bash ci/sai/run_local_ci.sh /path/to/local-run.env \
+    --working-tree --include-untracked
+```
+
+Ignored untracked files are never included, even if they were force-added to
+the index; files already tracked by `HEAD` remain source files regardless of
+later ignore rules. The resolver does not change the branch, working tree, or
+real Git index. A working-tree source may consume an existing verified
+baseline for delta transfer, but it uses an ephemeral cache role and never
+becomes the shared SAI source baseline.
+
+The client always materializes the remote `ci/sai` control scripts from the
+recorded committed `CONTROL_SHA` with `git archive`. A full local run also
+refuses dirty changes to the local launcher, resolver, control-snapshot helper,
+or payload builder; commit those control changes before using them. Other
+working-tree edits under `ci/sai` are included in the source under test but do
+not change the archived remote control scripts. This prevents ignored or
+untracked files and a check-to-upload race from silently altering remote
+commands.
+
+The client uploads a gzip-compressed Git delta and manifest through SSH,
+executes the same remote build and validation scripts, and downloads the
+artifact bundle below `SAI_ARTIFACT_ROOT/<run-id>/`. Committed local runs use
+the candidate cache role. If no scheduled source baseline exists yet, verified
+manual candidates maintain a fallback baseline until a scheduled run replaces
+it; candidates never replace a scheduled baseline.
 GitHub-hosted runs instead use the reverse artifact download described below.
 
 The OpenSSH Host entry determines the remote username and identity file. The
 client additionally forces batch mode, strict host-key checking, disabled
 agent/port forwarding, and a temporary multiplexed control socket. The local
-developer is responsible for reviewing `SAI_SOURCE_SHA`, because that commit's
-build system, integration scripts, and binaries execute with the permissions
-of the configured SAI account.
+developer is responsible for reviewing the selected commit or working-tree
+contents because its build system, integration scripts, and binaries execute
+with the permissions of the configured SAI account. Local runs do not create
+GitHub Actions or pull-request Check records; use the GitHub workflow with a
+pushed commit when a public GitHub record is required.
 
 The selected directory is a reusable project root, not a checkout directory.
 Each attempt uses a new
