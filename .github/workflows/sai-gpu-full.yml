@@ -75,7 +75,6 @@ jobs:
       gpu_failed: ${{ steps.case_summary.outputs.failed }}
       gpu_infrastructure: ${{ steps.case_summary.outputs.infrastructure }}
       gpu_passed: ${{ steps.case_summary.outputs.passed }}
-      multinode_result: ${{ steps.case_summary.outputs.multinode }}
     permissions:
       actions: read
       checks: write
@@ -249,11 +248,12 @@ jobs:
           set -euo pipefail
           payload="$RUNNER_TEMP/source-payload.gz"
           manifest="$RUNNER_TEMP/source-manifest.gz"
-          output=$(bash control/ci/sai/build_source_payload.sh \
-            "$GITHUB_WORKSPACE/source" "$SOURCE_SHA" "$SOURCE_CACHE_BASE_SHA" \
-            "$payload" "$manifest")
+          output=$(python3 control/ci/sai/sai.py source payload \
+            --repository "$GITHUB_WORKSPACE/source" \
+            --source-id "$SOURCE_SHA" --base-sha "$SOURCE_CACHE_BASE_SHA" \
+            --payload "$payload" --manifest "$manifest")
           printf '%s\n' "$output"
-          mode=$(awk -F= '$1 == "SOURCE_PAYLOAD_MODE" {print $2}' <<< "$output")
+          mode=$(jq -er '.mode | select(. == "full" or . == "delta")' <<< "$output")
           [[ "$mode" == full || "$mode" == delta ]]
           {
             echo "SOURCE_PAYLOAD=$payload"
@@ -319,10 +319,10 @@ jobs:
         run: |
           set -uo pipefail
           set +e
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
+          ssh -F "$SAI_SSH_CONFIG" sai-ci \
+            python3 "$REMOTE_RUN_ROOT/control/sai.py" remote run \
             "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" "$CONTROL_SHA" \
             "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" \
-            < control/ci/sai/run_remote_ci.sh \
             2>&1 | tee "$RUNNER_TEMP/sai-remote-driver.log"
           remote_rc=${PIPESTATUS[0]}
           set -e
@@ -363,49 +363,11 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          available=false
-          passed=
-          failed=
-          infrastructure=
-          multinode=unavailable
-          summary=${ARTIFACT_ROOT:+$ARTIFACT_ROOT/results/case-matrix/gpu-case-summary.md}
-          components=${ARTIFACT_ROOT:+$ARTIFACT_ROOT/results/gpu-validation-components.tsv}
-          if [[ -n "$summary" && -f "$summary" ]]; then
-            cat "$summary" >> "$GITHUB_STEP_SUMMARY"
-            counts=$(sed -n \
-              's/^Passed: \*\*\([0-9][0-9]*\)\*\*; Failed: \*\*\([0-9][0-9]*\)\*\*; Infrastructure: \*\*\([0-9][0-9]*\)\*\*$/\1 \2 \3/p' \
-              "$summary")
-            if [[ "$counts" =~ ^[0-9]+\ [0-9]+\ [0-9]+$ ]]; then
-              read -r passed failed infrastructure <<< "$counts"
-              count_re='^([0-9]|[1-3][0-9]|4[0-8])$'
-              if [[ "$passed" =~ $count_re && "$failed" =~ $count_re && \
-                    "$infrastructure" =~ $count_re ]] && \
-                 (( passed + failed + infrastructure == 48 )); then
-                available=true
-              fi
-            fi
-          else
-            echo "## SAI GPU validation produced no case summary" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          if [[ -n "$components" && -f "$components" ]]; then
-            multinode_rc=$(awk -F '\t' \
-              '$1 == "cusolvermp-multinode" && $2 ~ /^[0-9]+$/ { print $2 }' \
-              "$components")
-            if [[ "$multinode_rc" =~ ^[0-9]+$ ]]; then
-              if [[ "$multinode_rc" == 0 ]]; then
-                multinode=passed
-              else
-                multinode=failed
-              fi
-            fi
-          fi
-          {
-            echo "available=$available"
-            echo "passed=$passed"
-            echo "failed=$failed"
-            echo "infrastructure=$infrastructure"
-            echo "multinode=$multinode"
-          } >> "$GITHUB_OUTPUT"
+          result=${ARTIFACT_ROOT:+$ARTIFACT_ROOT/results/case-matrix/result.json}
+          python3 control/ci/sai/sai.py report github \
+            --result "${result:-$RUNNER_TEMP/missing-result.json}" \
+            --github-output "$GITHUB_OUTPUT" \
+            --github-summary "$GITHUB_STEP_SUMMARY"
 
       - name: Upload SAI logs
         id: artifact_upload
@@ -438,12 +400,20 @@ jobs:
           REMOTE_OUTCOME: ${{ steps.remote_validation.outcome }}
           COLLECT_OUTCOME: ${{ steps.collect.outcome }}
           REMOTE_EXIT_CODE: ${{ steps.remote_validation.outputs.exit_code }}
+          RESULT_AVAILABLE: ${{ steps.case_summary.outputs.available }}
+          RESULT_PASSED: ${{ steps.case_summary.outputs.passed }}
+          RESULT_FAILED: ${{ steps.case_summary.outputs.failed }}
+          RESULT_INFRASTRUCTURE: ${{ steps.case_summary.outputs.infrastructure }}
         run: |
           set -euo pipefail
           echo "Remote validation: $REMOTE_OUTCOME (rc=${REMOTE_EXIT_CODE:-missing})"
           echo "Artifact collection: $COLLECT_OUTCOME"
           [[ "$REMOTE_OUTCOME" == success ]]
           [[ "$COLLECT_OUTCOME" == success ]]
+          [[ "$RESULT_AVAILABLE" == true ]]
+          [[ "$RESULT_PASSED" == 49 ]]
+          [[ "$RESULT_FAILED" == 0 ]]
+          [[ "$RESULT_INFRASTRUCTURE" == 0 ]]
 
   report-pr-check:
     name: Report SAI result to pull request
@@ -463,7 +433,6 @@ jobs:
           GPU_FAILED: ${{ needs.rebuild-and-test.outputs.gpu_failed }}
           GPU_INFRASTRUCTURE: ${{ needs.rebuild-and-test.outputs.gpu_infrastructure }}
           GPU_PASSED: ${{ needs.rebuild-and-test.outputs.gpu_passed }}
-          MULTINODE_RESULT: ${{ needs.rebuild-and-test.outputs.multinode_result }}
           PR_NUMBER: ${{ needs.admit.outputs.pr_number }}
           SAI_RESULT: ${{ needs.rebuild-and-test.result }}
           SOURCE_SHA: ${{ needs.admit.outputs.source_sha }}
@@ -505,26 +474,22 @@ jobs:
 
           case_summary='GPU case summary unavailable.'
           if [[ "$CASE_SUMMARY_AVAILABLE" == true ]]; then
-            count_re='^([0-9]|[1-3][0-9]|4[0-8])$'
+            count_re='^([0-9]|[1-4][0-9])$'
             [[ "$GPU_PASSED" =~ $count_re ]]
             [[ "$GPU_FAILED" =~ $count_re ]]
             [[ "$GPU_INFRASTRUCTURE" =~ $count_re ]]
-            (( GPU_PASSED + GPU_FAILED + GPU_INFRASTRUCTURE == 48 ))
+            (( GPU_PASSED + GPU_FAILED + GPU_INFRASTRUCTURE == 49 ))
             case_summary="GPU cases: **$GPU_PASSED passed, $GPU_FAILED failed, $GPU_INFRASTRUCTURE infrastructure**."
           fi
-          case "$MULTINODE_RESULT" in
-            passed) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **passed**.' ;;
-            failed) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **failed**.' ;;
-            *) multinode_summary='Multinode Si48 cuSolverMp RT-TDDFT: **result unavailable**.' ;;
-          esac
           artifact_summary='Raw test files were not uploaded.'
           if [[ -n "$ARTIFACT_URL" ]]; then
             [[ "$ARTIFACT_URL" =~ ^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/[0-9]+/artifacts/[0-9]+$ ]]
             artifact_summary="[Download raw test files]($ARTIFACT_URL) (retained for 30 days)."
           fi
-          comment=$(printf '%s\n\n%s\n%s\n\n%s | %s\n\nCandidate: `%s`' \
+          # shellcheck disable=SC2016
+          comment=$(printf '%s\n\n%s\n\n%s | %s\n\nCandidate: `%s`' \
             "## SAI GPU validation: $SAI_RESULT" \
-            "$case_summary" "$multinode_summary" \
+            "$case_summary" \
             "[Open the Actions run]($details_url)" "$artifact_summary" \
             "$SOURCE_SHA")
           comment_request=$(python3 - "$comment" <<'PY'

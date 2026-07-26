@@ -6,13 +6,16 @@ set -euo pipefail
 : "${BUILD_ROOT:?BUILD_ROOT must be set}"
 : "${INSTALL_ROOT:?INSTALL_ROOT must be set}"
 : "${TOOLCHAIN_FILE:?TOOLCHAIN_FILE must be set}"
+: "${MP_PROFILE:?MP_PROFILE must be set}"
 
+# shellcheck source=/dev/null
 source "$TOOLCHAIN_FILE"
 declare -F sai_load_toolchain >/dev/null || {
     echo "Missing sai_load_toolchain() in $TOOLCHAIN_FILE" >&2
     exit 1
 }
 sai_load_toolchain
+[[ ${SAI_PROFILE_NAME:-} == "$MP_PROFILE" ]]
 
 : "${SAI_CUDA_ROOT:?}"
 : "${SAI_NVHPC_ROOT:?}"

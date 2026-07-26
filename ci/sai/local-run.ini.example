@@ -1,0 +1,7 @@
+# Keep this file outside the ABACUS checkout when customizing it.
+[local]
+ssh_config = ~/.ssh/config
+ssh_target = SAI-abacus
+project_root = /home/your-sai-user/abacus
+run_namespace = local
+artifact_root = ~/sai-local-artifacts

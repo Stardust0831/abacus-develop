@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-if [[ $# -ne 7 ]]; then
-    echo "Usage: $0 SUITE_DIR CASE_DIR CASE_NAME ABACUS RANKS OMP_THREADS TASK_ROOT" >&2
+if [[ $# -lt 7 || $# -gt 8 ]]; then
+    echo "Usage: $0 SUITE_DIR CASE_DIR CASE_NAME ABACUS RANKS OMP_THREADS TASK_ROOT [MAX_ATTEMPTS]" >&2
     exit 2
 fi
 
@@ -14,6 +14,7 @@ abacus=$(realpath -e "$4")
 ranks=$5
 omp_threads=$6
 task_root=$(realpath -e "$7")
+max_attempts=${8:-2}
 retry_delay=10
 
 [[ $case_name =~ ^[A-Za-z0-9_.-]+$ ]]
@@ -21,6 +22,7 @@ retry_delay=10
 [[ -x $abacus ]]
 [[ $ranks =~ ^[1-9][0-9]*$ ]]
 [[ $omp_threads =~ ^[1-9][0-9]*$ ]]
+[[ $max_attempts =~ ^[1-9][0-9]*$ && $max_attempts -le 2 ]]
 : "${RESULT_ROOT:?}"
 result_root=$(realpath -e "$RESULT_ROOT")
 [[ $task_root == "$result_root/"* ]]
@@ -48,10 +50,10 @@ retried=0
 retry_reason=none
 final_pmix=0
 test_rc=2
-while [[ $attempt -le 2 ]]; do
+while [[ $attempt -le $max_attempts ]]; do
     cleanup_case_outputs
     attempt_log="$task_root/case-attempt-${attempt}.log"
-    printf 'SAI_GPU_CASE_ATTEMPT attempt=%s max=2\n' "$attempt" \
+    printf 'SAI_GPU_CASE_ATTEMPT attempt=%s max=%s\n' "$attempt" "$max_attempts" \
         | tee -a "$combined_log"
 
     set +e
@@ -74,7 +76,7 @@ while [[ $attempt -le 2 ]]; do
             fi
             ;;
     esac
-    if [[ $attempt -eq 1 && $final_pmix -eq 1 ]]; then
+    if [[ $attempt -lt $max_attempts && $final_pmix -eq 1 ]]; then
         retried=1
         retry_reason=pmix_startup
         echo "SAI_PMIX_STARTUP_RETRY delay_seconds=$retry_delay" \
@@ -89,6 +91,7 @@ done
 metadata_tmp=$(mktemp "$task_root/.pmix-retry.XXXXXX")
 {
     printf 'attempts\t%s\n' "$attempt"
+    printf 'max_attempts\t%s\n' "$max_attempts"
     printf 'retried\t%s\n' "$retried"
     printf 'retry_reason\t%s\n' "$retry_reason"
     printf 'final_pmix\t%s\n' "$final_pmix"

@@ -27,7 +27,7 @@ grep -Fxq "run_root=$run_root" "$marker"
 IFS= read -r download_url
 blob_url_pattern='^https://[A-Za-z0-9.-]+\.blob\.core\.windows\.net/[^[:space:]"\\]+$'
 [[ $download_url =~ $blob_url_pattern ]]
-if IFS= read -r extra; then
+if IFS= read -r _extra; then
     echo "Artifact URL input must contain exactly one line" >&2
     exit 1
 fi

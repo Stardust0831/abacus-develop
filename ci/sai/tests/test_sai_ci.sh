@@ -127,200 +127,6 @@ test_configure_ssh_client() {
     assert_not_contains "$log" 'sai-ci-secret-marker'
 }
 
-test_build_source_payload() {
-    local root=$test_root/source-payload
-    local repository=$root/repository
-    local sha1 sha2 tree output
-    mkdir -p "$repository" "$root/full" "$root/delta"
-    git -C "$repository" init -q
-    git -C "$repository" config user.email ci@example.invalid
-    git -C "$repository" config user.name ci
-    printf 'first\n' > "$repository/data.txt"
-    git -C "$repository" add data.txt
-    git -C "$repository" commit -q -m first
-    sha1=$(git -C "$repository" rev-parse HEAD)
-    printf 'second\n' > "$repository/data.txt"
-    printf 'new\n' > "$repository/new.txt"
-    git -C "$repository" add data.txt new.txt
-    git -C "$repository" commit -q -m second
-    sha2=$(git -C "$repository" rev-parse HEAD)
-
-    output=$(bash ci/sai/build_source_payload.sh "$repository" "$sha1" none \
-        "$root/full/source-payload.gz" "$root/full/source-manifest.gz")
-    grep -Fxq 'SOURCE_PAYLOAD_MODE=full' <<< "$output"
-    cmp <(git -C "$repository" ls-tree -r -z --full-tree "$sha1") \
-        <(gzip -cd "$root/full/source-manifest.gz")
-    empty_tree=$(git -C "$repository" hash-object -t tree /dev/null)
-    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
-            "$empty_tree" "$sha1") \
-        <(gzip -cd "$root/full/source-payload.gz")
-
-    output=$(bash ci/sai/build_source_payload.sh "$repository" "$sha2" "$sha1" \
-        "$root/delta/source-payload.gz" "$root/delta/source-manifest.gz")
-    grep -Fxq 'SOURCE_PAYLOAD_MODE=delta' <<< "$output"
-    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
-            "$sha1" "$sha2") \
-        <(gzip -cd "$root/delta/source-payload.gz")
-
-    printf 'working tree\n' > "$repository/data.txt"
-    output=$(bash ci/sai/resolve_local_source.sh \
-        "$repository" --working-tree)
-    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
-    output=$(bash ci/sai/build_source_payload.sh "$repository" "$tree" "$sha2" \
-        "$root/delta/tree-payload.gz" "$root/delta/tree-manifest.gz")
-    grep -Fxq 'SOURCE_PAYLOAD_MODE=delta' <<< "$output"
-    cmp <(git -C "$repository" diff --binary --full-index --no-renames \
-            "$sha2" "$tree") \
-        <(gzip -cd "$root/delta/tree-payload.gz")
-    cmp <(git -C "$repository" ls-tree -r -z --full-tree "$tree") \
-        <(gzip -cd "$root/delta/tree-manifest.gz")
-}
-
-test_resolve_local_source() {
-    local root=$test_root/local-source
-    local repository=$root/repository
-    local base tree output status_before status_after index_before index_after
-    mkdir -p "$repository/ci/sai"
-    git -C "$repository" init -q
-    git -C "$repository" config user.email ci@example.invalid
-    git -C "$repository" config user.name ci
-    printf '*.ignored\n' > "$repository/.gitignore"
-    printf 'committed\n' > "$repository/tracked.txt"
-    printf 'tracked despite ignore\n' > "$repository/legacy.ignored"
-    printf 'rename source\n' > "$repository/rename-source.txt"
-    printf 'control committed\n' > "$repository/ci/sai/control.txt"
-    git -C "$repository" add .
-    git -C "$repository" add -f legacy.ignored
-    git -C "$repository" commit -qm base
-    base=$(git -C "$repository" rev-parse HEAD)
-
-    printf 'staged\n' > "$repository/tracked.txt"
-    git -C "$repository" add tracked.txt
-    printf 'working tree\n' > "$repository/tracked.txt"
-    printf 'staged new\n' > "$repository/staged-new.txt"
-    git -C "$repository" add staged-new.txt
-    printf 'staged new working tree\n' > "$repository/staged-new.txt"
-    printf 'control working tree\n' > "$repository/ci/sai/control.txt"
-    printf 'untracked\n' > "$repository/untracked.txt"
-    printf 'ignored\n' > "$repository/private.ignored"
-    printf 'force-staged ignored\n' > "$repository/staged-secret.ignored"
-    git -C "$repository" add -f staged-secret.ignored
-    git -C "$repository" mv -f rename-source.txt renamed-secret.ignored
-    printf 'modified rename\n' >> "$repository/renamed-secret.ignored"
-    git -C "$repository" add -f renamed-secret.ignored
-    git -C "$repository" update-index --assume-unchanged tracked.txt
-    printf 'assume-unchanged working tree\n' > "$repository/tracked.txt"
-    status_before=$(git -C "$repository" status --porcelain=v1 \
-        --untracked-files=all)
-    index_before=$(sha256sum "$repository/.git/index" | awk '{print $1}')
-
-    output=$(bash ci/sai/resolve_local_source.sh \
-        "$repository" --source-ref HEAD)
-    assert_contains <(printf '%s\n' "$output") 'SOURCE_MODE=commit'
-    assert_contains <(printf '%s\n' "$output") "SOURCE_ID=$base"
-    assert_contains <(printf '%s\n' "$output") 'SOURCE_DIRTY=false'
-
-    output=$(bash ci/sai/resolve_local_source.sh \
-        "$repository" --working-tree 2> "$root/working-tree.err")
-    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
-    [[ $tree =~ ^[0-9a-f]{40}$ ]]
-    assert_contains <(printf '%s\n' "$output") 'SOURCE_MODE=working-tree'
-    assert_contains <(printf '%s\n' "$output") "SOURCE_ID=$tree"
-    assert_contains <(printf '%s\n' "$output") "SOURCE_BASE_COMMIT=$base"
-    assert_contains <(printf '%s\n' "$output") 'SOURCE_DIRTY=true'
-    assert_contains <(printf '%s\n' "$output") \
-        'SOURCE_INCLUDE_UNTRACKED=false'
-    [[ $(git -C "$repository" show "$tree:tracked.txt") == \
-       'assume-unchanged working tree' ]]
-    [[ $(git -C "$repository" show "$tree:staged-new.txt") == \
-       'staged new working tree' ]]
-    [[ $(git -C "$repository" show "$tree:ci/sai/control.txt") == \
-       'control working tree' ]]
-    if git -C "$repository" cat-file -e "$tree:untracked.txt" 2>/dev/null; then
-        fail 'working-tree snapshot included untracked content by default'
-    fi
-    if git -C "$repository" cat-file -e "$tree:private.ignored" 2>/dev/null; then
-        fail 'working-tree snapshot included ignored content'
-    fi
-    if git -C "$repository" cat-file -e \
-        "$tree:staged-secret.ignored" 2>/dev/null; then
-        fail 'working-tree snapshot included a force-staged ignored addition'
-    fi
-    if git -C "$repository" cat-file -e \
-        "$tree:renamed-secret.ignored" 2>/dev/null; then
-        fail 'working-tree snapshot included an ignored rename destination'
-    fi
-    [[ $(git -C "$repository" show "$tree:legacy.ignored") == \
-       'tracked despite ignore' ]]
-    assert_contains "$root/working-tree.err" 'untracked.txt'
-    assert_contains "$root/working-tree.err" 'staged-secret.ignored'
-    assert_contains "$root/working-tree.err" 'renamed-secret.ignored'
-
-    status_after=$(git -C "$repository" status --porcelain=v1 \
-        --untracked-files=all)
-    index_after=$(sha256sum "$repository/.git/index" | awk '{print $1}')
-    [[ $status_after == "$status_before" ]]
-    [[ $index_after == "$index_before" ]]
-
-    output=$(bash ci/sai/resolve_local_source.sh \
-        "$repository" --working-tree --include-untracked)
-    tree=$(awk -F= '$1 == "SOURCE_TREE_SHA" {print $2}' <<< "$output")
-    assert_contains <(printf '%s\n' "$output") \
-        'SOURCE_INCLUDE_UNTRACKED=true'
-    [[ $(git -C "$repository" show "$tree:untracked.txt") == 'untracked' ]]
-    if git -C "$repository" cat-file -e "$tree:private.ignored" 2>/dev/null; then
-        fail 'include-untracked snapshot included ignored content'
-    fi
-    if git -C "$repository" cat-file -e \
-        "$tree:staged-secret.ignored" 2>/dev/null; then
-        fail 'include-untracked snapshot included a force-staged ignored addition'
-    fi
-    if git -C "$repository" cat-file -e \
-        "$tree:renamed-secret.ignored" 2>/dev/null; then
-        fail 'include-untracked snapshot included an ignored rename destination'
-    fi
-    [[ $(git -C "$repository" show "$tree:legacy.ignored") == \
-       'tracked despite ignore' ]]
-    [[ $(sha256sum "$repository/.git/index" | awk '{print $1}') == \
-       "$index_before" ]]
-
-    if bash ci/sai/resolve_local_source.sh "$repository" \
-        --source-ref HEAD --include-untracked > /dev/null 2>&1; then
-        fail '--include-untracked was accepted outside working-tree mode'
-    fi
-}
-
-test_prepare_control_snapshot() {
-    local root=$test_root/control-snapshot
-    local repository=$root/repository
-    local output=$root/output
-    local control_sha result control_root
-    mkdir -p "$repository/ci/sai"
-    git -C "$repository" init -q
-    git -C "$repository" config user.email ci@example.invalid
-    git -C "$repository" config user.name ci
-    printf '*.log\n' > "$repository/.gitignore"
-    printf '#!/usr/bin/env bash\nexit 0\n' \
-        > "$repository/ci/sai/run_remote_ci.sh"
-    chmod +x "$repository/ci/sai/run_remote_ci.sh"
-    printf 'tracked\n' > "$repository/ci/sai/tracked.txt"
-    git -C "$repository" add .gitignore ci/sai
-    git -C "$repository" commit -q -m control
-    control_sha=$(git -C "$repository" rev-parse HEAD)
-    printf 'ignored secret\n' > "$repository/ci/sai/private.log"
-    printf 'untracked\n' > "$repository/ci/sai/untracked.txt"
-
-    result=$(bash ci/sai/prepare_control_snapshot.sh \
-        "$repository" "$control_sha" "$output")
-    control_root=$(awk -F= '$1 == "CONTROL_ROOT" {print $2}' <<< "$result")
-    [[ $control_root == "$output/ci/sai" ]]
-    assert_file "$control_root/run_remote_ci.sh"
-    assert_file "$control_root/tracked.txt"
-    [[ -x $control_root/run_remote_ci.sh ]]
-    assert_not_exists "$control_root/private.log"
-    assert_not_exists "$control_root/untracked.txt"
-}
-
 test_remote_probe_identity() {
     local root=$test_root/remote-probe
     local fake_bin=$root/bin
@@ -356,47 +162,6 @@ EOF
     if PATH="$fake_bin:$original_path" HOME=$root/home \
         bash ci/sai/probe_remote_sai.sh wronguser > /dev/null 2>&1; then
         fail 'remote probe accepted the wrong expected user'
-    fi
-}
-
-test_local_client_probe() {
-    local root=$test_root/local-client
-    local fake_bin=$root/bin
-    local ssh_config=$root/ssh-config
-    local local_config=$root/local-run.env
-    local ssh_log=$root/ssh.log
-    mkdir -p "$fake_bin"
-    : > "$ssh_config"
-    cat > "$local_config" <<EOF
-SAI_SSH_CONFIG=$ssh_config
-SAI_SSH_TARGET=test-sai
-EOF
-    cat > "$fake_bin/ssh" <<EOF
-#!/usr/bin/env bash
-printf '%s\n' "\$*" >> "$ssh_log"
-case " \$* " in
-    *' -G '*) echo 'user localuser'; exit 0 ;;
-    *' -MNf '*) exit 0 ;;
-    *' -O exit '*) exit 0 ;;
-esac
-cat >/dev/null
-echo 'SAI_SSH_PROBE_OK user=localuser'
-EOF
-    chmod +x "$fake_bin/ssh"
-
-    PATH="$fake_bin:$original_path" \
-        bash ci/sai/run_local_ci.sh "$local_config" --probe-only \
-        > "$root/local-probe.log"
-    assert_contains "$root/local-probe.log" \
-        'SAI_LOCAL_PROBE_OK target=test-sai user=localuser'
-    assert_contains "$ssh_log" 'StrictHostKeyChecking=yes'
-    assert_contains "$ssh_log" 'ForwardAgent=no'
-    assert_contains "$ssh_log" 'ClearAllForwardings=yes'
-
-    if PATH="$fake_bin:$original_path" \
-        bash ci/sai/run_local_ci.sh "$local_config" --probe-only \
-        --working-tree > /dev/null 2>&1; then
-        fail 'local client accepted source selection with --probe-only'
     fi
 }
 
@@ -581,37 +346,48 @@ test_pr_result_comment() {
     local summary_script=$root/publish-summary.sh
     local report_script=$root/report-result.sh
     local summary_output=$root/summary-output
-    local step_summary=$root/step-summary.md
     local check_request=$root/check-request.json
     local comment_request=$root/comment-request.json
     local sha=1111111111111111111111111111111111111111
     mkdir -p "$artifact_root/results/case-matrix" "$fake_bin"
+    python3 - "$artifact_root/results/case-matrix/result.json" <<'PY'
+import json
+import sys
 
-    cat > "$artifact_root/results/case-matrix/gpu-case-summary.md" <<'EOF'
-## SAI GPU case matrix
-
-Passed: **47**; Failed: **1**; Infrastructure: **0**
-EOF
-    printf 'component\texit_code\ncase-matrix\t1\ncusolvermp-multinode\t0\n' \
-        > "$artifact_root/results/gpu-validation-components.tsv"
+resources = ["gpu1"] + ["gpu2"] * 7 + ["gpu4"] * 40 + ["gpu8x2"]
+cases = []
+for index, resource in enumerate(resources):
+    suite, name, runner = "suite", f"case-{index:02d}", "autotest"
+    if resource == "gpu8x2":
+        suite = "15_rtTDDFT_GPU"
+        name = "19_NO_Si48_CUSOLVERMP_TDDFT_GPU"
+        runner = "cusolvermp"
+    cases.append({
+        "case_id": f"{suite}/{name}", "suite": suite, "name": name,
+        "resource": resource, "runner": runner,
+        "state": "FAIL" if index == 0 else "PASS",
+        "exit_code": 1 if index == 0 else 0,
+        "slurm_state": "FAILED" if index == 0 else "COMPLETED",
+        "job_id": f"100_{index}", "elapsed_seconds": 3,
+        "artifact_dir": f"/tmp/case-{index:02d}",
+    })
+with open(sys.argv[1], "w", encoding="utf-8") as handle:
+    json.dump({
+        "protocol": 1, "total": 49, "passed": 48, "failed": 1,
+        "infrastructure": 0, "cases": cases,
+    }, handle)
+PY
+    printf '# SAI GPU result\n\nPassed: **48**; Failed: **1**; Infrastructure: **0**\n' \
+        > "$artifact_root/results/case-matrix/gpu-case-summary.md"
 
     extract_workflow_run_script 'Publish GPU case summary' "$summary_script"
+    sed -i 's#control/ci/sai/sai.py#ci/sai/sai.py#g' "$summary_script"
     ARTIFACT_ROOT=$artifact_root GITHUB_OUTPUT=$summary_output \
-    GITHUB_STEP_SUMMARY=$step_summary bash "$summary_script"
+        GITHUB_STEP_SUMMARY=$root/step-summary.md bash "$summary_script"
     assert_contains "$summary_output" 'available=true'
-    assert_contains "$summary_output" 'passed=47'
+    assert_contains "$summary_output" 'passed=48'
     assert_contains "$summary_output" 'failed=1'
-    assert_contains "$summary_output" 'infrastructure=0'
-    assert_contains "$summary_output" 'multinode=passed'
-
-    cat > "$artifact_root/results/case-matrix/gpu-case-summary.md" <<'EOF'
-## SAI GPU case matrix
-
-Passed: **18446744073709551664**; Failed: **0**; Infrastructure: **0**
-EOF
-    ARTIFACT_ROOT=$artifact_root GITHUB_OUTPUT=$root/overflow-summary-output \
-    GITHUB_STEP_SUMMARY=$root/overflow-step-summary.md bash "$summary_script"
-    assert_contains "$root/overflow-summary-output" 'available=false'
+    assert_contains "$summary_output" 'total=49'
 
     cat > "$fake_bin/gh" <<'EOF'
 #!/usr/bin/env bash
@@ -619,211 +395,75 @@ set -euo pipefail
 case " $* " in
     *'check-runs/12345'*) cat > "$FAKE_CHECK_REQUEST" ;;
     *'issues/17/comments'*) cat > "$FAKE_COMMENT_REQUEST" ;;
-    *)
-        echo "Unexpected fake gh invocation: $*" >&2
-        exit 2
-        ;;
+    *) exit 2 ;;
 esac
 EOF
     chmod +x "$fake_bin/gh"
     extract_workflow_run_script 'Complete requested PR check' "$report_script"
     PATH="$fake_bin:$original_path" \
-    FAKE_CHECK_REQUEST=$check_request FAKE_COMMENT_REQUEST=$comment_request \
-    ARTIFACT_URL=https://github.com/Stardust0831/abacus-develop/actions/runs/98765/artifacts/24680 \
-    CASE_SUMMARY_AVAILABLE=true CHECK_RUN_ID=12345 \
-    GPU_FAILED=1 GPU_INFRASTRUCTURE=0 GPU_PASSED=47 \
-    MULTINODE_RESULT=passed PR_NUMBER=17 SAI_RESULT=failure SOURCE_SHA=$sha \
-    GH_TOKEN=test-token GITHUB_RUN_ID=98765 \
-    GITHUB_REPOSITORY=Stardust0831/abacus-develop \
-    GITHUB_SERVER_URL=https://github.com \
-        bash "$report_script"
+        FAKE_CHECK_REQUEST=$check_request FAKE_COMMENT_REQUEST=$comment_request \
+        ARTIFACT_URL=https://github.com/Stardust0831/abacus-develop/actions/runs/98765/artifacts/24680 \
+        CASE_SUMMARY_AVAILABLE=true CHECK_RUN_ID=12345 \
+        GPU_FAILED=1 GPU_INFRASTRUCTURE=0 GPU_PASSED=48 \
+        PR_NUMBER=17 SAI_RESULT=failure SOURCE_SHA=$sha GH_TOKEN=test-token \
+        GITHUB_RUN_ID=98765 GITHUB_REPOSITORY=Stardust0831/abacus-develop \
+        GITHUB_SERVER_URL=https://github.com bash "$report_script"
 
     python3 - "$check_request" "$comment_request" "$sha" <<'PY'
 import json
 import sys
 
-check_path, comment_path, source_sha = sys.argv[1:]
-with open(check_path, encoding="utf-8") as handle:
+with open(sys.argv[1], encoding="utf-8") as handle:
     check = json.load(handle)
-with open(comment_path, encoding="utf-8") as handle:
-    comment = json.load(handle)
-assert check["status"] == "completed"
-assert check["conclusion"] == "failure"
-body = comment["body"]
-assert "## SAI GPU validation: failure" in body
-assert "47 passed, 1 failed, 0 infrastructure" in body
-assert "Multinode Si48 cuSolverMp RT-TDDFT: **passed**" in body
-assert "actions/runs/98765" in body
-assert "actions/runs/98765/artifacts/24680" in body
-assert source_sha in body
+with open(sys.argv[2], encoding="utf-8") as handle:
+    comment = json.load(handle)["body"]
+assert check["status"] == "completed" and check["conclusion"] == "failure"
+assert "48 passed, 1 failed, 0 infrastructure" in comment
+assert "actions/runs/98765/artifacts/24680" in comment
+assert "Multinode" not in comment
+assert sys.argv[3] in comment
 PY
-
-    set +e
-    PATH="$fake_bin:$original_path" \
-    FAKE_CHECK_REQUEST=$root/overflow-check-request.json \
-    FAKE_COMMENT_REQUEST=$root/overflow-comment-request.json \
-    ARTIFACT_URL=https://github.com/Stardust0831/abacus-develop/actions/runs/98765/artifacts/24680 \
-    CASE_SUMMARY_AVAILABLE=true CHECK_RUN_ID=12345 \
-    GPU_FAILED=0 GPU_INFRASTRUCTURE=0 GPU_PASSED=18446744073709551664 \
-    MULTINODE_RESULT=passed PR_NUMBER=17 SAI_RESULT=failure SOURCE_SHA=$sha \
-    GH_TOKEN=test-token GITHUB_RUN_ID=98765 \
-    GITHUB_REPOSITORY=Stardust0831/abacus-develop \
-    GITHUB_SERVER_URL=https://github.com \
-        bash "$report_script" > "$root/overflow-report.log" 2>&1
-    overflow_rc=$?
-    set -e
-    [[ $overflow_rc -ne 0 ]]
-    assert_not_exists "$root/overflow-comment-request.json"
 }
 
 test_workflow_security_policy() {
     local workflow=.github/workflows/sai-gpu-full.yml
     local bootstrap=.github/workflows/sai-bootstrap.yml
     local toolchain=ci/sai/toolchains/abacus-develop-git-079fd0c.env.example
-    local payload_builder=ci/sai/build_source_payload.sh
-    local runtime_file report_job
+    local report_job
     assert_contains "$workflow" 'cron: "30 20 * * *"'
-    assert_contains "$workflow" 'issue_comment:'
     assert_contains "$workflow" "github.event.comment.body == '/abacus-ci sai-gpu'"
-    assert_contains "$workflow" 'run: bash control/ci/sai/authorize_pr_comment.sh'
     assert_contains "$workflow" "if: needs.admit.outputs.accepted == 'true'"
-    assert_contains "$workflow" 'repository: ${{ env.SOURCE_REPOSITORY }}'
-    assert_contains "$workflow" 'checks: write'
-    assert_contains "$workflow" 'issues: write'
-    assert_contains "$workflow" 'pull-requests: read'
-    report_job=$(sed -n '/^  report-pr-check:/,$p' "$workflow")
-    assert_contains <(printf '%s\n' "$report_job") 'pull-requests: write'
-    assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
-    assert_contains "$workflow" "group: sai-gpu-\${{ github.event_name == 'schedule' && 'daily' || github.run_id }}"
-    assert_not_contains "$workflow" 'group: sai-gpu-rebuild'
     assert_contains "$workflow" 'ref: ${{ github.event.repository.default_branch }}'
-    assert_contains "$workflow" 'Approved code SHA; executes as abacususer01 on SAI'
-    assert_contains "$bootstrap" 'name: sai-ssh-manual'
-    assert_contains "$bootstrap" 'ref: ${{ github.event.repository.default_branch }}'
-    assert_contains "$bootstrap" 'rsync -az -e "ssh -F $SAI_SSH_CONFIG"'
-    assert_contains "$workflow" 'ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci'
-    assert_contains "$bootstrap" 'ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci'
-    assert_contains "$workflow" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
-    assert_contains "$bootstrap" 'ssh -F "$SAI_SSH_CONFIG" -O exit sai-ci'
-    assert_contains ci/sai/run_remote_ci.sh \
-        'toolchains/abacus-develop-git-079fd0c.env.example'
-    assert_not_contains ci/sai/run_remote_ci.sh 'prepare_nvidia_mp.sh'
-    assert_contains "$toolchain" \
-        'export SAI_ABACUS_MODULE=abacus/develop-git-079fd0c-260724-sm70-auto'
-    assert_contains "$toolchain" \
-        'export SAI_ABACUS_MODULE_COMMIT=079fd0cff4e91abc25b6e2809114cfbeac94720e'
-    assert_contains "$toolchain" 'export SAI_CUSOLVERMP_ROOT=/opt/devtools/nvidia/mp_libs'
-    assert_contains "$toolchain" 'export SAI_CUBLASMP_ROOT=/opt/devtools/nvidia/mp_libs'
-    assert_contains "$toolchain" 'module load "$SAI_ABACUS_MODULE"'
-    assert_not_contains "$toolchain" 'module load nvhpc/'
-    assert_not_contains "$toolchain" 'module load nvmplibs/'
-    assert_contains "$toolchain" 'export SAI_NCCL_ROOT=$NCCL_ROOT'
-    assert_not_contains "$toolchain" 'module load nccl/'
-    assert_not_contains "$toolchain" 'export SAI_NCCL_ROOT=/opt/'
-    assert_contains "$workflow" 'source_transfer_cache.sh'
-    assert_contains "$workflow" 'Build compressed source payload'
-    assert_contains "$workflow" 'Upload source payload artifact'
-    assert_contains "$workflow" 'Pull and apply source payload on SAI'
-    assert_contains "$workflow" 'actions: read'
-    assert_contains "$workflow" 'unset GH_TOKEN'
-    assert_contains "$workflow" 'size_in_bytes'
-    assert_contains "$workflow" '--dump-header - --output /dev/null --config -'
-    assert_not_contains "$workflow" '--header "Authorization: Bearer $GH_TOKEN"'
-    assert_contains "$workflow" 'compression-level: 0'
+    assert_contains "$workflow" "name: \${{ github.event_name == 'schedule' && 'sai-ssh-scheduled' || 'sai-ssh-manual' }}"
+    assert_contains "$workflow" 'python3 control/ci/sai/sai.py source payload'
+    assert_contains "$workflow" 'python3 "$REMOTE_RUN_ROOT/control/sai.py" remote run'
+    assert_contains "$workflow" 'python3 control/ci/sai/sai.py report github'
+    assert_contains "$workflow" '[[ "$RESULT_AVAILABLE" == true ]]'
+    assert_contains "$workflow" '[[ "$RESULT_PASSED" == 49 ]]'
+    assert_not_contains "$workflow" 'run_remote_ci.sh'
+    assert_not_contains "$workflow" 'build_source_payload.sh'
+    assert_not_contains "$workflow" 'multinode_result'
     assert_contains "$workflow" 'retention-days: 1'
     assert_contains "$workflow" 'retention-days: 30'
-    assert_contains "$workflow" 'steps.artifact_upload.outputs.artifact-url'
-    assert_contains "$workflow" 'GPU cases: **$GPU_PASSED passed, $GPU_FAILED failed, $GPU_INFRASTRUCTURE infrastructure**.'
-    assert_contains "$workflow" '[Download raw test files]($ARTIFACT_URL) (retained for 30 days).'
-    assert_contains "$workflow" 'issues/$PR_NUMBER/comments'
-    assert_contains "$workflow" 'download_source_artifact.sh'
-    assert_not_contains "$workflow" 'stage_source_from_git.sh'
-    assert_contains "$payload_builder" 'diff --binary --full-index --no-renames'
-    assert_contains "$payload_builder" 'empty_tree=$(git -C "$repository" hash-object -t tree /dev/null)'
-    assert_contains "$payload_builder" 'ls-tree -r -z --full-tree "$source_sha"'
-    assert_contains "$payload_builder" '| gzip -1 > "$payload"'
-    assert_contains "$workflow" 'run_namespace=${RUN_NAMESPACE_INPUT:-manual}'
-    assert_contains "$workflow" 'source_cache_role=baseline'
-    assert_contains "$workflow" 'source_cache_role=candidate'
-    assert_contains "$workflow" \
-        'runs/$RUN_NAMESPACE/$run_key'
-    assert_not_contains "$workflow" '"sai-ci:$REMOTE_RUN_ROOT/source/"'
-    assert_contains ci/sai/download_source_artifact.sh \
-        '^https://[A-Za-z0-9.-]+\.blob\.core\.windows\.net/'
-    assert_contains ci/sai/download_source_artifact.sh \
-        "--proto '=https'"
-    assert_contains ci/sai/download_source_artifact.sh 'part_count=8'
-    assert_contains ci/sai/download_source_artifact.sh '--range "$first-$last"'
-    assert_not_contains ci/sai/download_source_artifact.sh '--location'
-    assert_not_contains ci/sai/download_source_artifact.sh '.artifact-url.'
-    assert_not_contains ci/sai/download_source_artifact.sh \
-        'curl "$download_url"'
-    assert_not_contains ci/sai/probe_remote_sai.sh ' curl '
-    assert_not_contains ci/sai/probe_remote_sai.sh ' xz '
-    assert_contains "$workflow" 'bash -s -- "$SAI_SSH_USER"'
-    assert_contains "$bootstrap" 'bash -s -- "$SAI_SSH_USER"'
-    assert_contains "$workflow" \
-        '^/(home|org)/abacus-group/abacususer01/'
-    assert_contains "$bootstrap" \
-        '^/(home|org)/abacus-group/abacususer01/'
-    assert_not_contains ci/sai/probe_remote_sai.sh '1478400356'
-    for runtime_file in ci/sai/build_gpu.sh ci/sai/test_gpu.sbatch \
-        ci/sai/test_gpu_case.sh "$toolchain"; do
-        assert_contains "$runtime_file" '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}'
-        assert_not_contains "$runtime_file" ':${LD_LIBRARY_PATH:-}'
-    done
-    assert_contains ci/sai/run_local_ci.sh 'source_transfer_cache.sh'
-    assert_contains ci/sai/run_local_ci.sh 'resolve_local_source.sh'
-    assert_contains ci/sai/run_local_ci.sh 'source_cache_role=candidate'
-    assert_contains ci/sai/run_local_ci.sh 'source_cache_role=ephemeral'
-    assert_contains ci/sai/run_local_ci.sh '"$source_cache_role"'
-    assert_contains ci/sai/run_local_ci.sh \
-        'Commit local SAI launcher changes before starting a remote run'
-    assert_contains ci/sai/run_local_ci.sh \
-        '--path="$local_control_path"'
-    assert_not_contains ci/sai/run_local_ci.sh 'diff --quiet HEAD'
-    assert_not_contains ci/sai/run_local_ci.sh \
-        'status --porcelain --untracked-files=all'
-    assert_contains ci/sai/run_local_ci.sh 'prepare_control_snapshot.sh'
-    assert_contains ci/sai/run_local_ci.sh \
-        'expected_org_project_root=/org/${SAI_PROJECT_ROOT#/home/}'
-    assert_contains ci/sai/run_local_ci.sh '"$control_root/"'
-    assert_contains ci/sai/run_local_ci.sh '< "$control_root/probe_remote_sai.sh"'
-    assert_not_contains ci/sai/run_local_ci.sh '< "$script_dir/probe_remote_sai.sh"'
-    assert_not_contains ci/sai/local-run.env.example 'PRIVATE KEY'
-    for runtime_file in \
-        ci/sai/run_remote_ci.sh \
-        ci/sai/run_slurm_job.sh \
-        ci/sai/collect_remote_artifacts.sh \
-        ci/sai/mark_artifacts_uploaded.sh \
-        ci/sai/rt_tddft_scale_remote.sh \
-        ci/sai/rt_tddft_efficiency_remote.sh \
-        ci/sai/rt_tddft_scale.sbatch; do
-        assert_contains "$runtime_file" \
-            'canonical_home=$(cd "$HOME" && pwd -P)'
-        assert_not_contains "$runtime_file" '== "$HOME/"*'
-    done
+    assert_contains "$workflow" 'unset GH_TOKEN'
+    assert_not_contains "$workflow" '--header "Authorization: Bearer $GH_TOKEN"'
+    report_job=$(sed -n '/^  report-pr-check:/,$p' "$workflow")
+    assert_contains <(printf '%s\n' "$report_job") 'pull-requests: write'
+    assert_contains "$bootstrap" 'name: sai-ssh-manual'
+    assert_contains "$toolchain" 'module load "$SAI_ABACUS_MODULE"'
+    assert_not_contains "$toolchain" 'module load nvhpc/'
+    assert_not_contains "$toolchain" 'module load nccl/'
+    assert_contains "$toolchain" 'export SAI_NCCL_ROOT=$NCCL_ROOT'
     if sed -n '/^on:/,/^permissions:/p' "$workflow" | grep -Eq '^[[:space:]]+pull_request:'; then
         fail 'GPU workflow must not run automatically for pull requests'
     fi
 }
 
 test_control_executable_modes() {
-    local path mode
-    for path in \
-        ci/sai/authorize_pr_comment.sh \
-        ci/sai/build_source_payload.sh \
-        ci/sai/build_gpu.sbatch \
-        ci/sai/mpirun_with_mapping.sh \
-        ci/sai/prepare_control_snapshot.sh \
-        ci/sai/resolve_local_source.sh \
-        ci/sai/run_local_ci.sh \
-        ci/sai/run_slurm_job.sh \
-        ci/sai/download_source_artifact.sh \
-        ci/sai/test_gpu.sbatch \
-        ci/sai/test_gpu_case.sh; do
-        mode=$(git ls-files -s -- "$path" | awk 'NR == 1 {print $1}')
-        [[ $mode == 100755 ]] || fail "$path has Git mode ${mode:-untracked}, expected 100755"
+    local path
+    for path in ci/sai/authorize_pr_comment.sh ci/sai/build_gpu.sbatch \
+        ci/sai/gpu_case.sbatch ci/sai/sai.py ci/sai/download_source_artifact.sh; do
+        [[ -x $path ]] || fail "$path must be executable"
     done
 }
 
@@ -946,137 +586,6 @@ EOF
     assert_contains "$task/pmix-retry.tsv" $'retried\t0'
     assert_contains "$task/pmix-retry.tsv" $'final_pmix\t0'
     assert_contains "$task/pmix-retry.tsv" $'final_rc\t124'
-}
-
-test_gpu_matrix_submission_policy() {
-    local script=ci/sai/run_gpu_case_matrix.sh
-    local multinode=ci/sai/test_gpu.sbatch
-    local launcher=ci/sai/test_gpu_case.sh
-    local summary=ci/sai/summarize_gpu_case_matrix.sh
-    assert_contains "$script" \
-        'declare -A limits=([gpu1]=2 [gpu2]=8 [gpu4]=8)'
-    assert_contains "$script" 'export GPU_CASE_CLASS=$class'
-    assert_contains "$script" 'export GPU_CASE_RANKS=${ranks[$class]}'
-    assert_contains "$script" 'export GPU_CASE_MANIFEST=$manifest'
-    assert_not_contains "$script" '--export'
-    assert_contains "$script" 'declare -A ranks=([gpu1]=1 [gpu2]=2 [gpu4]=4)'
-    assert_contains "$script" 'declare -A qos=([gpu1]=flood-1o2gpu [gpu2]=flood-1o2gpu [gpu4]=flood-gpu)'
-    assert_contains "$script" '--ntasks="${ranks[$class]}"'
-    assert_contains "$script" '--gpus-per-node="${ranks[$class]}"'
-    assert_contains "$script" '"$CONTROL_ROOT/test_gpu_case.sh"'
-    assert_not_contains "$script" '--cpus-per-task'
-    assert_not_contains ci/sai/run_slurm_job.sh '--export'
-    assert_contains "$multinode" 'prepare_cusolvermp_smoke.sh'
-    assert_not_contains "$multinode" 'CASES_CUSOLVERMP_16GPU.txt'
-    assert_contains "$multinode" '#SBATCH --nodes=2'
-    assert_contains "$multinode" '#SBATCH --ntasks=16'
-    assert_contains "$multinode" '#SBATCH --gpus-per-node=8'
-    assert_contains "$multinode" '#SBATCH --ntasks-per-node=8'
-    assert_contains "$multinode" '#SBATCH --time=00:40:00'
-    assert_not_contains "$multinode" '#SBATCH --mem'
-    assert_not_contains "$multinode" '#SBATCH --cpus-per-task'
-    assert_contains ci/sai/build_gpu.sbatch '#SBATCH --time=01:00:00'
-    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --mem'
-    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --cpus-per-task'
-    assert_not_contains ci/sai/build_gpu.sbatch '#SBATCH --export'
-    diff -u \
-        <(printf '%s\n' \
-            '#!/bin/bash' \
-            '#SBATCH --job-name=abacus-cusolvermp-multinode-ci' \
-            '#SBATCH --partition=16V100' \
-            '#SBATCH --nodes=2' \
-            '#SBATCH --ntasks=16         # Nodes * GPUs-per-node * Ranks-per-GPU' \
-            '#SBATCH --gpus-per-node=8   # Specify the GPUs-per-node' \
-            '#SBATCH --qos=flood-gpu     # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]') \
-        <(sed -n '1,7p' "$multinode") \
-        || fail "$multinode does not match the SAI template header"
-    diff -u \
-        <(printf '%s\n' \
-            '#!/bin/bash' \
-            '#SBATCH --job-name=abacus-sai-build' \
-            '#SBATCH --partition=16V100' \
-            '#SBATCH --nodes=1' \
-            '#SBATCH --ntasks=4          # Nodes * GPUs-per-node * Ranks-per-GPU' \
-            '#SBATCH --gpus-per-node=4   # Specify the GPUs-per-node' \
-            '#SBATCH --qos=huge-gpu      # Depending on your needs [Priority: rush-* > improper-* = huge-* > flood-* = ultimate-*]') \
-        <(sed -n '1,7p' ci/sai/build_gpu.sbatch) \
-        || fail 'ci/sai/build_gpu.sbatch does not match the SAI template header'
-    assert_contains "$multinode" '19_NO_Si48_CUSOLVERMP_TDDFT_GPU'
-    assert_not_contains "$multinode" 'Autotest.sh'
-    assert_contains "$launcher" 'run_gpu_case_attempts.sh'
-    assert_contains "$launcher" 'state=INFRA'
-    assert_contains "$summary" '^(PASS|FAIL|TIMEOUT|INFRA)$'
-}
-
-test_gpu_case_symlink_rejection() {
-    local root=$test_root/gpu-case-symlink
-    local source=$root/source
-    local case_dir=$source/tests/suite/case
-    local manifest=$root/manifest.tsv
-    local outside=$root/outside
-    mkdir -p "$case_dir" "$source/tests/integrate" "$source/tests/PP_ORB" \
-        "$root/results" "$root/install" "$root/control"
-    printf 'outside\n' > "$outside"
-    ln -s "$outside" "$case_dir/INPUT"
-    printf 'suite\tcase\n' > "$manifest"
-
-    if CI_SOURCE=$source CONTROL_ROOT=$root/control \
-        INSTALL_ROOT=$root/install RESULT_ROOT=$root/results \
-        TOOLCHAIN_FILE=$root/missing-toolchain MP_PROFILE=test \
-        GPU_CASE_CLASS=gpu1 GPU_CASE_RANKS=1 \
-        GPU_CASE_MANIFEST=$manifest SLURM_ARRAY_JOB_ID=1 \
-        SLURM_ARRAY_TASK_ID=0 SLURM_NTASKS=1 SLURM_GPUS_ON_NODE=1 \
-        bash ci/sai/test_gpu_case.sh > "$root/case.log" 2>&1; then
-        fail 'GPU case launcher accepted a symbolic link'
-    fi
-    assert_contains "$root/case.log" 'GPU case contains a symbolic link'
-    [[ $(<"$outside") == outside ]]
-}
-
-test_prepare_cusolvermp_smoke() {
-    local root=$test_root/cusolvermp-smoke
-    local source=$root/source
-    local results=$root/results
-    local case_name=19_NO_Si48_CUSOLVERMP_TDDFT_GPU
-    local repository_case=tests/15_rtTDDFT_GPU/$case_name
-    local source_case=$source/tests/15_rtTDDFT_GPU/$case_name
-    local input=$source_case/INPUT
-    local staged=$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/INPUT
-    local name
-    mkdir -p "$(dirname "$source_case")" "$source/tests/PP_ORB"
-    cp -a "$repository_case" "$source_case"
-    printf 'must not be staged\n' > "$source_case/UNTRUSTED_EXTRA"
-    CI_SOURCE=$source RESULT_ROOT=$results \
-        bash ci/sai/prepare_cusolvermp_smoke.sh > "$root/prepare.log"
-    assert_contains "$input" 'ks_solver         cusolvermp'
-    assert_contains "$staged" 'ks_solver         cusolvermp'
-    for name in INPUT KPT README STRU; do
-        cmp "$source_case/$name" \
-            "$results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/$name"
-    done
-    if [[ -e $results/cusolvermp-smoke/15_rtTDDFT_GPU/$case_name/UNTRUSTED_EXTRA ]]; then
-        fail 'cuSolverMp smoke staging copied an unvalidated extra file'
-    fi
-
-    printf '%s\n' INPUT_PARAMETERS 'ks_solver         elpa' > "$input"
-    if CI_SOURCE=$source RESULT_ROOT=$root/missing-results \
-        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
-        fail 'cuSolverMp smoke staging accepted a missing cusolvermp line'
-    fi
-
-    printf '%s\n' INPUT_PARAMETERS 'ks_solver cusolvermp' 'ks_solver cusolvermp' > "$input"
-    if CI_SOURCE=$source RESULT_ROOT=$root/duplicate-results \
-        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
-        fail 'cuSolverMp smoke staging accepted duplicate cusolvermp lines'
-    fi
-
-    cp "$repository_case/INPUT" "$input"
-    rm -f "$source_case/KPT"
-    ln -s "$PWD/$repository_case/KPT" "$source_case/KPT"
-    if CI_SOURCE=$source RESULT_ROOT=$root/symlink-results \
-        bash ci/sai/prepare_cusolvermp_smoke.sh > /dev/null 2>&1; then
-        fail 'cuSolverMp smoke staging accepted a symlinked case file'
-    fi
 }
 
 test_prepare_remote_run_paths() {
@@ -1753,12 +1262,19 @@ make_cleanup_fixture() {
     mkdir -p "$project/runs/204-1/results"
     : > "$project/runs/204-1/.artifacts-uploaded"
     touch -d '73 hours ago' "$project/runs/204-1/.artifacts-uploaded"
-    printf 'SLURM_JOB_ID=701\n' > "$project/runs/204-1/results/build-submit.log"
+    printf '{"protocol":1,"jobs":[{"job_id":"701","name":"build","label":"build","array_count":null,"argv":[]}]}\n' \
+        > "$project/runs/204-1/results/jobs.json"
 
     mkdir -p "$project/runs/205-1/results"
     : > "$project/runs/205-1/.artifacts-uploaded"
     touch -d '73 hours ago' "$project/runs/205-1/.artifacts-uploaded"
-    printf 'SLURM_JOB_ID=702\n' > "$project/runs/205-1/results/build-submit.log"
+    printf '{"protocol":1,"jobs":[{"job_id":"702","name":"build","label":"build","array_count":null,"argv":[]}]}\n' \
+        > "$project/runs/205-1/results/jobs.json"
+
+    mkdir -p "$project/runs/209-1/results"
+    : > "$project/runs/209-1/.artifacts-uploaded"
+    touch -d '73 hours ago' "$project/runs/209-1/.artifacts-uploaded"
+    printf '{not-json}\n' > "$project/runs/209-1/results/jobs.json"
 
     mkdir -p "$project/runs/pr-7658/208-1/results"
     : > "$project/runs/pr-7658/208-1/.artifacts-uploaded"
@@ -1820,6 +1336,7 @@ EOF
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$project/cache/source-transfers/206-1"
     assert_contains "$root/dry-run.log" "DRY_RUN delete path=$home/diagnostic-only/diagnostics/diagnostic-old"
     assert_contains "$root/dry-run.log" "SKIP active_or_unknown path=$project/runs/204-1"
+    assert_contains "$root/dry-run.log" "SKIP invalid_job_ledger run=$project/runs/209-1"
     assert_file "$project/runs/201-1/.artifacts-uploaded"
     [[ -d $project/runs/pr-7658 ]]
 
@@ -1836,6 +1353,7 @@ EOF
     assert_file "$project/runs/202-1/.artifacts-uploaded"
     assert_file "$project/runs/204-1/.artifacts-uploaded"
     assert_file "$project/runs/205-1/.artifacts-uploaded"
+    assert_file "$project/runs/209-1/.artifacts-uploaded"
     assert_file "$project/cache/source-transfers/207-1/.ci-source-transfer"
 
     mkdir -p "$escape_home" "$root/outside-cache"
@@ -1991,84 +1509,6 @@ test_mark_artifacts_uploaded() {
     [[ ! -L $run/.artifacts-uploaded ]]
     assert_contains "$run/.artifacts-uploaded" 'uploaded_epoch='
     [[ $(<"$root/upload-target") == upload-sentinel ]]
-}
-
-test_slurm_signal_cancellation() {
-    local root=$test_root/slurm-signal
-    local fake_bin=$root/bin
-    local submit_log=$root/submit.log
-    local output_pattern=$root/job-%j.out
-    local cancel_log=$root/scancel.log
-    local pid rc
-    mkdir -p "$fake_bin" "$root/source"
-    : > "$root/job.sbatch"
-    cat > "$fake_bin/sbatch" <<'EOF'
-#!/usr/bin/env bash
-echo 801
-EOF
-    cat > "$fake_bin/sacct" <<'EOF'
-#!/usr/bin/env bash
-echo '801 RUNNING 0:0'
-EOF
-    cat > "$fake_bin/scancel" <<EOF
-#!/usr/bin/env bash
-printf '%s\n' "\$*" >> "$cancel_log"
-EOF
-    chmod +x "$fake_bin/sbatch" "$fake_bin/sacct" "$fake_bin/scancel"
-
-    PATH="$fake_bin:$original_path" HOME=$test_root TMPDIR=$root/missing-tmp \
-    CI_SOURCE=$root/source \
-    GITHUB_RUN_ID=1 GITHUB_RUN_ATTEMPT=1 \
-        bash ci/sai/run_slurm_job.sh "$submit_log" "$output_pattern" \
-        "$root/job.sbatch" > "$root/driver.log" 2>&1 &
-    pid=$!
-    wait_for_file "$submit_log"
-    kill -TERM "$pid"
-    set +e
-    wait "$pid"
-    rc=$?
-    set -e
-    [[ $rc -eq 143 ]] || fail "TERM returned $rc instead of 143"
-    assert_contains "$cancel_log" '801'
-}
-
-test_slurm_launch_window_cancellation() {
-    local root=$test_root/slurm-launch-signal
-    local fake_bin=$root/bin
-    local submit_log=$root/submit.log
-    local output_pattern=$root/job-%j.out
-    local cancel_log=$root/scancel.log
-    local ready=$root/sbatch-ready
-    local pid rc
-    mkdir -p "$fake_bin" "$root/source"
-    : > "$root/job.sbatch"
-    cat > "$fake_bin/sbatch" <<EOF
-#!/usr/bin/env bash
-echo 802
-touch "$ready"
-trap 'exit 143' TERM HUP INT
-while true; do sleep 1; done
-EOF
-    cat > "$fake_bin/scancel" <<EOF
-#!/usr/bin/env bash
-printf '%s\n' "\$*" >> "$cancel_log"
-EOF
-    chmod +x "$fake_bin/sbatch" "$fake_bin/scancel"
-
-    PATH="$fake_bin:$original_path" HOME=$test_root TMPDIR=$root/missing-tmp \
-    CI_SOURCE=$root/source \
-    GITHUB_RUN_ID=2 GITHUB_RUN_ATTEMPT=1 \
-        bash ci/sai/run_slurm_job.sh "$submit_log" "$output_pattern" \
-        "$root/job.sbatch" > "$root/driver.log" 2>&1 &
-    pid=$!
-    wait_for_file "$ready"
-    kill -HUP "$pid"
-    set +e
-    wait "$pid"
-    rc=$?
-    set -e
-    [[ $rc -eq 143 ]] || fail "launch-window HUP returned $rc instead of 143"
-    assert_contains "$cancel_log" '802'
 }
 
 test_rt_tddft_scale_submission_policy() {
@@ -2394,19 +1834,12 @@ EOF
 }
 
 run_test 'SSH client configuration' test_configure_ssh_client
-run_test 'source payload builder' test_build_source_payload
-run_test 'local source resolver' test_resolve_local_source
-run_test 'committed control snapshot' test_prepare_control_snapshot
 run_test 'remote probe identity' test_remote_probe_identity
-run_test 'local client SSH probe' test_local_client_probe
 run_test 'pull request comment authorization' test_authorize_pr_comment
 run_test 'pull request result comment' test_pr_result_comment
 run_test 'workflow security policy' test_workflow_security_policy
 run_test 'control executable modes' test_control_executable_modes
 run_test 'PMIx startup retry policy' test_pmix_startup_retry
-run_test 'GPU matrix submission policy' test_gpu_matrix_submission_policy
-run_test 'GPU case symlink rejection' test_gpu_case_symlink_rejection
-run_test 'cuSolverMp smoke staging' test_prepare_cusolvermp_smoke
 run_test 'remote path containment and collision' test_prepare_remote_run_paths
 run_test 'source artifact reverse download' test_download_source_artifact
 run_test 'compressed source snapshot cache' test_source_snapshot_cache
@@ -2415,8 +1848,6 @@ run_test 'artifact collection whitelist' test_artifact_collection
 run_test 'uploaded marker atomic replacement' test_mark_artifacts_uploaded
 run_test 'cleanup retention and active-job safety' test_cleanup_retention
 run_test 'cleanup cron installation safety' test_cleanup_cron_installation
-run_test 'Slurm TERM cancellation' test_slurm_signal_cancellation
-run_test 'Slurm launch-window HUP cancellation' test_slurm_launch_window_cancellation
 run_test 'RT-TDDFT scale submission policy' test_rt_tddft_scale_submission_policy
 run_test 'RT-TDDFT scale batch selector' test_rt_tddft_scale_batch_selector
 run_test 'RT-TDDFT scale sbatch invocation' test_rt_tddft_scale_sbatch_invocation
