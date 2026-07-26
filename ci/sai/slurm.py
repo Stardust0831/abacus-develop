@@ -299,9 +299,23 @@ class SlurmClient:
             "# SAI GPU result", "",
             "Passed: **%s**; Failed: **%s**; Infrastructure: **%s**"
             % (result["passed"], result["failed"], result["infrastructure"]),
-            "", "| Case | Resource | State | Exit | Slurm | Elapsed |",
-            "| --- | --- | --- | ---: | --- | ---: |",
+            "", "## Components", "",
+            "| Component | State | Slurm job | Slurm state | Exit |",
+            "| --- | --- | --- | --- | --- |",
         ]
+        for component in result["components"]:
+            lines.append(
+                "| %s | %s | %s | %s | %s |"
+                % (
+                    component["label"], component["state"], component["job_id"],
+                    component["slurm_state"], component["exit_code"],
+                )
+            )
+        lines.extend([
+            "", "## Case matrix", "",
+            "| Case | Resource | State | Exit | Slurm | Elapsed |",
+            "| --- | --- | --- | ---: | --- | ---: |",
+        ])
         for row in result["cases"]:
             lines.append(
                 "| %s | %s | %s | %s | %s | %ss |"

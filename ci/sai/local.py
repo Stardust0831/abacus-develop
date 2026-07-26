@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-from . import source
+import source
 
 
 _SSH_ALIAS = re.compile(r"[A-Za-z0-9._-]+\Z")
@@ -176,14 +176,8 @@ def _git_text(repository: Path, arguments: Sequence[str]) -> str:
     return _git(repository, arguments).stdout.decode("utf-8", "replace").strip()
 
 
-def _repository(args: argparse.Namespace, control_root: Path) -> Path:
-    requested = getattr(args, "repository", None)
-    if requested:
-        candidate = Path(requested).expanduser()
-    else:
-        candidate = control_root.parent.parent
-        if not (candidate / ".git").exists():
-            candidate = Path.cwd()
+def _repository(requested: Optional[Path], fallback: Path) -> Path:
+    candidate = Path(requested).expanduser() if requested else fallback
     try:
         candidate = candidate.resolve(strict=True)
     except OSError as exc:
@@ -267,22 +261,13 @@ def _disconnect(config: LocalConfig, options: Sequence[str]) -> None:
     _run(["ssh", *options, "-O", "exit", config.ssh_target], check=False)
 
 
-def _ssh_script(
-    config: LocalConfig,
-    options: Sequence[str],
-    script: Path,
-    arguments: Sequence[str],
-    *,
-    check: bool = True,
+def _ssh_python(
+    config: LocalConfig, options: Sequence[str], script: Path,
+    arguments: Sequence[str], *, check: bool = True,
 ) -> subprocess.CompletedProcess:
-    try:
-        input_data = script.read_bytes()
-    except OSError as exc:
-        raise LocalError("Unable to read committed remote helper: %s" % script) from exc
     return _run(
-        ["ssh", *options, config.ssh_target, "bash", "-s", "--", *arguments],
-        input_data=input_data,
-        check=check,
+        ["ssh", *options, config.ssh_target, "python3", "-", *arguments],
+        input_data=script.read_bytes(), check=check,
     )
 
 
@@ -321,10 +306,17 @@ def _rsync(
     if delete:
         flags.insert(1, "--delete")
     source_args = [str(path) + ("/" if directory_contents else "") for path in sources]
-    _run(
-        ["rsync", *flags, *source_args, "%s:%s" % (config.ssh_target, destination)],
-        env=_rsync_environment(config, options),
-    )
+    command = ["rsync", *flags, *source_args, "%s:%s" % (config.ssh_target, destination)]
+    environment = _rsync_environment(config, options)
+    for attempt in range(1, 4):
+        result = _run(command, env=environment, check=False)
+        if result.returncode == 0:
+            return
+        if attempt < 3:
+            print("SAI rsync failed (attempt %d/3)" % attempt, file=sys.stderr)
+            time.sleep(attempt * 5)
+    detail = result.stderr.decode("utf-8", "replace").strip()
+    raise LocalError("rsync failed after three attempts%s" % (": " + detail if detail else ""))
 
 
 def _extract_artifacts(data: bytes, artifact_root: Path) -> None:
@@ -460,7 +452,7 @@ def _run_remote_entrypoint(
 
 
 def _run_probe(config: LocalConfig, options: Sequence[str], control_root: Path, remote_user: str) -> None:
-    result = _ssh_script(config, options, control_root / "probe_remote_sai.sh", [remote_user])
+    result = _ssh_python(config, options, control_root / "bootstrap.py", ["probe", remote_user])
     output = result.stdout.decode("utf-8", "replace").strip()
     print("SAI_LOCAL_PROBE_OK target=%s user=%s" % (config.ssh_target, remote_user))
     if output:
@@ -468,12 +460,15 @@ def _run_probe(config: LocalConfig, options: Sequence[str], control_root: Path, 
 
 
 def _execute_probe(args: argparse.Namespace, config: LocalConfig, control_root: Path) -> int:
-    repository = _repository(args, control_root)
+    del args
+    repository = _repository(None, control_root.parent.parent)
     client_root = Path(tempfile.mkdtemp(prefix="abacus-sai-local-"))
     options = _ssh_options(config, client_root / "control-%C")
     try:
         control_sha = _git_text(repository, ("rev-parse", "--verify", "HEAD^{commit}"))
-        snapshot = _prepare_snapshot(repository, control_sha, control_root, client_root / "control-snapshot")
+        snapshot = _prepare_snapshot(
+            repository, control_sha, control_root, client_root / "control-snapshot"
+        )
         remote_user = _remote_user(config, options)
         _connect(config, options)
         _run_probe(config, options, snapshot, remote_user)
@@ -486,22 +481,33 @@ def _execute_probe(args: argparse.Namespace, config: LocalConfig, control_root: 
 def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Path) -> int:
     if getattr(args, "include_untracked", False) and not getattr(args, "working_tree", False):
         raise LocalError("--include-untracked is valid only with --working-tree")
-    repository = _repository(args, control_root)
-    control_sha = _verify_control_current(repository, control_root)
+    control_repository = _repository(None, control_root.parent.parent)
+    control_sha = _verify_control_current(control_repository, control_root)
+    repository = _repository(
+        getattr(args, "source_repository", None), control_repository
+    )
     selection = source.resolve_source(
         repository,
         source_ref=getattr(args, "source_ref", None),
         working_tree=bool(getattr(args, "working_tree", False)),
         include_untracked=bool(getattr(args, "include_untracked", False)),
     )
-    cache_role = "ephemeral" if selection.mode == "working-tree" else "candidate"
+    requested_role = getattr(args, "cache_role", None)
+    cache_role = requested_role or (
+        "ephemeral" if selection.mode == "working-tree" else "candidate"
+    )
+    if cache_role not in ("baseline", "candidate", "ephemeral") or \
+            (selection.mode == "working-tree") != (cache_role == "ephemeral"):
+        raise LocalError("cache role does not match the selected source mode")
 
     client_root = Path(tempfile.mkdtemp(prefix="abacus-sai-local-"))
     options = _ssh_options(config, client_root / "control-%C")
     artifact_parent = config.artifact_root
     artifact_parent.mkdir(parents=True, exist_ok=True)
-    run_id = str(int(time.time()))
-    run_attempt = str(os.getpid())
+    run_id = getattr(args, "run_id", None) or str(int(time.time()))
+    run_attempt = getattr(args, "run_attempt", None) or str(os.getpid())
+    if not run_id.isdigit() or not run_attempt.isdigit():
+        raise LocalError("run ID and attempt must be decimal integers")
     run_key = run_id + "-" + run_attempt
     artifact_root = artifact_parent / run_key
     try:
@@ -514,18 +520,21 @@ def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Pa
     collection_rc = 1
     remote_run_root = ""
     try:
-        snapshot = _prepare_snapshot(repository, control_sha, control_root, client_root / "control-snapshot")
+        snapshot = _prepare_snapshot(
+            control_repository, control_sha, control_root,
+            client_root / "control-snapshot",
+        )
         remote_user = _remote_user(config, options)
         _connect(config, options)
-        probe = _ssh_script(config, options, snapshot / "probe_remote_sai.sh", [remote_user])
+        probe = _ssh_python(config, options, snapshot / "bootstrap.py", ["probe", remote_user])
         if probe.stdout:
             print(probe.stdout.decode("utf-8", "replace"), end="")
 
-        prepare = _ssh_script(
+        prepare = _ssh_python(
             config,
             options,
-            snapshot / "prepare_remote_run.sh",
-            [config.project_root, config.run_namespace, run_key, selection.source_id, control_sha],
+            snapshot / "bootstrap.py",
+            ["prepare", config.project_root, config.run_namespace, run_key, selection.source_id, control_sha],
         )
         values = _parse_key_values(prepare.stdout)
         remote_project_root = values.get("SAI_PROJECT_ROOT", "")
@@ -542,12 +551,16 @@ def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Pa
             delete=True,
             directory_contents=True,
         )
-        transfer = _ssh_script(
-            config,
-            options,
-            snapshot / "source_transfer_cache.sh",
-            ["prepare", remote_project_root, remote_run_root, selection.source_id, cache_role],
-        )
+        _run([
+            "ssh", *options, config.ssh_target, "python3",
+            remote_run_root + "/control/sai.py", "remote", "cleanup",
+            remote_project_root,
+        ])
+        transfer = _run([
+            "ssh", *options, config.ssh_target, "python3",
+            remote_run_root + "/control/sai.py", "cache", "prepare",
+            remote_project_root, remote_run_root, selection.source_id, cache_role,
+        ])
         transfer_values = _parse_key_values(transfer.stdout)
         transfer_root = transfer_values.get("SOURCE_TRANSFER_ROOT", "")
         base_sha = transfer_values.get("SOURCE_CACHE_BASE_SHA", "")
@@ -559,18 +572,17 @@ def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Pa
         manifest = client_root / "source-manifest.gz"
         payload_info = source.build_payload(repository, selection.source_id, base_sha, payload, manifest)
         _rsync(config, options, [payload, manifest], transfer_root + "/")
-        _ssh_script(
-            config,
-            options,
-            snapshot / "source_transfer_cache.sh",
-            ["receive", remote_project_root, remote_run_root, transfer_root, payload_info.mode, selection.source_id],
-        )
-        _ssh_script(
-            config,
-            options,
-            snapshot / "source_transfer_cache.sh",
-            ["finalize", remote_project_root, remote_run_root, transfer_root, selection.source_id],
-        )
+        _run([
+            "ssh", *options, config.ssh_target, "python3",
+            remote_run_root + "/control/sai.py", "cache", "receive",
+            remote_project_root, remote_run_root, transfer_root,
+            payload_info.mode, selection.source_id,
+        ])
+        _run([
+            "ssh", *options, config.ssh_target, "python3",
+            remote_run_root + "/control/sai.py", "cache", "finalize",
+            remote_project_root, remote_run_root, transfer_root, selection.source_id,
+        ])
 
         context = {
             "source_mode": selection.mode,
@@ -600,11 +612,12 @@ def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Pa
             artifact_root / "sai-remote-driver.log",
         )
 
-        collection = _ssh_script(
-            config,
-            options,
-            snapshot / "collect_remote_artifacts.sh",
-            [remote_run_root],
+        collection = _run(
+            [
+                "ssh", *options, config.ssh_target, "python3",
+                remote_run_root + "/control/sai.py", "remote", "collect",
+                remote_run_root,
+            ],
             check=False,
         )
         if collection.returncode == 0:
@@ -613,8 +626,12 @@ def _execute_run(args: argparse.Namespace, config: LocalConfig, control_root: Pa
                 collection_rc = 0
             except LocalError as exc:
                 print(str(exc), file=sys.stderr)
-        if collection_rc == 0:
-            _ssh_script(config, options, snapshot / "mark_artifacts_uploaded.sh", [remote_run_root])
+        if collection_rc == 0 and not getattr(args, "defer_archive", False):
+            _run([
+                "ssh", *options, config.ssh_target, "python3",
+                remote_run_root + "/control/sai.py", "remote", "archive",
+                remote_run_root,
+            ])
         print("SAI_LOCAL_RUN_RESULT validation_rc=%d collection_rc=%d" % (validation_rc, collection_rc))
         print("SAI_LOCAL_ARTIFACT_ROOT=%s" % artifact_root)
         print("SAI_REMOTE_RUN_ROOT=%s" % remote_run_root)
@@ -630,16 +647,22 @@ def configure_parser(parser: argparse.ArgumentParser) -> None:
     subparsers = parser.add_subparsers(dest="local_command", required=True)
     probe = subparsers.add_parser("probe", help="probe the configured SAI account")
     probe.add_argument("--config", required=True, type=Path)
-    probe.add_argument("--repository", type=Path, default=None, help=argparse.SUPPRESS)
     probe.set_defaults(handler=execute)
 
     run = subparsers.add_parser("run", help="run SAI validation through SSH")
     run.add_argument("--config", required=True, type=Path)
-    run.add_argument("--repository", type=Path, default=None, help=argparse.SUPPRESS)
+    run.add_argument("--source-repository", type=Path, help=argparse.SUPPRESS)
     selection = run.add_mutually_exclusive_group(required=True)
     selection.add_argument("--source-ref")
     selection.add_argument("--working-tree", action="store_true")
     run.add_argument("--include-untracked", action="store_true")
+    run.add_argument("--run-id", help=argparse.SUPPRESS)
+    run.add_argument("--run-attempt", help=argparse.SUPPRESS)
+    run.add_argument(
+        "--cache-role", choices=("baseline", "candidate", "ephemeral"),
+        help=argparse.SUPPRESS,
+    )
+    run.add_argument("--defer-archive", action="store_true", help=argparse.SUPPRESS)
     run.set_defaults(handler=execute)
 
 

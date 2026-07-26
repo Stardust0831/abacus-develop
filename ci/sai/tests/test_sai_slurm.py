@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from sai_ci.config import ResourceProfile  # noqa: E402
-from sai_ci.slurm import SlurmAccountingError, SlurmClient, SlurmSubmissionError  # noqa: E402
+from config import ResourceProfile  # noqa: E402
+from slurm import SlurmAccountingError, SlurmClient, SlurmSubmissionError  # noqa: E402
 
 
 class FakeCommands:
@@ -86,7 +86,7 @@ class SlurmTests(unittest.TestCase):
             client = SlurmClient(Path(directory), command_runner=fake, user="testuser")
             with self.assertRaises(SlurmSubmissionError):
                 client.submit(
-                    script=Path("/control/build.sbatch"), partition="16V100",
+                    script=Path("/control/build_gpu.sh"), partition="16V100",
                     profile=ResourceProfile("huge-gpu", 1, 4, 4, 3600),
                     label="build", chdir=Path("/source"), output=Path("/result.out"),
                     script_args=(),
@@ -114,7 +114,7 @@ class SlurmTests(unittest.TestCase):
             try:
                 with self.assertRaises(KeyboardInterrupt):
                     client.submit(
-                        script=Path("/control/build.sbatch"), partition="16V100",
+                    script=Path("/control/build_gpu.sh"), partition="16V100",
                         profile=ResourceProfile("huge-gpu", 1, 4, 4, 3600),
                         label="build", chdir=Path("/source"), output=Path("/result.out"),
                         script_args=(),

@@ -7,7 +7,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from sai_ci.config import ConfigError, load_config  # noqa: E402
+from config import ConfigError, load_config  # noqa: E402
 
 
 class SaiConfigTests(unittest.TestCase):
@@ -66,18 +66,27 @@ class SaiConfigTests(unittest.TestCase):
             with self.assertRaises(ConfigError):
                 self.load_text(self.config_text().replace(old, new, 1))
 
-    def test_unsafe_identifier_and_case_assignment(self):
+    def test_unsafe_identifier_and_case_reference(self):
         for old, new in (
             ("name = sai", "name = -unsafe"),
-            ("resource = gpu1\nrunner = autotest", "resource = gpu2\nrunner = autotest"),
-            ("runner = cusolvermp", "runner = autotest"),
+            ("resource = gpu1\nrunner = autotest", "resource = missing\nrunner = autotest"),
+            ("runner = cusolvermp", "runner = unknown"),
         ):
             with self.assertRaises(ConfigError):
                 self.load_text(self.config_text().replace(old, new, 1))
 
+    def test_resource_names_come_from_the_ini(self):
+        text = self.config_text().replace(
+            "[resource.gpu1]", "[resource.single_gpu]", 1
+        ).replace("resource = gpu1", "resource = single_gpu", 1)
+        config = self.load_text(text)
+        self.assertIn("single_gpu", config.resources)
+        self.assertNotIn("gpu1", config.resources)
+        self.assertEqual(config.cases[5].resource, "single_gpu")
+
     def test_control_root_resolves_regular_toolchain(self):
         root = pathlib.Path(self.tmp.name) / "control"
-        toolchain = root / "toolchains" / "abacus-develop-git-079fd0c.env.example"
+        toolchain = root / "toolchain.env"
         toolchain.parent.mkdir(parents=True)
         toolchain.write_text("# test\n", encoding="utf-8")
         config = load_config(self.matrix, root)

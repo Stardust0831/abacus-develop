@@ -45,6 +45,7 @@ class ResourceProfile:
     gpus_per_node: int
     time_seconds: int
     parallelism: Optional[int] = None
+    label: str = ""
 
     @property
     def total_tasks(self) -> int:
@@ -75,9 +76,9 @@ class SaiConfig:
 _SCHEMA = {
     "cluster": ("name", "partition", "toolchain", "mp_profile", "mps_mapping_root", "disable_nccl_ib"),
     "coordinator": ("poll_seconds", "queue_failure_limit", "accounting_attempts"),
-    "build": ("qos", "nodes", "tasks_per_node", "gpus_per_node", "time_seconds"),
+    "build": ("label", "qos", "nodes", "tasks_per_node", "gpus_per_node", "time_seconds"),
 }
-_RESOURCE_KEYS = ("qos", "nodes", "tasks_per_node", "gpus_per_node", "time_seconds", "parallelism")
+_RESOURCE_KEYS = ("label", "qos", "nodes", "tasks_per_node", "gpus_per_node", "time_seconds", "parallelism")
 _CASE_KEYS = ("suite", "name", "resource", "runner")
 
 
@@ -106,6 +107,13 @@ def _boolean(value: str, field: str) -> bool:
     if value == "false":
         return False
     raise _error(f"invalid boolean for {field}: {value!r}")
+
+
+def _label(value: str, field: str) -> str:
+    result = value.strip()
+    if not result or len(result) > 80 or any(ord(character) < 32 for character in result):
+        raise _error(f"invalid {field}")
+    return result
 
 
 def _read_parser(path: Path) -> configparser.ConfigParser:
@@ -171,6 +179,7 @@ def _resource(section: str, values: Mapping[str, str], include_parallelism: bool
     expected = _RESOURCE_KEYS if include_parallelism else _RESOURCE_KEYS[:-1]
     if set(values) != set(expected):
         raise _error(f"invalid keys in [{section}]")
+    label = _label(values["label"], f"{section}.label")
     qos = _identifier(values["qos"], f"{section}.qos")
     nodes = _integer(values["nodes"], f"{section}.nodes", 1, 2)
     tasks = _integer(values["tasks_per_node"], f"{section}.tasks_per_node", 1, 8)
@@ -179,7 +188,7 @@ def _resource(section: str, values: Mapping[str, str], include_parallelism: bool
     parallelism = _integer(values["parallelism"], f"{section}.parallelism", 1, 16) if include_parallelism else None
     if tasks != gpus:
         raise _error(f"{section}: tasks_per_node must equal gpus_per_node")
-    profile = ResourceProfile(qos, nodes, tasks, gpus, seconds, parallelism)
+    profile = ResourceProfile(qos, nodes, tasks, gpus, seconds, parallelism, label)
     if profile.total_tasks > 16:
         raise _error(f"{section}: total tasks exceed 16")
     return profile
@@ -187,12 +196,19 @@ def _resource(section: str, values: Mapping[str, str], include_parallelism: bool
 
 def load_config(path: Path, control_root: Optional[Path] = None) -> SaiConfig:
     parser = _read_parser(Path(path))
-    expected_sections = set(_SCHEMA) | {f"resource.{name}" for name in ("gpu1", "gpu2", "gpu4", "gpu8x2")} | {f"case.{i:03d}" for i in range(1, 50)}
+    fixed_sections = set(_SCHEMA)
+    resource_sections = [section for section in parser.sections() if section.startswith("resource.")]
+    case_sections = [section for section in parser.sections() if section.startswith("case.")]
     actual_sections = set(parser.sections())
-    if actual_sections != expected_sections:
-        missing = sorted(expected_sections - actual_sections)
-        unknown = sorted(actual_sections - expected_sections)
-        raise _error(f"section mismatch; missing={missing}, unknown={unknown}")
+    recognized = fixed_sections | set(resource_sections) | set(case_sections)
+    if fixed_sections - actual_sections or recognized != actual_sections or not resource_sections or not case_sections:
+        raise _error("configuration must contain cluster, coordinator, build, resources, and cases")
+    resource_names = [section[len("resource."):] for section in resource_sections]
+    if any(not _IDENTIFIER.fullmatch(name) for name in resource_names) or len(set(resource_names)) != len(resource_names):
+        raise _error("invalid resource section")
+    expected_cases = [f"case.{index:03d}" for index in range(1, len(case_sections) + 1)]
+    if case_sections != expected_cases:
+        raise _error("case sections must be contiguous and ordered")
     for section, keys in _SCHEMA.items():
         if set(parser[section]) != set(keys):
             raise _error(f"invalid keys in [{section}]")
@@ -211,10 +227,10 @@ def load_config(path: Path, control_root: Optional[Path] = None) -> SaiConfig:
     )
     build = _resource("build", parser["build"], False)
     resources_data = OrderedDict()
-    for name in ("gpu1", "gpu2", "gpu4", "gpu8x2"):
+    for name in resource_names:
         resources_data[name] = _resource(f"resource.{name}", parser[f"resource.{name}"], True)
     cases = []
-    for index in range(1, 50):
+    for index in range(1, len(case_sections) + 1):
         section = parser[f"case.{index:03d}"]
         if set(section) != set(_CASE_KEYS):
             raise _error(f"invalid keys in [case.{index:03d}]")
@@ -226,15 +242,11 @@ def load_config(path: Path, control_root: Optional[Path] = None) -> SaiConfig:
             raise _error(f"invalid case resource/runner in case.{index:03d}")
         case = CaseSpec(suite, name, resource, runner)
         cases.append(case)
-    if len({case.case_id for case in cases}) != 49:
+    if len({case.case_id for case in cases}) != len(cases):
         raise _error("duplicate case identity")
-    distribution = {name: sum(case.resource == name for case in cases) for name in resources_data}
-    if distribution != {"gpu1": 1, "gpu2": 7, "gpu4": 40, "gpu8x2": 1}:
-        raise _error("unexpected case resource distribution")
-    smoke = [case for case in cases if case.runner == "cusolvermp"]
-    if len(smoke) != 1 or smoke[0].case_id != \
-            "15_rtTDDFT_GPU/19_NO_Si48_CUSOLVERMP_TDDFT_GPU" or smoke[0].resource != "gpu8x2":
-        raise _error("unexpected cuSolverMp smoke assignment")
+    unused = [name for name in resources_data if not any(case.resource == name for case in cases)]
+    if unused:
+        raise _error("resources have no cases: {}".format(", ".join(unused)))
     return SaiConfig(cluster, coordinator, build, MappingProxyType(resources_data), tuple(cases))
 
 

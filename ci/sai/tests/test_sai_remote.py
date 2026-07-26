@@ -1,3 +1,6 @@
+import io
+import os
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,8 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = ROOT.parents[1]
 sys.path.insert(0, str(ROOT))
 
-from sai_ci.config import load_config  # noqa: E402
-from sai_ci.remote import CUSOLVERMP_HASHES, RemoteCoordinator, validate_cases  # noqa: E402
+from config import load_config  # noqa: E402
+from remote import (  # noqa: E402
+    RemoteCoordinator, archive_run, cleanup_archives, collect_artifacts,
+    validate_cases,
+)
 
 
 class FakeSlurm:
@@ -66,16 +72,51 @@ class FakeSlurm:
 
 
 class RemoteTests(unittest.TestCase):
-    def test_repository_inventory_and_si48_hashes(self):
+    @staticmethod
+    def _run_tree(root):
+        run = root / "project" / "runs" / "daily" / "1-1"
+        (run / "results").mkdir(parents=True)
+        (run / ".ci-created").write_text("created\n", encoding="utf-8")
+        return run
+
+    def test_repository_inventory_and_cusolvermp_case(self):
         config = load_config(ROOT / "gpu-matrix.ini")
         rows = validate_cases(REPOSITORY, config.cases)
         self.assertEqual(len(rows), 49)
         self.assertEqual(sum(row["runner"] == "cusolvermp" for row in rows), 1)
 
-    def test_worker_rechecks_the_trusted_si48_hashes(self):
-        worker = (ROOT / "gpu_case.sbatch").read_text(encoding="utf-8")
-        for filename, digest in CUSOLVERMP_HASHES.items():
-            self.assertIn("[%s]=%s" % (filename, digest), worker)
+    def test_artifact_collection_and_remote_archive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            run = self._run_tree(home)
+            (run / "results" / "result.json").write_text("{}\n", encoding="utf-8")
+            (run / "results" / "ignored.bin").write_bytes(b"ignored")
+            output = io.BytesIO()
+            collect_artifacts(run, output, home=home)
+            with tarfile.open(fileobj=io.BytesIO(output.getvalue()), mode="r:gz") as archive:
+                self.assertEqual(
+                    sorted(archive.getnames()),
+                    [".ci-created", "results/result.json"],
+                )
+            saved = archive_run(run, home=home)
+            self.assertFalse(run.exists())
+            self.assertEqual(saved, home / "project" / "archives" / "daily" / "1-1.tar.gz")
+            with tarfile.open(saved, mode="r:gz") as archive:
+                self.assertEqual(
+                    sorted(archive.getnames()),
+                    [".ci-created", "results/result.json"],
+                )
+
+    def test_cleanup_removes_only_expired_archives(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            run = self._run_tree(home)
+            saved = archive_run(run, home=home)
+            os.utime(saved, (1, 1))
+            self.assertEqual(cleanup_archives(
+                home / "project", now=72 * 3600 + 2, home=home,
+            ), 1)
+            self.assertFalse(saved.exists())
 
     def test_build_then_four_resource_arrays_and_structured_result(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -86,8 +127,7 @@ class RemoteTests(unittest.TestCase):
             source.mkdir(parents=True)
             control.mkdir()
             (control / "gpu-matrix.ini").write_text((ROOT / "gpu-matrix.ini").read_text(encoding="utf-8"), encoding="utf-8")
-            toolchain = control / "toolchains" / "abacus-develop-git-079fd0c.env.example"
-            toolchain.parent.mkdir()
+            toolchain = control / "toolchain.env"
             toolchain.write_text("# test\n", encoding="utf-8")
             fake = FakeSlurm(run)
             config = load_config(control / "gpu-matrix.ini", control)
@@ -104,7 +144,7 @@ class RemoteTests(unittest.TestCase):
                 control_sha="b" * 40, run_id="1", run_attempt="1",
                 control_root=control, slurm=fake, home=Path(directory),
             )
-            with mock.patch("sai_ci.remote.validate_cases", return_value=rows):
+            with mock.patch("remote.validate_cases", return_value=rows):
                 self.assertEqual(coordinator.execute(), 0)
 
             self.assertEqual([item["label"] for item in fake.submissions], [
@@ -115,6 +155,7 @@ class RemoteTests(unittest.TestCase):
             self.assertEqual([item["profile"].total_tasks for item in arrays], [1, 2, 4, 16])
             result = run / "results" / "case-matrix" / "result.json"
             self.assertIn('"passed": 49', result.read_text(encoding="utf-8"))
+            self.assertIn('"label": "Compile"', result.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

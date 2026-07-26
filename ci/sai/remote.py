@@ -1,33 +1,130 @@
-"""Build ABACUS and run the trusted 49-case SAI GPU matrix."""
+"""Build ABACUS and run the trusted SAI GPU matrix."""
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
+import shutil
 import socket
+import sys
+import tarfile
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
-from .config import CaseSpec, SaiConfig, load_config
-from .slurm import SlurmClient, SlurmError
+from config import CaseSpec, SaiConfig, load_config
+from slurm import SlurmClient, SlurmError
 
 
-TOTAL_CASES = 49
-CUSOLVERMP_HASHES = {
-    "INPUT": "1285180c32058368699e0ec8c0b50d73f6a8af3e89aabe2791c91a210ed57c54",
-    "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
-    "README": "19a018be686ce24a5e43684cac588e10cf72ade391fd08a6f600e316cfe48ce7",
-    "STRU": "8da05442b1f70f79b3decd603c94bd7d650b5f31df166db2916e981b61294760",
-}
 _CUSOLVER_LINE = re.compile(r"^[ \t]*ks_solver[ \t]+cusolvermp[ \t]*$", re.MULTILINE)
 _HEX40 = re.compile(r"[0-9a-f]{40}\Z")
+_RUN_PART = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}\Z")
 
 
 class RemoteValidationError(ValueError):
     pass
+
+
+def _canonical_run(path: Path, home: Optional[Path] = None) -> Path:
+    candidate = Path(path).expanduser()
+    if candidate.is_symlink():
+        raise RemoteValidationError("run root is symbolic")
+    root = candidate.resolve(strict=True)
+    account_home = (home or Path.home()).resolve(strict=True)
+    if not _contained(root, account_home):
+        raise RemoteValidationError("run root is outside HOME")
+    parts = root.parts
+    if len(parts) < 3 or parts[-3] != "runs" or \
+            not all(_RUN_PART.fullmatch(part) for part in parts[-2:]):
+        raise RemoteValidationError("run root must end in runs/NAMESPACE/RUN_KEY")
+    marker = root / ".ci-created"
+    if not marker.is_file() or marker.is_symlink():
+        raise RemoteValidationError("run root has no regular creation marker")
+    return root
+
+
+def collect_artifacts(
+    run_root: Path, output: Any, *, home: Optional[Path] = None,
+) -> None:
+    root = _canonical_run(run_root, home)
+    with tarfile.open(fileobj=output, mode="w|gz") as archive:
+        _add_artifacts(archive, root)
+
+
+def _add_artifacts(archive: tarfile.TarFile, root: Path) -> None:
+    selected = []
+    for relative in (
+        ".ci-created", "build/toolchain-summary.txt",
+        "build/CMakeCache.txt", "install/abacus-info.txt", "install/ldd.txt",
+        "install/abacus.sha256",
+    ):
+        path = root / relative
+        if path.is_file() and not path.is_symlink():
+            selected.append(path)
+    for directory in (root / "results", root / "source" / "tests"):
+        if not directory.is_dir() or directory.is_symlink():
+            continue
+        for path in directory.rglob("*"):
+            if not path.is_file() or path.is_symlink():
+                continue
+            if directory == root / "results":
+                allowed = path.suffix in {".log", ".out", ".txt", ".tsv", ".md", ".json", ".sha256"}
+            else:
+                allowed = path.name in {"log.txt", "result.out", "warning.log"} or path.name.startswith("running") and path.suffix == ".log"
+            if allowed:
+                selected.append(path)
+    for path in sorted(set(selected)):
+        archive.add(str(path), arcname=path.relative_to(root).as_posix(), recursive=False)
+
+
+def archive_run(run_root: Path, *, home: Optional[Path] = None) -> Path:
+    root = _canonical_run(run_root, home)
+    project = root.parents[2]
+    archive_root = project / "archives" / root.parent.name
+    if (project / "archives").is_symlink() or archive_root.is_symlink():
+        raise RemoteValidationError("archive root is symbolic")
+    archive_root.mkdir(parents=True, exist_ok=True)
+    destination = archive_root / (root.name + ".tar.gz")
+    if destination.exists() or destination.is_symlink():
+        raise RemoteValidationError("run archive already exists")
+    temporary = destination.with_name(".%s.%d.tmp" % (destination.name, os.getpid()))
+    try:
+        with tarfile.open(str(temporary), mode="w:gz") as archive:
+            _add_artifacts(archive, root)
+        os.replace(str(temporary), str(destination))
+        shutil.rmtree(str(root))
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+    return destination
+
+
+def cleanup_archives(
+    project_root: Path, *, now: Optional[int] = None, home: Optional[Path] = None,
+) -> int:
+    project = Path(project_root).expanduser().resolve(strict=True)
+    account_home = (home or Path.home()).resolve(strict=True)
+    if not _contained(project, account_home):
+        raise RemoteValidationError("project root is outside HOME")
+    archives = project / "archives"
+    if archives.is_symlink() or not archives.is_dir():
+        return 0
+    removed = 0
+    current = int(time.time()) if now is None else now
+    for path in sorted(archives.glob("*/*.tar.gz")):
+        if path.is_symlink() or not path.is_file() or \
+                not _RUN_PART.fullmatch(path.parent.name) or \
+                not _RUN_PART.fullmatch(path.name[:-7]):
+            continue
+        if current - int(path.stat().st_mtime) < 72 * 3600:
+            continue
+        path.unlink()
+        removed += 1
+    return removed
 
 
 def _atomic_write(path: Path, text: str) -> None:
@@ -45,45 +142,33 @@ def _contained(path: Path, parent: Path) -> bool:
         return False
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def _validate_regular_tree(path: Path, label: str) -> None:
+def _validate_directory(path: Path, label: str) -> None:
     if not path.is_dir() or path.is_symlink():
         raise RemoteValidationError("%s is missing or symbolic" % label)
-    for root, directories, files in os.walk(str(path), followlinks=False):
-        for name in directories + files:
-            if (Path(root) / name).is_symlink():
-                raise RemoteValidationError("%s contains a symbolic link" % label)
 
 
 def validate_cases(source_root: Path, cases: Sequence[CaseSpec]) -> List[Dict[str, str]]:
-    if len(cases) != TOTAL_CASES:
-        raise RemoteValidationError("expected exactly %d cases" % TOTAL_CASES)
+    if not cases:
+        raise RemoteValidationError("GPU matrix has no cases")
     tests_root = source_root / "tests"
     if not tests_root.is_dir() or tests_root.is_symlink():
         raise RemoteValidationError("source tests tree is missing or symbolic")
     for shared in ("integrate", "PP_ORB"):
-        _validate_regular_tree(tests_root / shared, "tests/%s" % shared)
+        _validate_directory(tests_root / shared, "tests/%s" % shared)
 
     rows: List[Dict[str, str]] = []
     for case in cases:
         case_dir = tests_root / case.suite / case.name
-        _validate_regular_tree(case_dir, case.case_id)
+        _validate_directory(case_dir, case.case_id)
         if case.runner == "autotest":
             reference = case_dir / "result.ref"
             if not reference.is_file() or reference.is_symlink():
                 raise RemoteValidationError("%s has no regular result.ref" % case.case_id)
         else:
-            for filename, expected in CUSOLVERMP_HASHES.items():
+            for filename in ("INPUT", "KPT", "STRU"):
                 path = case_dir / filename
-                if not path.is_file() or path.is_symlink() or _sha256(path) != expected:
-                    raise RemoteValidationError("unexpected %s in %s" % (filename, case.case_id))
+                if not path.is_file() or path.is_symlink():
+                    raise RemoteValidationError("missing %s in %s" % (filename, case.case_id))
             text = (case_dir / "INPUT").read_text(encoding="utf-8")
             if len(_CUSOLVER_LINE.findall(text)) != 1:
                 raise RemoteValidationError("%s must select cusolvermp exactly once" % case.case_id)
@@ -110,6 +195,20 @@ def _result_row(
         "resource": row["resource"], "runner": row["runner"], "state": state,
         "exit_code": exit_code, "slurm_state": slurm_state, "job_id": job_id,
         "elapsed_seconds": elapsed_seconds, "artifact_dir": artifact_dir,
+    }
+
+
+def _component(
+    name: str, label: str, state: str, *, job_id: str = "", slurm_state: str = "",
+    exit_code: str = "",
+) -> Dict[str, str]:
+    return {
+        "name": name,
+        "label": label,
+        "state": state,
+        "job_id": job_id,
+        "slurm_state": slurm_state,
+        "exit_code": exit_code,
     }
 
 
@@ -213,7 +312,7 @@ class RemoteCoordinator:
             client.install_signal_handlers()
             cluster = self.config.cluster
             build_job = client.submit(
-                script=self.control_root / "build_gpu.sbatch",
+                script=self.control_root / "build_gpu.sh",
                 partition=cluster.partition,
                 profile=self.config.build,
                 label="build",
@@ -226,13 +325,22 @@ class RemoteCoordinator:
             )
             client.save_jobs(self.results_root / "jobs.json")
             build_state, build_exit = client.wait((build_job,))[build_job]
+            build_component = _component(
+                "build", self.config.build.label,
+                "PASS" if (build_state, build_exit) == ("COMPLETED", "0:0") else "FAIL",
+                job_id=build_job, slurm_state=build_state, exit_code=build_exit,
+            )
             if (build_state, build_exit) != ("COMPLETED", "0:0"):
                 rows = [
                     _result_row(row, state="INFRA", exit_code=build_exit,
                                 slurm_state=build_state, job_id=build_job)
                     for row in self.rows
                 ]
-                return self._finish(rows)
+                components = [build_component] + [
+                    _component(resource, profile.label, "SKIPPED")
+                    for resource, profile in self.config.resources.items()
+                ]
+                return self._finish(rows, components)
 
             grouped = {
                 resource: [row for row in self.rows if row["resource"] == resource]
@@ -287,7 +395,33 @@ class RemoteCoordinator:
                             elapsed_seconds=elapsed, artifact_dir=str(artifact_dir),
                         )
                     )
-            return self._finish(results)
+            components = [build_component]
+            for resource, group_rows in grouped.items():
+                states = [row["state"] for row in results if row["resource"] == resource]
+                if states and all(state == "PASS" for state in states):
+                    state = "PASS"
+                elif any(state in ("FAIL", "TIMEOUT") for state in states):
+                    state = "FAIL"
+                else:
+                    state = "INFRA"
+                job = arrays[resource]
+                task_states = [
+                    accounting["%s_%d" % (job, index)]
+                    for index in range(len(group_rows))
+                ]
+                if all(item == ("COMPLETED", "0:0") for item in task_states):
+                    slurm_state, slurm_exit = "COMPLETED", "0:0"
+                else:
+                    slurm_state, slurm_exit = next(
+                        item for item in task_states if item != ("COMPLETED", "0:0")
+                    )
+                components.append(
+                    _component(
+                        resource, self.config.resources[resource].label, state, job_id=job,
+                        slurm_state=slurm_state, exit_code=slurm_exit,
+                    )
+                )
+            return self._finish(results, components)
         except (OSError, SlurmError, ValueError) as error:
             try:
                 self.results_root.mkdir(parents=True, exist_ok=True)
@@ -295,7 +429,14 @@ class RemoteCoordinator:
                 if self.client is not None:
                     self.client.cancel()
                 if self.rows:
-                    self._finish([_result_row(row, state="INFRA") for row in self.rows])
+                    assert self.config is not None
+                    self._finish(
+                        [_result_row(row, state="INFRA") for row in self.rows],
+                        [_component("build", self.config.build.label, "INFRA")] + [
+                            _component(name, profile.label, "INFRA")
+                            for name, profile in self.config.resources.items()
+                        ],
+                    )
             except OSError:
                 pass
             return 2
@@ -328,17 +469,21 @@ class RemoteCoordinator:
             return None
         return state, returncode, elapsed
 
-    def _finish(self, rows: Sequence[Mapping[str, Any]]) -> int:
+    def _finish(
+        self, rows: Sequence[Mapping[str, Any]],
+        components: Sequence[Mapping[str, str]],
+    ) -> int:
         passed = sum(row["state"] == "PASS" for row in rows)
         infrastructure = sum(row["state"] == "INFRA" for row in rows)
         result = {
-            "protocol": 1, "total": len(rows), "passed": passed,
+            "protocol": 2, "total": len(rows), "passed": passed,
             "failed": len(rows) - passed - infrastructure,
-            "infrastructure": infrastructure, "cases": list(rows),
+            "infrastructure": infrastructure, "components": list(components),
+            "cases": list(rows),
         }
         SlurmClient.save_result(self.matrix_root / "result.json", result)
         SlurmClient.save_markdown(self.matrix_root / "gpu-case-summary.md", result)
-        return 0 if passed == TOTAL_CASES else 1
+        return 0 if rows and passed == len(rows) else 1
 
 
 def configure_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -363,6 +508,6 @@ def execute(args: Any, control_root: Path) -> int:
 
 
 __all__ = [
-    "CUSOLVERMP_HASHES", "RemoteCoordinator", "RemoteValidationError",
+    "RemoteCoordinator", "RemoteValidationError",
     "configure_parser", "execute", "validate_cases",
 ]

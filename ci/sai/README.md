@@ -13,6 +13,13 @@ from a workstation. Cluster policy and the trusted test inventory live in
 argument. The INI file cannot provide shell commands, environment variables,
 scripts, or additional scheduler arguments.
 
+The directory is intentionally flat. `sai.py` is the only public entry point;
+the adjacent Python files are focused modules and `tests/` is the only source
+subdirectory. `build_gpu.sh` is the fixed build worker, while
+`gpu_case.sbatch` only loads the module environment before invoking Python. The
+eight-line `mpirun_with_mapping.sh` must be an executable named `mpirun` for
+ABACUS Autotest. No orchestration is implemented in Shell.
+
 ## Trust model
 
 `.github/workflows/sai-gpu-full.yml` checks out two trees:
@@ -55,8 +62,8 @@ only to the manual Environment, and configure each Environment with:
 secret: SAI_SSH_PRIVATE_KEY=<complete private key>
 variable: SAI_SSH_HOST=c0.sai.ai-4s.com
 variable: SAI_SSH_PORT=12022
-variable: SAI_SSH_USER=abacususer01
-variable: SAI_PROJECT_ROOT=/home/abacus-group/abacususer01/agent/abacus_sai_gpu_ci
+variable: SAI_SSH_USER=<sai-user>
+variable: SAI_PROJECT_ROOT=/home/<group>/<sai-user>/abacus_sai_gpu_ci
 ```
 
 GitHub Environment secrets are separate, so the key must be added to each
@@ -80,7 +87,7 @@ paths:
 [local]
 ssh_config = ~/.ssh/config
 ssh_target = SAI-abacus
-project_root = /home/your-group/your-user/agent/abacus_sai_gpu_ci
+project_root = /home/your-group/your-user/abacus_sai_gpu_ci
 run_namespace = local
 artifact_root = ./sai-artifacts
 ```
@@ -132,13 +139,13 @@ The exact schema contains:
 - `[coordinator]`: polling and bounded Slurm query failure limits;
 - `[build]`: one build allocation;
 - `[resource.*]`: per-case nodes, ranks, GPUs, time, QoS, and array concurrency;
-- `[case.001]` through `[case.049]`: the immutable suite, case, resource, and
-  runner assignment.
+- contiguous `[case.NNN]` sections starting at `[case.001]`: suite, case,
+  resource, and runner assignments.
 
 Sections and keys are exact. Interpolation, defaults, multiline values,
 unknown resources, unsafe paths, and topology outside the validated bounds are
 rejected. Resource profiles generate argv lists for `sbatch`; the fixed
-`build_gpu.sbatch` and `gpu_case.sbatch` files contain no `#SBATCH` resource
+`build_gpu.sh` and `gpu_case.sbatch` files contain no `#SBATCH` resource
 directives. No job uses `--cpus-per-task`, memory requests, `--wrap`, or node
 pinning. A fixed `--export=NIL` prevents the submission environment from being
 inherited; fixed scripts reconstruct only `HOME`, `USER`, `LOGNAME`, and a
@@ -154,7 +161,8 @@ does not modify `/opt`, modules, or system configuration.
 ## Execution model
 
 The coordinator submits the build first. Only a successful terminal build
-state releases four resource-homogeneous arrays:
+state releases one homogeneous array for each configured resource profile.
+The current matrix is:
 
 | Profile | Cases | Per task | QoS | Max concurrent |
 | --- | ---: | --- | --- | ---: |
@@ -178,11 +186,11 @@ all recorded allocations.
 ## Source transfer and results
 
 GitHub creates a deterministic gzip-compressed full or delta Git payload plus
-a compressed tree manifest. The files are stored as a one-day Actions artifact
-without a second compression pass. SAI receives only a short-lived Blob URL,
-downloads bounded ranges in parallel, validates the archive and canonical Git
-tree, then updates the verified cache. The GitHub token never leaves the
-runner.
+a compressed tree manifest. The source checkout includes Git history so an
+available SAI cache SHA produces a delta rather than an accidental full
+payload. `rsync --partial` pushes the two compressed files directly over the
+approved SSH connection and resumes a failed transfer. SAI validates the
+canonical Git tree before updating the verified cache.
 
 The authoritative result is:
 
@@ -190,28 +198,30 @@ The authoritative result is:
 results/case-matrix/result.json
 ```
 
-It records protocol version, aggregate counts, all 49 case identities,
-resources, runner types, return codes, Slurm states and job IDs, elapsed time,
-and artifact directories. `gpu-case-summary.md` is derived display output;
-GitHub reporting validates the JSON rather than parsing Markdown.
+It records protocol version, aggregate counts, compile status, configured
+resource-group statuses, case identities, return codes, Slurm states and job
+IDs, elapsed time, and artifact directories. GitHub expands the build and each
+configured resource group into independent red/green jobs using the labels in
+`gpu-matrix.ini`. The derived `gpu-case-summary.md` contains the complete case
+matrix; reporting validates JSON against the trusted INI rather than parsing
+Markdown.
 
-The complete artifact is retained for 30 days. After upload, the remote run
-gets an atomic `.artifacts-uploaded` marker. The user-level cleanup installed
-by `.github/workflows/sai-bootstrap.yml` removes uploaded runs after 72 hours
-and incomplete or diagnostic runs after 168 hours, while refusing roots
-outside HOME. It reads the atomic `jobs.json` ledger and skips active jobs,
-malformed ledgers, and runs whose Slurm state cannot be queried.
+The complete GitHub artifact is retained for 30 days. After a successful
+upload, SAI writes the same selected results to an atomic
+`archives/NAMESPACE/RUN.tar.gz` file and removes the original run directory.
+Each later run removes archives older than 72 hours. Incomplete runs are left
+untouched for explicit inspection instead of being deleted automatically.
 
 ## Verification
 
-Run both test layers locally:
+Run the test suite locally:
 
 ```bash
 python3 -m unittest discover -s ci/sai/tests -p 'test_sai_*.py' -v
-bash ci/sai/tests/test_sai_ci.sh
 ```
 
 Python tests cover configuration, source selection, local transport, Slurm
 argv and accounting, remote orchestration, CLI behavior, and the JSON result
-protocol. Shell tests cover the retained SSH, cache, artifact, cleanup, PMIx,
-workflow policy, and independent RT-TDDFT scale helpers.
+protocol. The policy test fixes the small allowed shell surface, trusted
+workflow boundaries, compressed delta transfer, component jobs, forbidden
+Slurm options, and shell syntax.

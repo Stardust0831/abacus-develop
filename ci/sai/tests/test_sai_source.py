@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from sai_ci.source import PayloadInfo, SourceSelection, build_payload, resolve_source
+from source import PayloadInfo, SourceSelection, build_payload, resolve_source
 
 
 class GitRepository:

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: "Approved code SHA; executes as abacususer01 on SAI"
+        description: "Approved code SHA; executes as the configured SAI account"
         required: true
         type: string
       project_root:
@@ -49,7 +49,7 @@ jobs:
       source_sha: ${{ steps.request.outputs.source_sha }}
     steps:
       - name: Checkout trusted request handler
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           path: control
@@ -61,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MANUAL_RUN_NAMESPACE: ${{ inputs.run_namespace || 'manual' }}
           MANUAL_SOURCE_SHA: ${{ inputs.source_sha || '' }}
-        run: bash control/ci/sai/authorize_pr_comment.sh
+        run: python3 control/ci/sai/sai.py github authorize
 
   rebuild-and-test:
     name: SAI SSH rebuild and GPU validation
@@ -75,6 +75,8 @@ jobs:
       gpu_failed: ${{ steps.case_summary.outputs.failed }}
       gpu_infrastructure: ${{ steps.case_summary.outputs.infrastructure }}
       gpu_passed: ${{ steps.case_summary.outputs.passed }}
+      gpu_total: ${{ steps.case_summary.outputs.total }}
+      components: ${{ steps.case_summary.outputs.components }}
     permissions:
       actions: read
       checks: write
@@ -92,17 +94,10 @@ jobs:
       SAI_SSH_PORT: ${{ vars.SAI_SSH_PORT }}
       SAI_SSH_USER: ${{ vars.SAI_SSH_USER }}
       ARTIFACT_ROOT: ""
-      REMOTE_PROJECT_ROOT: ""
-      REMOTE_RUN_ROOT: ""
-      REMOTE_SOURCE_TRANSFER_ROOT: ""
-      SOURCE_CACHE_BASE_SHA: ""
-      SOURCE_MANIFEST: ""
-      SOURCE_PAYLOAD: ""
-      SOURCE_PAYLOAD_MODE: ""
       SAI_SSH_CONFIG: ""
     steps:
       - name: Checkout trusted CI control plane
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.event.repository.default_branch }}
           path: control
@@ -114,13 +109,6 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           requested_root=${PROJECT_ROOT_INPUT:-$SAI_PROJECT_ROOT_DEFAULT}
           : "${requested_root:?Set the SAI_PROJECT_ROOT Environment variable or workflow input}"
-          [[ "$requested_root" =~ ^/(home|org)/abacus-group/abacususer01(/[A-Za-z0-9._-]+)+$ ]]
-          case "/$requested_root/" in
-            */./*|*/../*)
-              echo "Project root contains a dot path component: $requested_root" >&2
-              exit 1
-              ;;
-          esac
           if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
             run_namespace=daily
             source_cache_role=baseline
@@ -136,10 +124,11 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Checkout requested ABACUS commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: ${{ env.SOURCE_REPOSITORY }}
           ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 0
           path: source
           persist-credentials: false
 
@@ -147,15 +136,7 @@ jobs:
         if: env.CHECK_RUN_ID != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          [[ "$CHECK_RUN_ID" =~ ^[1-9][0-9]*$ ]]
-          jq -n \
-            --arg started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '{status: "in_progress", started_at: $started_at}' \
-            | gh api --method PATCH \
-                "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_RUN_ID" \
-                --input - >/dev/null
+        run: python3 control/ci/sai/sai.py github start-check
 
       - name: Verify immutable source checkout
         run: |
@@ -175,188 +156,43 @@ jobs:
           SAI_SSH_PRIVATE_KEY: ${{ secrets.SAI_SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          bash control/ci/sai/configure_ssh_client.sh \
+          python3 control/ci/sai/sai.py github configure-ssh \
             "$RUNNER_TEMP/sai-ssh" "$GITHUB_WORKSPACE/control/ci/sai/known_hosts"
           echo "SAI_SSH_CONFIG=$RUNNER_TEMP/sai-ssh/config" >> "$GITHUB_ENV"
 
-      - name: Verify SAI SSH and Slurm access
-        run: |
-          set -euo pipefail
-          connected=0
-          for attempt in {1..4}; do
-            if ssh -F "$SAI_SSH_CONFIG" -o ConnectionAttempts=1 -MNf sai-ci; then
-              connected=1
-              break
-            fi
-            echo "SAI SSH master connection failed (attempt $attempt/4)" >&2
-            if [[ $attempt -lt 4 ]]; then
-              sleep $((attempt * 5))
-            fi
-          done
-          [[ $connected -eq 1 ]]
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$SAI_SSH_USER" \
-            < control/ci/sai/probe_remote_sai.sh
-
-      - name: Create isolated remote run
-        run: |
-          set -euo pipefail
-          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
-            "$REQUESTED_PROJECT_ROOT" "$RUN_NAMESPACE" "$run_key" \
-            "$SOURCE_SHA" "$CONTROL_SHA" \
-            < control/ci/sai/prepare_remote_run.sh)
-          printf '%s\n' "$output"
-          remote_project_root=$(awk -F= '$1 == "SAI_PROJECT_ROOT" {print $2}' <<< "$output")
-          remote_run_root=$(awk -F= '$1 == "RUN_ROOT" {print $2}' <<< "$output")
-          [[ "$remote_project_root" =~ ^/(home|org)/abacus-group/abacususer01/ ]]
-          [[ "$remote_run_root" == "$remote_project_root/runs/$RUN_NAMESPACE/$run_key" ]]
-          {
-            echo "REMOTE_PROJECT_ROOT=$remote_project_root"
-            echo "REMOTE_RUN_ROOT=$remote_run_root"
-          } >> "$GITHUB_ENV"
-
-      - name: Upload trusted control plane to SAI
-        run: |
-          set -euo pipefail
-          rsync -az --delete --timeout=600 --stats \
-            -e "ssh -F $SAI_SSH_CONFIG" \
-            "$GITHUB_WORKSPACE/control/ci/sai/" \
-            "sai-ci:$REMOTE_RUN_ROOT/control/"
-
-      - name: Prepare source delta target
-        run: |
-          set -euo pipefail
-          output=$(ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
-            prepare "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" \
-            "$SOURCE_CACHE_ROLE" \
-            < control/ci/sai/source_transfer_cache.sh)
-          printf '%s\n' "$output"
-          transfer_root=$(awk -F= '$1 == "SOURCE_TRANSFER_ROOT" {print $2}' <<< "$output")
-          base_sha=$(awk -F= '$1 == "SOURCE_CACHE_BASE_SHA" {print $2}' <<< "$output")
-          cache_role=$(awk -F= '$1 == "SOURCE_CACHE_ROLE" {print $2}' <<< "$output")
-          run_key="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          [[ "$transfer_root" == "$REMOTE_PROJECT_ROOT/cache/source-transfers/$run_key" ]]
-          [[ "$base_sha" == none || "$base_sha" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$cache_role" == "$SOURCE_CACHE_ROLE" ]]
-          {
-            echo "REMOTE_SOURCE_TRANSFER_ROOT=$transfer_root"
-            echo "SOURCE_CACHE_BASE_SHA=$base_sha"
-          } >> "$GITHUB_ENV"
-
-      - name: Build compressed source payload
-        run: |
-          set -euo pipefail
-          payload="$RUNNER_TEMP/source-payload.gz"
-          manifest="$RUNNER_TEMP/source-manifest.gz"
-          output=$(python3 control/ci/sai/sai.py source payload \
-            --repository "$GITHUB_WORKSPACE/source" \
-            --source-id "$SOURCE_SHA" --base-sha "$SOURCE_CACHE_BASE_SHA" \
-            --payload "$payload" --manifest "$manifest")
-          printf '%s\n' "$output"
-          mode=$(jq -er '.mode | select(. == "full" or . == "delta")' <<< "$output")
-          [[ "$mode" == full || "$mode" == delta ]]
-          {
-            echo "SOURCE_PAYLOAD=$payload"
-            echo "SOURCE_MANIFEST=$manifest"
-            echo "SOURCE_PAYLOAD_MODE=$mode"
-          } >> "$GITHUB_ENV"
-          echo "SOURCE_PAYLOAD_READY mode=$mode base=$SOURCE_CACHE_BASE_SHA target=$SOURCE_SHA"
-
-      - name: Upload source payload artifact
-        id: source_payload_artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: sai-source-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ env.SOURCE_PAYLOAD }}
-            ${{ env.SOURCE_MANIFEST }}
-          if-no-files-found: error
-          retention-days: 1
-          compression-level: 0
-
-      - name: Pull and apply source payload on SAI
-        env:
-          ARTIFACT_ID: ${{ steps.source_payload_artifact.outputs.artifact-id }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          [[ "$ARTIFACT_ID" =~ ^[0-9]+$ ]]
-          artifact_metadata=$(printf 'header = "Authorization: Bearer %s"\n' "$GH_TOKEN" \
-            | curl --fail --silent --show-error --max-time 60 --config - \
-            --header "Accept: application/vnd.github+json" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID")
-          archive_size=$(jq -er \
-            '.size_in_bytes | select(type == "number" and . > 0 and . <= 134217728)' \
-            <<< "$artifact_metadata")
-          unset artifact_metadata
-          download_url=$(printf 'header = "Authorization: Bearer %s"\n' "$GH_TOKEN" \
-            | curl --fail --silent --show-error --max-time 60 \
-            --dump-header - --output /dev/null --config - \
-            --header "Accept: application/vnd.github+json" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \
-            | awk 'tolower($1) == "location:" {$1=""; sub(/^ /, ""); sub(/\r$/, ""); location=$0} END {print location}')
-          unset GH_TOKEN
-          [[ "$download_url" =~ ^https://[A-Za-z0-9.-]+\.blob\.core\.windows\.net/[^[:space:]]+$ ]]
-          printf '%s\n' "$download_url" | ssh -F "$SAI_SSH_CONFIG" sai-ci \
-            bash "$REMOTE_RUN_ROOT/control/download_source_artifact.sh" \
-            "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
-            "$REMOTE_SOURCE_TRANSFER_ROOT" "$archive_size"
-          unset download_url
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
-            receive "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
-            "$REMOTE_SOURCE_TRANSFER_ROOT" "$SOURCE_PAYLOAD_MODE" "$SOURCE_SHA" \
-            < control/ci/sai/source_transfer_cache.sh
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- \
-            finalize "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" \
-            "$REMOTE_SOURCE_TRANSFER_ROOT" "$SOURCE_SHA" \
-            < control/ci/sai/source_transfer_cache.sh
-
-      - name: Build and run SAI GPU validations
-        id: remote_validation
+      - name: Run the shared SAI client
+        id: sai_client
         continue-on-error: true
         run: |
-          set -uo pipefail
+          set -euo pipefail
+          artifact_parent="$RUNNER_TEMP/sai-artifacts"
+          artifact_root="$artifact_parent/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          client_config="$RUNNER_TEMP/sai-client.ini"
+          mkdir -p "$artifact_parent"
+          printf '%s\n' \
+            '[local]' \
+            "ssh_config = $SAI_SSH_CONFIG" \
+            'ssh_target = sai-ci' \
+            "project_root = $REQUESTED_PROJECT_ROOT" \
+            "run_namespace = $RUN_NAMESPACE" \
+            "artifact_root = $artifact_parent" > "$client_config"
+          echo "ARTIFACT_ROOT=$artifact_root" >> "$GITHUB_ENV"
           set +e
-          ssh -F "$SAI_SSH_CONFIG" sai-ci \
-            python3 "$REMOTE_RUN_ROOT/control/sai.py" remote run \
-            "$REMOTE_PROJECT_ROOT" "$REMOTE_RUN_ROOT" "$SOURCE_SHA" "$CONTROL_SHA" \
-            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" \
-            2>&1 | tee "$RUNNER_TEMP/sai-remote-driver.log"
-          remote_rc=${PIPESTATUS[0]}
+          python3 control/ci/sai/sai.py local run \
+            --config "$client_config" \
+            --source-repository "$GITHUB_WORKSPACE/source" \
+            --source-ref "$SOURCE_SHA" \
+            --cache-role "$SOURCE_CACHE_ROLE" \
+            --run-id "$GITHUB_RUN_ID" \
+            --run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --defer-archive \
+            2>&1 | tee "$RUNNER_TEMP/sai-client.log"
+          client_rc=${PIPESTATUS[0]}
           set -e
-          echo "exit_code=$remote_rc" >> "$GITHUB_OUTPUT"
-          exit "$remote_rc"
-
-      - name: Collect remote artifacts
-        id: collect
-        if: always()
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          ARTIFACT_ROOT=${ARTIFACT_ROOT:-$RUNNER_TEMP/sai-artifacts}
-          export ARTIFACT_ROOT
           mkdir -p "$ARTIFACT_ROOT"
-          echo "ARTIFACT_ROOT=$ARTIFACT_ROOT" >> "$GITHUB_ENV"
-          {
-            echo "event_name=$GITHUB_EVENT_NAME"
-            echo "source_sha=$SOURCE_SHA"
-            echo "control_sha=${CONTROL_SHA:-unavailable}"
-            echo "remote_run_root=${REMOTE_RUN_ROOT:-unavailable}"
-          } > "$ARTIFACT_ROOT/workflow-context.txt"
-          if [[ -f "$RUNNER_TEMP/sai-remote-driver.log" ]]; then
-            cp "$RUNNER_TEMP/sai-remote-driver.log" "$ARTIFACT_ROOT/"
-          fi
-          if [[ -z ${SAI_SSH_CONFIG:-} || ! -f $SAI_SSH_CONFIG || \
-                -z ${REMOTE_RUN_ROOT:-} ]]; then
-            echo "Remote run was not created; no remote artifacts are available." \
-              | tee "$ARTIFACT_ROOT/collection-error.log" >&2
-            exit 1
-          fi
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$REMOTE_RUN_ROOT" \
-            < control/ci/sai/collect_remote_artifacts.sh \
-            | tar -xzf - -C "$ARTIFACT_ROOT"
+          cp "$RUNNER_TEMP/sai-client.log" "$ARTIFACT_ROOT/"
+          echo "exit_code=$client_rc" >> "$GITHUB_OUTPUT"
+          exit "$client_rc"
 
       - name: Publish GPU case summary
         id: case_summary
@@ -372,19 +208,26 @@ jobs:
       - name: Upload SAI logs
         id: artifact_upload
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: sai-ssh-gpu-rebuild-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.ARTIFACT_ROOT }}
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Mark remote artifacts as uploaded
-        if: always() && steps.collect.outcome == 'success' && steps.artifact_upload.outcome == 'success'
+      - name: Archive uploaded SAI run
+        if: >-
+          always() && steps.case_summary.outputs.available == 'true' &&
+          steps.artifact_upload.outcome == 'success'
         run: |
           set -euo pipefail
-          ssh -F "$SAI_SSH_CONFIG" sai-ci bash -s -- "$REMOTE_RUN_ROOT" \
-            < control/ci/sai/mark_artifacts_uploaded.sh
+          context="$ARTIFACT_ROOT/local-run-context.txt"
+          [[ -f "$context" ]]
+          remote_run_root=$(awk -F= '$1 == "remote_run_root" {print $2}' "$context")
+          [[ -n "$remote_run_root" ]]
+          ssh -F "$SAI_SSH_CONFIG" sai-ci \
+            python3 "$remote_run_root/control/sai.py" remote archive \
+            "$remote_run_root"
 
       - name: Remove local SSH credentials
         if: always()
@@ -397,34 +240,57 @@ jobs:
       - name: Report validation result
         if: always()
         env:
-          REMOTE_OUTCOME: ${{ steps.remote_validation.outcome }}
-          COLLECT_OUTCOME: ${{ steps.collect.outcome }}
-          REMOTE_EXIT_CODE: ${{ steps.remote_validation.outputs.exit_code }}
+          CLIENT_OUTCOME: ${{ steps.sai_client.outcome }}
+          CLIENT_EXIT_CODE: ${{ steps.sai_client.outputs.exit_code }}
           RESULT_AVAILABLE: ${{ steps.case_summary.outputs.available }}
           RESULT_PASSED: ${{ steps.case_summary.outputs.passed }}
           RESULT_FAILED: ${{ steps.case_summary.outputs.failed }}
           RESULT_INFRASTRUCTURE: ${{ steps.case_summary.outputs.infrastructure }}
+          RESULT_TOTAL: ${{ steps.case_summary.outputs.total }}
         run: |
           set -euo pipefail
-          echo "Remote validation: $REMOTE_OUTCOME (rc=${REMOTE_EXIT_CODE:-missing})"
-          echo "Artifact collection: $COLLECT_OUTCOME"
-          [[ "$REMOTE_OUTCOME" == success ]]
-          [[ "$COLLECT_OUTCOME" == success ]]
+          echo "SAI client: $CLIENT_OUTCOME (rc=${CLIENT_EXIT_CODE:-missing})"
+          [[ "$CLIENT_OUTCOME" == success || "$CLIENT_OUTCOME" == failure ]]
           [[ "$RESULT_AVAILABLE" == true ]]
-          [[ "$RESULT_PASSED" == 49 ]]
-          [[ "$RESULT_FAILED" == 0 ]]
-          [[ "$RESULT_INFRASTRUCTURE" == 0 ]]
+          [[ "$RESULT_TOTAL" =~ ^[1-9][0-9]*$ ]]
+          (( RESULT_PASSED + RESULT_FAILED + RESULT_INFRASTRUCTURE == RESULT_TOTAL ))
+
+  component-status:
+    name: SAI / ${{ matrix.component.label }}
+    needs: rebuild-and-test
+    if: always()
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        component: ${{ fromJSON(needs.rebuild-and-test.outputs.components || '[{"name":"infrastructure","label":"Infrastructure","state":"INFRA"}]') }}
+    steps:
+      - name: Report component state
+        env:
+          COMPONENT_STATE: ${{ matrix.component.state }}
+        run: |
+          set -euo pipefail
+          echo "Component state: $COMPONENT_STATE"
+          [[ "$COMPONENT_STATE" == PASS ]]
 
   report-pr-check:
     name: Report SAI result to pull request
-    needs: [admit, rebuild-and-test]
+    needs: [admit, rebuild-and-test, component-status]
     if: always() && needs.admit.outputs.check_run_id != ''
     runs-on: ubuntu-24.04
     permissions:
       checks: write
+      contents: read
       issues: write
       pull-requests: write
     steps:
+      - name: Checkout trusted result reporter
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: control
+          persist-credentials: false
+
       - name: Complete requested PR check
         env:
           ARTIFACT_URL: ${{ needs.rebuild-and-test.outputs.artifact_url }}
@@ -433,72 +299,9 @@ jobs:
           GPU_FAILED: ${{ needs.rebuild-and-test.outputs.gpu_failed }}
           GPU_INFRASTRUCTURE: ${{ needs.rebuild-and-test.outputs.gpu_infrastructure }}
           GPU_PASSED: ${{ needs.rebuild-and-test.outputs.gpu_passed }}
+          GPU_TOTAL: ${{ needs.rebuild-and-test.outputs.gpu_total }}
           PR_NUMBER: ${{ needs.admit.outputs.pr_number }}
-          SAI_RESULT: ${{ needs.rebuild-and-test.result }}
+          SAI_RESULT: ${{ needs.component-status.result }}
           SOURCE_SHA: ${{ needs.admit.outputs.source_sha }}
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          [[ "$CHECK_RUN_ID" =~ ^[1-9][0-9]*$ ]]
-          [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
-          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          case "$SAI_RESULT" in
-            success) conclusion=success ;;
-            cancelled) conclusion=cancelled ;;
-            failure|skipped) conclusion=failure ;;
-            *)
-              echo "Unexpected SAI job result: $SAI_RESULT" >&2
-              conclusion=failure
-              ;;
-          esac
-          details_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          summary="SAI GPU validation for PR #$PR_NUMBER at \`$SOURCE_SHA\` completed with workflow result **$SAI_RESULT**. [Open the Actions run]($details_url) for the case summary and retained logs."
-          check_request=$(python3 - "$conclusion" \
-            "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            "SAI GPU validation: $SAI_RESULT" "$summary" <<'PY'
-          import json
-          import sys
-
-          conclusion, completed_at, title, summary = sys.argv[1:]
-          print(json.dumps({
-              "status": "completed",
-              "conclusion": conclusion,
-              "completed_at": completed_at,
-              "output": {"title": title, "summary": summary},
-          }))
-          PY
-          )
-          gh api --method PATCH \
-            "repos/$GITHUB_REPOSITORY/check-runs/$CHECK_RUN_ID" \
-            --input - <<< "$check_request" >/dev/null
-
-          case_summary='GPU case summary unavailable.'
-          if [[ "$CASE_SUMMARY_AVAILABLE" == true ]]; then
-            count_re='^([0-9]|[1-4][0-9])$'
-            [[ "$GPU_PASSED" =~ $count_re ]]
-            [[ "$GPU_FAILED" =~ $count_re ]]
-            [[ "$GPU_INFRASTRUCTURE" =~ $count_re ]]
-            (( GPU_PASSED + GPU_FAILED + GPU_INFRASTRUCTURE == 49 ))
-            case_summary="GPU cases: **$GPU_PASSED passed, $GPU_FAILED failed, $GPU_INFRASTRUCTURE infrastructure**."
-          fi
-          artifact_summary='Raw test files were not uploaded.'
-          if [[ -n "$ARTIFACT_URL" ]]; then
-            [[ "$ARTIFACT_URL" =~ ^https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/[0-9]+/artifacts/[0-9]+$ ]]
-            artifact_summary="[Download raw test files]($ARTIFACT_URL) (retained for 30 days)."
-          fi
-          # shellcheck disable=SC2016
-          comment=$(printf '%s\n\n%s\n\n%s | %s\n\nCandidate: `%s`' \
-            "## SAI GPU validation: $SAI_RESULT" \
-            "$case_summary" \
-            "[Open the Actions run]($details_url)" "$artifact_summary" \
-            "$SOURCE_SHA")
-          comment_request=$(python3 - "$comment" <<'PY'
-          import json
-          import sys
-
-          print(json.dumps({"body": sys.argv[1]}))
-          PY
-          )
-          gh api --method POST \
-            "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            --input - <<< "$comment_request" >/dev/null
+        run: python3 control/ci/sai/sai.py github complete-check

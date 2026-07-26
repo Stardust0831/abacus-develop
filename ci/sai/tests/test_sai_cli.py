@@ -26,6 +26,13 @@ class CliTest(unittest.TestCase):
             ("remote", "run", "--help"),
             ("config", "validate", "--help"),
             ("report", "github", "--help"),
+            ("worker", "autotest", "--help"),
+            ("worker", "case", "--help"),
+            ("cache", "prepare", "--help"),
+            ("github", "authorize", "--help"),
+            ("github", "start-check", "--help"),
+            ("github", "complete-check", "--help"),
+            ("github", "configure-ssh", "--help"),
         ]
         for arguments in commands:
             with self.subTest(arguments=arguments):
@@ -41,6 +48,14 @@ class CliTest(unittest.TestCase):
         result = self.run_cli("--version")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), "SAI CI protocol 1")
+
+    def test_remote_maintenance_commands_use_the_public_dispatch_contract(self):
+        for command in ("cleanup", "collect", "archive"):
+            with self.subTest(command=command):
+                result = self.run_cli("remote", command, "/definitely/not/a/sai/run")
+                self.assertEqual(result.returncode, 2)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertIn("sai:", result.stderr)
 
 
 if __name__ == "__main__":
