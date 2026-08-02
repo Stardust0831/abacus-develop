@@ -435,7 +435,7 @@ def _stream(command: Sequence[str], cwd: Path, log: Path) -> int:
 def _mpi_startup_failure(log: Path) -> bool:
     data = log.read_bytes()
     return (
-        bool(PMIX.search(data)) and b"MPI_Init_thread" in data and b"PMIx_Init failed" in data
+        bool(PMIX.search(data)) and b"MPI_Init_thread" in data
     ) or bool(SRUN_DAEMON.search(data))
 
 
