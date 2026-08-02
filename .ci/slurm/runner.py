@@ -200,7 +200,9 @@ def load_config(path: Path = ROOT / "config.ini") -> Config:
         case = Case(section["suite"], section["name"], section["resource"], section["runner"])
         if not all(NAME.fullmatch(value) for value in (case.suite, case.name, case.resource)):
             raise ValueError("invalid case name")
-        if case.resource not in profiles or case.runner not in ("autotest", "cusolvermp"):
+        if case.resource not in profiles or case.runner not in (
+            "autotest", "autotest_gpu", "cusolvermp",
+        ):
             raise ValueError("invalid case resource or runner")
         matrix.append(case)
     if len({case.case_id for case in matrix}) != len(matrix):
@@ -433,8 +435,42 @@ def _stream(command: Sequence[str], cwd: Path, log: Path) -> int:
 def _mpi_startup_failure(log: Path) -> bool:
     data = log.read_bytes()
     return (
-        bool(PMIX.search(data)) and b"MPI_Init_thread" in data and b"PMIx_Init failed" in data
+        bool(PMIX.search(data)) and b"MPI_Init_thread" in data
     ) or bool(SRUN_DAEMON.search(data))
+
+
+def _force_gpu_inputs(case: Path, artifacts: Optional[Path] = None) -> None:
+    inputs = sorted(path for path in case.rglob("INPUT") if path.is_file())
+    if not inputs:
+        raise ValueError("GPU autotest case has no INPUT")
+    for path in inputs:
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines(keepends=True)
+        active = [
+            index for index, line in enumerate(lines)
+            if re.match(r"^\s*device(?:\s*=|\s+)", line) and not line.lstrip().startswith("#")
+        ]
+        if len(active) > 1:
+            raise ValueError("GPU autotest INPUT has duplicate device entries: {}".format(path))
+        if active:
+            index = active[0]
+            ending = "\r\n" if lines[index].endswith("\r\n") else "\n" if lines[index].endswith("\n") else ""
+            body = lines[index][:-len(ending)] if ending else lines[index]
+            match = re.match(
+                r"^(\s*)device(?:\s*=|\s+)\s*\S+(\s*(?:#.*)?)$", body,
+            )
+            if not match:
+                raise ValueError("invalid device entry in GPU autotest INPUT: {}".format(path))
+            lines[index] = "{}device gpu{}{}".format(match.group(1), match.group(2), ending)
+        else:
+            if text and not text.endswith(("\n", "\r")):
+                lines.append("\n")
+            lines.append("device gpu\n")
+        path.write_text("".join(lines), encoding="utf-8")
+        if artifacts is not None:
+            destination = artifacts / "effective-inputs" / path.relative_to(case)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(str(path), str(destination))
 
 
 def worker(source: Path, control: Path, install: Path, results: Path, manifest: Path) -> int:
@@ -454,6 +490,8 @@ def worker(source: Path, control: Path, install: Path, results: Path, manifest: 
     os.symlink(str(source / "tests" / "integrate"), str(tests / "integrate"))
     os.symlink(str(source / "tests" / "PP_ORB"), str(tests / "PP_ORB"))
     shutil.copytree(str(source / "tests" / suite / name), str(case))
+    if runner == "autotest_gpu":
+        _force_gpu_inputs(case, artifacts)
     launcher = work / "launcher"
     launcher.mkdir()
     os.symlink(str(control / "mpirun_with_mapping.sh"), str(launcher / "mpirun"))
@@ -467,7 +505,7 @@ def worker(source: Path, control: Path, install: Path, results: Path, manifest: 
     returncode = 2
     final_startup_failure = False
     try:
-        if runner == "autotest":
+        if runner in ("autotest", "autotest_gpu"):
             cases_file = case.parent / "CASES.task.txt"
             cases_file.write_text(name + "\n", encoding="utf-8")
             command = (
