@@ -274,6 +274,27 @@ def _component(name: str, label: str, state: str, job: str = "", slurm: str = ""
     }
 
 
+def _folder_components(result: Mapping[str, Any]) -> List[Dict[str, str]]:
+    components = [dict(result["components"][0])]
+    suites: Dict[str, List[Mapping[str, Any]]] = {}
+    for row in result["cases"]:
+        suite = row["case_id"].split("/", 1)[0]
+        suites.setdefault(suite, []).append(row)
+    for suite in sorted(suites):
+        rows = suites[suite]
+        states = [row["state"] for row in rows]
+        state = "PASS" if all(item == "PASS" for item in states) else (
+            "FAIL" if any(item in ("FAIL", "TIMEOUT") for item in states) else "INFRA"
+        )
+        jobs = list(dict.fromkeys(
+            row["job_id"].split("_", 1)[0] for row in rows if row["job_id"]
+        ))
+        components.append(_component(
+            suite, "tests/" + suite, state, ", ".join(jobs),
+        ))
+    return components
+
+
 def _result_row(case: Case, state: str, **values: Any) -> Dict[str, Any]:
     row = {
         "case_id": case.case_id, "resource": case.resource,
@@ -305,18 +326,19 @@ def _site_credit() -> str:
 
 
 def _result_markdown(result: Mapping[str, Any]) -> str:
+    components = _folder_components(result)
     lines = [
         "# GPU validation result", "",
         "Passed: **{}**; failed: **{}**; infrastructure: **{}**".format(
             result["passed"], result["failed"], result["infrastructure"]
-        ), "", "| Component | State | Slurm job |", "| --- | --- | --- |",
+        ), "", "| Component | State | Slurm jobs |", "| --- | --- | --- |",
     ]
-    lines.extend("| {} | {} | {} |".format(item["label"], item["state"], item["job_id"]) for item in result["components"])
+    lines.extend("| {} | {} | {} |".format(item["label"], item["state"], item["job_id"]) for item in components)
     lines.extend(("", "| Case | Resource | State | Duration | Slurm job |", "| --- | --- | --- | --- | --- |"))
     lines.extend("| {} | {} | {} | {} | {} |".format(
         row["case_id"], row["resource"], row["state"],
         _time(row["elapsed_seconds"]), row["job_id"],
-    ) for row in result["cases"])
+    ) for row in sorted(result["cases"], key=lambda item: item["case_id"]))
     lines.extend(("", _site_credit()))
     return "\n".join(lines) + "\n"
 
@@ -1044,7 +1066,7 @@ def _print_result(
         print("{} passed, {} failed, {} infrastructure\n".format(
             result["passed"], result["failed"], result["infrastructure"],
         ))
-        for component in result["components"]:
+        for component in _folder_components(result):
             print("  {:<24} {}".format(component["label"], component["state"]))
         print("\nSummary: {}".format(root / "results" / "summary.md"))
     print("Raw results: {}".format(root / "results"))
@@ -1221,7 +1243,10 @@ def report(args: argparse.Namespace) -> int:
         values = {"available": "false", "passed": "", "failed": "", "infrastructure": "", "total": ""}
     else:
         result = _read_result(args.result)
-        components = [{key: item[key] for key in ("name", "label", "state")} for item in result["components"]]
+        components = [
+            {key: item[key] for key in ("name", "label", "state")}
+            for item in _folder_components(result)
+        ]
         counts = {name: result[name] for name in ("passed", "failed", "infrastructure", "total")}
         values = {"available": "true", **{name: str(value) for name, value in counts.items()}}
         if args.summary:

@@ -43,9 +43,22 @@ class ConfigTests(unittest.TestCase):
     def test_current_matrix_is_loaded_from_ini(self):
         config = runner.load_config()
         self.assertEqual(len(config.cases), 123)
-        self.assertEqual(list(config.resources), ["gpu1", "gpu2", "gpu4", "gpu8x2", "pw_gpu1"])
+        self.assertEqual(list(config.resources), ["gpu1", "gpu2", "gpu4", "gpu4x2", "pw_gpu1"])
         self.assertEqual(config.resources["gpu4"].label, "4 GPUs")
-        self.assertEqual(config.resources["gpu8x2"].label, "2 nodes / 16 GPUs")
+        self.assertEqual(config.resources["gpu4x2"].label, "2 nodes / 8 GPUs")
+        resources = {(case.suite, case.name): case.resource for case in config.cases}
+        self.assertEqual(resources[("11_PW_GPU", "scf_cg")], "gpu4")
+        self.assertEqual(resources[("13_NAO_multik_GPU", "001_NO_KP_BiSeCuO_GPU")], "gpu4")
+        self.assertEqual(resources[("15_rtTDDFT_GPU", "12_NO_re_TDDFT_GPU")], "gpu4")
+        self.assertEqual(resources[("15_rtTDDFT_GPU", "19_NO_Si48_CUSOLVERMP_TDDFT_GPU")], "gpu4x2")
+        self.assertEqual(
+            {identity for identity, resource in resources.items() if resource == "gpu4"},
+            {
+                ("11_PW_GPU", "scf_cg"),
+                ("13_NAO_multik_GPU", "001_NO_KP_BiSeCuO_GPU"),
+                ("15_rtTDDFT_GPU", "12_NO_re_TDDFT_GPU"),
+            },
+        )
         pw_cases = [case for case in config.cases if case.suite == "01_PW"]
         self.assertEqual(len(pw_cases), 73)
         self.assertTrue(all(case.resource == "pw_gpu1" for case in pw_cases))
@@ -804,7 +817,8 @@ class ResultTests(unittest.TestCase):
         self.assertIn("GPU validation: PASS", text)
         self.assertIn("123 passed, 0 failed, 0 infrastructure", text)
         self.assertIn("Compile                  PASS", text)
-        self.assertIn("2 nodes / 16 GPUs        PASS", text)
+        self.assertIn("tests/01_PW              PASS", text)
+        self.assertRegex(text, r"tests/15_rtTDDFT_GPU\s+PASS")
         self.assertIn("Summary: {}/results/summary.md".format(root.resolve()), text)
         self.assertIn("Raw results: {}/results".format(root.resolve()), text)
         self.assertIn("Remote archive: /remote/archives/manual/1-1.tar.gz", text)
@@ -821,15 +835,25 @@ class ResultTests(unittest.TestCase):
             runner.report(args)
             output = args.output.read_text(encoding="utf-8")
             self.assertIn("available=true", output)
-            self.assertIn('"name":"gpu8x2"', output)
+            self.assertIn('"name":"01_PW","label":"tests/01_PW"', output)
+            self.assertIn('"name":"15_rtTDDFT_GPU","label":"tests/15_rtTDDFT_GPU"', output)
             summary = args.summary.read_text()
             self.assertTrue(summary.startswith("# GPU validation result\n"))
+            self.assertIn("| Component | State | Slurm jobs |", summary)
             self.assertIn("| Case | Resource | State | Duration | Slurm job |", summary)
             self.assertIn("| 11_PW_GPU/scf_out_wf | gpu1 | PASS | 00:00:10 | 102_0 |", summary)
             self.assertTrue(summary.rstrip().endswith(
                 "Computing resources were provided by "
                 "[Open Source Supercomputing Center of SAI](https://www.open-sai.com/)."
             ))
+
+    def test_folder_components_aggregate_case_failures(self):
+        result = valid_result()
+        failed = next(row for row in result["cases"] if row["case_id"].startswith("12_NAO_Gamma_GPU/"))
+        failed["state"] = "FAIL"
+        components = {item["name"]: item for item in runner._folder_components(result)}
+        self.assertEqual(components["12_NAO_Gamma_GPU"]["state"], "FAIL")
+        self.assertEqual(components["13_NAO_multik_GPU"]["state"], "PASS")
 
     def test_report_rejects_untrusted_counts(self):
         invalid = (
