@@ -42,7 +42,7 @@ def valid_result():
 class ConfigTests(unittest.TestCase):
     def test_current_matrix_is_loaded_from_ini(self):
         config = runner.load_config()
-        self.assertEqual(len(config.cases), 122)
+        self.assertEqual(len(config.cases), 123)
         self.assertEqual(list(config.resources), ["gpu1", "gpu2", "gpu4", "gpu8x2", "pw_gpu1"])
         self.assertEqual(config.resources["gpu4"].label, "4 GPUs")
         self.assertEqual(config.resources["gpu8x2"].label, "2 nodes / 16 GPUs")
@@ -50,6 +50,11 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(len(pw_cases), 73)
         self.assertTrue(all(case.resource == "pw_gpu1" for case in pw_cases))
         self.assertTrue(all(case.runner == "autotest_gpu" for case in pw_cases))
+        ofdft_cases = [case for case in config.cases if case.suite == "07_OFDFT"]
+        self.assertEqual(
+            ofdft_cases,
+            [runner.Case("07_OFDFT", "31_OF_KE_WT_GPU", "pw_gpu1", "autotest")],
+        )
         self.assertEqual(config.site.name, "Open Source Supercomputing Center of SAI")
         self.assertEqual(config.site.url, "https://www.open-sai.com/")
         self.assertEqual(config.site.acknowledgement, "Computing resources were provided by")
@@ -797,7 +802,7 @@ class ResultTests(unittest.TestCase):
             runner._print_result(result, root, "/remote/archives/manual/1-1.tar.gz")
             text = output.getvalue()
         self.assertIn("GPU validation: PASS", text)
-        self.assertIn("122 passed, 0 failed, 0 infrastructure", text)
+        self.assertIn("123 passed, 0 failed, 0 infrastructure", text)
         self.assertIn("Compile                  PASS", text)
         self.assertIn("2 nodes / 16 GPUs        PASS", text)
         self.assertIn("Summary: {}/results/summary.md".format(root.resolve()), text)
