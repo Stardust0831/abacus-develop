@@ -141,7 +141,23 @@ def format_description(desc: str) -> str:
     return result.strip()
 
 
-def generate_parameter_markdown(param: Dict[str, str]) -> str:
+def link_availability(availability: str, name_anchors: Dict[str, str]) -> str:
+    """
+    Render each parameter keyword that appears in an availability expression as
+    a link to that parameter's own documentation section, so readers can jump to
+    the meaning of the parameter (and the values listed in its description)
+    without leaving the generated reference.
+    """
+    def replace(match):
+        name = match.group(0)
+        anchor = name_anchors.get(name)
+        if anchor:
+            return f"[`{name}`]({anchor})"
+        return name
+    return re.sub(r'\b[A-Za-z_][A-Za-z0-9_]*\b', replace, availability)
+
+def generate_parameter_markdown(param: Dict[str, str],
+                                name_anchors: Dict[str, str]) -> str:
     """
     Generate markdown for a single parameter.
     """
@@ -154,7 +170,9 @@ def generate_parameter_markdown(param: Dict[str, str]) -> str:
 
     # Availability (before description, as in original format)
     if param.get('availability', '') != '':
-        lines.append(f"- **Availability**: `{param['availability']}`")
+        lines.append("- **Availability**: *"
+                     + link_availability(str(param['availability']), name_anchors)
+                     + "*")
 
     # Description
     if param.get('description', '') != '':
@@ -184,14 +202,15 @@ def generate_parameter_markdown(param: Dict[str, str]) -> str:
     return '\n'.join(lines)
 
 
-def generate_category_markdown(category: str, params: List[Dict[str, str]]) -> str:
+def generate_category_markdown(category: str, params: List[Dict[str, str]],
+                                name_anchors: Dict[str, str]) -> str:
     """
     Generate markdown for a category section.
     """
     lines = [f"## {category}", ""]
 
     for param in params:
-        lines.append(generate_parameter_markdown(param))
+        lines.append(generate_parameter_markdown(param, name_anchors))
 
     # Keep legacy navigation aid used by downstream tooling/rendering.
     lines.append("[back to top](#full-list-of-input-keywords)")
@@ -266,6 +285,9 @@ def generate(yaml_path: Path, output: Path, verbose: bool = False):
         if cat not in sorted_categories:
             sorted_categories[cat] = by_category[cat]
 
+    name_anchors = {param['name']: '#' + generate_anchor(param['name'])
+                    for param in all_params}
+
     # Generate markdown
     md_parts = [
         "# Full List of INPUT Keywords",
@@ -281,7 +303,7 @@ def generate(yaml_path: Path, output: Path, verbose: bool = False):
     for category, params in sorted_categories.items():
         if verbose:
             print(f"Category '{category}': {len(params)} parameters")
-        md_parts.append(generate_category_markdown(category, params))
+        md_parts.append(generate_category_markdown(category, params, name_anchors))
 
     # Write output
     output_content = '\n'.join(md_parts)
