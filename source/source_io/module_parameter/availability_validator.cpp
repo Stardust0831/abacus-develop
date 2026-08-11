@@ -254,30 +254,45 @@ void add_conjuncts(const AvailabilityExpr& expression, Conjunction& conjunction)
     conjunction.insert(structural_key(expression));
 }
 
-bool contains_prerequisite(const AvailabilityExpr& prerequisite,
-                           const Conjunction& conjunction)
+bool conjunction_implies(const AvailabilityExpr& prerequisite,
+                         const Conjunction& conjunction)
 {
     if (prerequisite.is_leaf() && prerequisite.condition.param.empty())
     {
         return true;
     }
-    if (!prerequisite.is_leaf() && prerequisite.op == "and")
+    if (conjunction.count(structural_key(prerequisite)) != 0)
+    {
+        return true;
+    }
+    if (prerequisite.is_leaf())
+    {
+        return false;
+    }
+    if (prerequisite.op == "and")
     {
         for (const AvailabilityExpr& child : prerequisite.children)
         {
-            if (!contains_prerequisite(child, conjunction))
+            if (!conjunction_implies(child, conjunction))
             {
                 return false;
             }
         }
         return true;
     }
-    return conjunction.count(structural_key(prerequisite)) != 0;
+    for (const AvailabilityExpr& child : prerequisite.children)
+    {
+        if (conjunction_implies(child, conjunction))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 /// Check every reference against the explicit conditions in its enclosing
-/// conjunction. A prerequisite OR must appear as a complete subtree; equivalent
-/// distributed forms are intentionally not inferred.
+/// conjunction. An AND prerequisite needs every operand, while any satisfied OR
+/// branch is sufficient. Different leaf conditions are not related.
 void validate_node_self_contained(
     const std::string& owner,
     const AvailabilityExpr& expression,
@@ -294,12 +309,12 @@ void validate_node_self_contained(
         const auto it = expressions.find(referenced);
         if (it != expressions.end())
         {
-            if (!contains_prerequisite(it->second, enclosing_conjunction))
+            if (!conjunction_implies(it->second, enclosing_conjunction))
             {
                 fail(owner,
                      "references '" + referenced + "', whose availability requires '"
                          + it->second.to_string()
-                         + "'; include that complete prerequisite in the same conjunction");
+                         + "'; ensure that prerequisite is implied on the same path");
             }
         }
         return;

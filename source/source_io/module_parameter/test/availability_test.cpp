@@ -191,7 +191,7 @@ TEST(AvailabilityValidator, RejectsMissingTransitiveRequirement)
                  std::invalid_argument);
 }
 
-TEST(AvailabilityValidator, RequiresExplicitOrPrerequisite)
+TEST(AvailabilityValidator, AcceptsOrPrerequisiteImpliedByPath)
 {
     std::map<std::string, AvailabilityExpr> expressions;
     expressions["q"] = parse_availability("");
@@ -209,9 +209,19 @@ TEST(AvailabilityValidator, RequiresExplicitOrPrerequisite)
 
     expressions["distributed"] = parse_availability(
         "(p==1 and q==2) or (p==1 and r==3)");
-    EXPECT_THROW(validate_availability_self_contained(
-                     "distributed", expressions["distributed"], expressions),
-                 std::invalid_argument);
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "distributed", expressions["distributed"], expressions));
+
+    expressions["basis_type"] = parse_availability("");
+    expressions["calculation"] = parse_availability("");
+    expressions["gamma_only"] = parse_availability("");
+    expressions["out_pchg"] = parse_availability(
+        "basis_type==pw or (basis_type==lcao and calculation==get_pchg)");
+    expressions["if_separate_k"] = parse_availability(
+        "(basis_type==pw and out_pchg!=none) or "
+        "(basis_type==lcao and calculation==get_pchg and gamma_only==0)");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "if_separate_k", expressions["if_separate_k"], expressions));
 
     expressions["missing"] = parse_availability("p==1");
     EXPECT_THROW(validate_availability_self_contained(
