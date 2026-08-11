@@ -191,4 +191,77 @@ TEST(AvailabilityValidator, RejectsMissingTransitiveRequirement)
                  std::invalid_argument);
 }
 
+TEST(AvailabilityValidator, RequiresExplicitOrPrerequisite)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["q"] = parse_availability("");
+    expressions["r"] = parse_availability("");
+    expressions["p"] = parse_availability("q==2 or r==3");
+
+    expressions["factored"] = parse_availability("p==1 and (r==3 or q==2)");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "factored", expressions["factored"], expressions));
+
+    expressions["all"] = parse_availability("q==2 and r==3");
+    expressions["and_order"] = parse_availability("all==1 and r==3 and q==2");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "and_order", expressions["and_order"], expressions));
+
+    expressions["distributed"] = parse_availability(
+        "(p==1 and q==2) or (p==1 and r==3)");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "distributed", expressions["distributed"], expressions),
+                 std::invalid_argument);
+
+    expressions["missing"] = parse_availability("p==1");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "missing", expressions["missing"], expressions),
+                 std::invalid_argument);
+}
+
+TEST(AvailabilityValidator, RequiresExactNonEqualityPrerequisite)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["mode"] = parse_availability("");
+    expressions["feature"] = parse_availability("mode in [a, b]");
+
+    expressions["explicit"] = parse_availability(
+        "feature==enabled and mode in [a, b]");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "explicit", expressions["explicit"], expressions));
+
+    expressions["inferred"] = parse_availability("feature==enabled and mode==a");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "inferred", expressions["inferred"], expressions),
+                 std::invalid_argument);
+}
+
+TEST(AvailabilityValidator, ChecksPrerequisitesTransitivelyThroughOr)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["root"] = parse_availability("");
+    expressions["q"] = parse_availability("root==ready");
+    expressions["r"] = parse_availability("");
+    expressions["p"] = parse_availability("q==2 or r==3");
+
+    expressions["complete"] = parse_availability(
+        "root==ready and p==1 and (q==2 or r==3)");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "complete", expressions["complete"], expressions));
+
+    expressions["missing"] = parse_availability("p==1 and (q==2 or r==3)");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "missing", expressions["missing"], expressions),
+                 std::invalid_argument);
+}
+
+TEST(AvailabilityValidator, RejectsSelfReference)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["self"] = parse_availability("self==true");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "self", expressions["self"], expressions),
+                 std::invalid_argument);
+}
+
 } // namespace ModuleIO

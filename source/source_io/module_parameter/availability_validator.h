@@ -33,11 +33,12 @@ void validate_availability_expr(
     const AvailabilityExpr& expression,
     const std::map<std::string, AvailabilityValueKind>& parameter_types);
 
-/// Validate that every referenced parameter in \p expression carries its own
-/// enclosing requirements (its "prerequisites") as equality conditions that hold
-/// on the path where the parameter is referenced. \p expressions maps every
-/// parameter label to its availability AST. Throws std::invalid_argument when a
-/// referenced parameter's prerequisites are missing from its referencing path.
+/// Validate that every referenced parameter in \p expression carries its full
+/// availability AST explicitly in the same conjunction. Associative AND/OR
+/// groups are flattened and order-independent, but logically equivalent
+/// distributed forms are not inferred. \p expressions maps every parameter
+/// label to its availability AST. Throws std::invalid_argument when a referenced
+/// parameter's prerequisite is missing.
 void validate_availability_self_contained(
     const std::string& owner,
     const AvailabilityExpr& expression,

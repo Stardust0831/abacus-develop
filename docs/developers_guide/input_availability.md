@@ -43,6 +43,12 @@ Some existing INPUT parameters accept multiple whitespace-separated tokens as
 one value. Such existing INPUT forms are preserved and are not assigned a new
 runtime interpretation by this metadata contract.
 
+A referenced parameter's availability must appear explicitly in the same
+conjunction. Repeated `and` or `or` groups are order-independent, but validation
+does not infer distributive rewrites or relationships between different
+conditions. For example, if `p` is available under `q==2 or r==3`, write
+`p==1 and (q==2 or r==3)` rather than relying on an equivalent distributed form.
+
 Examples:
 
 ```cpp

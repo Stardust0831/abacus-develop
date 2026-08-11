@@ -1,10 +1,10 @@
 #include "source_io/module_parameter/availability_validator.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
-#include <stdexcept>
 #include <set>
-#include <utility>
+#include <stdexcept>
 
 namespace ModuleIO
 {
@@ -200,68 +200,89 @@ void validate_availability_expr(
 namespace
 {
 
-using EqualitySet = std::set<std::pair<std::string, std::string>>;
+using Conjunction = std::set<std::string>;
 
-/// Collect the equality conditions (`param==value`) that are guaranteed to hold
-/// whenever \p expression is true. "and" contributes the union of its children;
-/// "or" contributes only the intersection shared by every branch.
-EqualitySet guaranteed_equalities(const AvailabilityExpr& expression)
+std::string structural_key(const AvailabilityExpr& expression);
+
+void collect_operands(const AvailabilityExpr& expression,
+                      const std::string& op,
+                      std::vector<std::string>& operands)
+{
+    if (!expression.is_leaf() && expression.op == op)
+    {
+        for (const AvailabilityExpr& child : expression.children)
+        {
+            collect_operands(child, op, operands);
+        }
+        return;
+    }
+    operands.push_back(structural_key(expression));
+}
+
+/// Build an order-independent key while flattening only associative uses of the
+/// same boolean operator. No distributive or condition-level inference is done.
+std::string structural_key(const AvailabilityExpr& expression)
 {
     if (expression.is_leaf())
     {
-        const AvailabilityCondition& condition = expression.condition;
-        if (condition.op == "==" && condition.values.size() == 1)
-        {
-            return {std::make_pair(condition.param, condition.values[0])};
-        }
-        return {};
+        const std::string condition = expression.condition.to_string();
+        return "leaf:" + std::to_string(condition.size()) + ":" + condition;
     }
-    if (expression.op == "and")
+
+    std::vector<std::string> operands;
+    collect_operands(expression, expression.op, operands);
+    std::sort(operands.begin(), operands.end());
+
+    std::string result = expression.op + ":";
+    for (const std::string& operand : operands)
     {
-        EqualitySet result;
-        for (const AvailabilityExpr& child : expression.children)
-        {
-            const EqualitySet child_equalities = guaranteed_equalities(child);
-            result.insert(child_equalities.begin(), child_equalities.end());
-        }
-        return result;
-    }
-    EqualitySet result;
-    bool first = true;
-    for (const AvailabilityExpr& child : expression.children)
-    {
-        const EqualitySet child_equalities = guaranteed_equalities(child);
-        if (first)
-        {
-            result = child_equalities;
-            first = false;
-        }
-        else
-        {
-            EqualitySet intersection;
-            for (const auto& equality : result)
-            {
-                if (child_equalities.count(equality))
-                {
-                    intersection.insert(equality);
-                }
-            }
-            result = std::move(intersection);
-        }
+        result += std::to_string(operand.size()) + ":" + operand;
     }
     return result;
 }
 
-/// Check every reference against the equality conditions guaranteed on its
-/// path (the conjunction that encloses it). A referenced parameter's own
-/// guaranteed equalities must be present on that path; transitivity follows
-/// because any prerequisite that is included becomes another reference with its
-/// own prerequisites checked.
+void add_conjuncts(const AvailabilityExpr& expression, Conjunction& conjunction)
+{
+    if (!expression.is_leaf() && expression.op == "and")
+    {
+        for (const AvailabilityExpr& child : expression.children)
+        {
+            add_conjuncts(child, conjunction);
+        }
+        return;
+    }
+    conjunction.insert(structural_key(expression));
+}
+
+bool contains_prerequisite(const AvailabilityExpr& prerequisite,
+                           const Conjunction& conjunction)
+{
+    if (prerequisite.is_leaf() && prerequisite.condition.param.empty())
+    {
+        return true;
+    }
+    if (!prerequisite.is_leaf() && prerequisite.op == "and")
+    {
+        for (const AvailabilityExpr& child : prerequisite.children)
+        {
+            if (!contains_prerequisite(child, conjunction))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return conjunction.count(structural_key(prerequisite)) != 0;
+}
+
+/// Check every reference against the explicit conditions in its enclosing
+/// conjunction. A prerequisite OR must appear as a complete subtree; equivalent
+/// distributed forms are intentionally not inferred.
 void validate_node_self_contained(
     const std::string& owner,
     const AvailabilityExpr& expression,
     const std::map<std::string, AvailabilityExpr>& expressions,
-    const EqualitySet& path_equalities)
+    const Conjunction& enclosing_conjunction)
 {
     if (expression.is_leaf())
     {
@@ -273,31 +294,40 @@ void validate_node_self_contained(
         const auto it = expressions.find(referenced);
         if (it != expressions.end())
         {
-            const EqualitySet prerequisites = guaranteed_equalities(it->second);
-            for (const auto& prerequisite : prerequisites)
+            if (!contains_prerequisite(it->second, enclosing_conjunction))
             {
-                if (!path_equalities.count(prerequisite))
-                {
-                    fail(owner,
-                         "references '" + referenced + "', whose availability requires '"
-                             + prerequisite.first + "==" + prerequisite.second
-                             + "'; include it in the same conjunction");
-                }
+                fail(owner,
+                     "references '" + referenced + "', whose availability requires '"
+                         + it->second.to_string()
+                         + "'; include that complete prerequisite in the same conjunction");
             }
         }
         return;
     }
 
-    EqualitySet inherited = path_equalities;
-    if (expression.op != "or")
+    if (expression.op == "and")
     {
-        // "and": equalities guaranteed by the whole group hold on every child path.
-        const EqualitySet group_equalities = guaranteed_equalities(expression);
-        inherited.insert(group_equalities.begin(), group_equalities.end());
+        for (std::size_t i = 0; i < expression.children.size(); ++i)
+        {
+            Conjunction child_conjunction = enclosing_conjunction;
+            for (std::size_t j = 0; j < expression.children.size(); ++j)
+            {
+                if (i != j)
+                {
+                    add_conjuncts(expression.children[j], child_conjunction);
+                }
+            }
+            validate_node_self_contained(owner,
+                                         expression.children[i],
+                                         expressions,
+                                         child_conjunction);
+        }
+        return;
     }
+
     for (const AvailabilityExpr& child : expression.children)
     {
-        validate_node_self_contained(owner, child, expressions, inherited);
+        validate_node_self_contained(owner, child, expressions, enclosing_conjunction);
     }
 }
 
@@ -308,7 +338,7 @@ void validate_availability_self_contained(
     const AvailabilityExpr& expression,
     const std::map<std::string, AvailabilityExpr>& expressions)
 {
-    validate_node_self_contained(owner, expression, expressions, EqualitySet{});
+    validate_node_self_contained(owner, expression, expressions, Conjunction{});
 }
 
 } // namespace ModuleIO

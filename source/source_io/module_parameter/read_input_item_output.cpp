@@ -1535,7 +1535,10 @@ If EXX(exact exchange) is calculated (i.e. dft_fuctional==hse/hf/pbe0/scan0 or r
         item.description = "Specifies whether to write the partial charge densities for all k-points to individual files or merge them. Warning: Enabling symmetry may produce unwanted results due to reduced k-point weights and symmetry operations in real space. Therefore when calculating partial charge densities, if you are not sure what you want exactly, it is strongly recommended to set symmetry = -1. It is noteworthy that your symmetry setting should remain the same as that in the SCF procedure.";
         item.default_value = "false";
         item.unit = "";
-        item.set_availability("(basis_type==pw and out_pchg!=none) or (basis_type==lcao and calculation==get_pchg and gamma_only==0)");
+        item.set_availability(
+            "(basis_type==pw or (basis_type==lcao and calculation==get_pchg)) and "
+            "((basis_type==pw and out_pchg!=none) or "
+            "(basis_type==lcao and calculation==get_pchg and gamma_only==0))");
         read_sync_bool(input.if_separate_k);
         this->add_item(item);
     }

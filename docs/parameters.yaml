@@ -3495,7 +3495,7 @@ parameters:
       Specifies whether to write the partial charge densities for all k-points to individual files or merge them. Warning: Enabling symmetry may produce unwanted results due to reduced k-point weights and symmetry operations in real space. Therefore when calculating partial charge densities, if you are not sure what you want exactly, it is strongly recommended to set symmetry = -1. It is noteworthy that your symmetry setting should remain the same as that in the SCF procedure.
     default_value: "false"
     unit: ""
-    availability: "(basis_type==pw and out_pchg!=none) or (basis_type==lcao and calculation==get_pchg and gamma_only==0)"
+    availability: "(basis_type==pw or (basis_type==lcao and calculation==get_pchg)) and ((basis_type==pw and out_pchg!=none) or (basis_type==lcao and calculation==get_pchg and gamma_only==0))"
   - name: out_elf
     category: Output information
     type: "Integer \\[Integer\\](optional)"
@@ -3869,7 +3869,7 @@ parameters:
       [NOTE] Note: If you do not want any electric field, the parameter efield_amp should be set to zero. This should ONLY be used in a slab geometry for surface calculations, with the discontinuity FALLING IN THE EMPTY SPACE.
     default_value: "False"
     unit: ""
-    availability: dip_cor_flag==true and efield_flag==true
+    availability: efield_flag==true
   - name: efield_dir
     category: Electric field and dipole correction
     type: Integer
