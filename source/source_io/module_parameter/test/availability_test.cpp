@@ -154,4 +154,41 @@ TEST(AvailabilityValidator, RejectsUnknownAndIncompatibleReferences)
                  std::invalid_argument);
 }
 
+TEST(AvailabilityValidator, AcceptsDependenciesOfDependencies)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["esolver_type"] = parse_availability("");
+    expressions["basis_type"] = parse_availability("");
+    expressions["out_dos"] = parse_availability("");
+    expressions["method_sto"] = parse_availability("esolver_type==sdft");
+    expressions["cal_cond"] = parse_availability("basis_type==pw");
+    // Each referenced parameter carries its own enclosing requirement, both
+    // directly (method_sto -> esolver_type==sdft) and transitively
+    // (cal_cond -> basis_type==pw) along its own path.
+    expressions["npart_sto"] = parse_availability(
+        "esolver_type==sdft and ((method_sto==2 and out_dos==1) or (basis_type==pw and cal_cond==true))");
+    EXPECT_NO_THROW(validate_availability_self_contained(
+        "npart_sto", expressions["npart_sto"], expressions));
+
+    // A requirement present only on a different OR branch does not satisfy the
+    // referencing path.
+    expressions["broken"] = parse_availability(
+        "(method_sto==2 and out_dos==1) or (esolver_type==sdft and cal_cond==true)");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "broken", expressions["broken"], expressions),
+                 std::invalid_argument);
+}
+
+TEST(AvailabilityValidator, RejectsMissingTransitiveRequirement)
+{
+    std::map<std::string, AvailabilityExpr> expressions;
+    expressions["esolver_type"] = parse_availability("");
+    expressions["out_dos"] = parse_availability("");
+    expressions["method_sto"] = parse_availability("esolver_type==sdft");
+    expressions["npart_sto"] = parse_availability("method_sto==2 and out_dos==1");
+    EXPECT_THROW(validate_availability_self_contained(
+                     "npart_sto", expressions["npart_sto"], expressions),
+                 std::invalid_argument);
+}
+
 } // namespace ModuleIO

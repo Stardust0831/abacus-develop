@@ -3,6 +3,8 @@
 #include <cerrno>
 #include <cstdlib>
 #include <stdexcept>
+#include <set>
+#include <utility>
 
 namespace ModuleIO
 {
@@ -193,6 +195,120 @@ void validate_availability_expr(
     const std::map<std::string, AvailabilityValueKind>& parameter_types)
 {
     validate_node(owner, expression, parameter_types);
+}
+
+namespace
+{
+
+using EqualitySet = std::set<std::pair<std::string, std::string>>;
+
+/// Collect the equality conditions (`param==value`) that are guaranteed to hold
+/// whenever \p expression is true. "and" contributes the union of its children;
+/// "or" contributes only the intersection shared by every branch.
+EqualitySet guaranteed_equalities(const AvailabilityExpr& expression)
+{
+    if (expression.is_leaf())
+    {
+        const AvailabilityCondition& condition = expression.condition;
+        if (condition.op == "==" && condition.values.size() == 1)
+        {
+            return {std::make_pair(condition.param, condition.values[0])};
+        }
+        return {};
+    }
+    if (expression.op == "and")
+    {
+        EqualitySet result;
+        for (const AvailabilityExpr& child : expression.children)
+        {
+            const EqualitySet child_equalities = guaranteed_equalities(child);
+            result.insert(child_equalities.begin(), child_equalities.end());
+        }
+        return result;
+    }
+    EqualitySet result;
+    bool first = true;
+    for (const AvailabilityExpr& child : expression.children)
+    {
+        const EqualitySet child_equalities = guaranteed_equalities(child);
+        if (first)
+        {
+            result = child_equalities;
+            first = false;
+        }
+        else
+        {
+            EqualitySet intersection;
+            for (const auto& equality : result)
+            {
+                if (child_equalities.count(equality))
+                {
+                    intersection.insert(equality);
+                }
+            }
+            result = std::move(intersection);
+        }
+    }
+    return result;
+}
+
+/// Check every reference against the equality conditions guaranteed on its
+/// path (the conjunction that encloses it). A referenced parameter's own
+/// guaranteed equalities must be present on that path; transitivity follows
+/// because any prerequisite that is included becomes another reference with its
+/// own prerequisites checked.
+void validate_node_self_contained(
+    const std::string& owner,
+    const AvailabilityExpr& expression,
+    const std::map<std::string, AvailabilityExpr>& expressions,
+    const EqualitySet& path_equalities)
+{
+    if (expression.is_leaf())
+    {
+        if (expression.condition.param.empty())
+        {
+            return;
+        }
+        const std::string& referenced = expression.condition.param;
+        const auto it = expressions.find(referenced);
+        if (it != expressions.end())
+        {
+            const EqualitySet prerequisites = guaranteed_equalities(it->second);
+            for (const auto& prerequisite : prerequisites)
+            {
+                if (!path_equalities.count(prerequisite))
+                {
+                    fail(owner,
+                         "references '" + referenced + "', whose availability requires '"
+                             + prerequisite.first + "==" + prerequisite.second
+                             + "'; include it in the same conjunction");
+                }
+            }
+        }
+        return;
+    }
+
+    EqualitySet inherited = path_equalities;
+    if (expression.op != "or")
+    {
+        // "and": equalities guaranteed by the whole group hold on every child path.
+        const EqualitySet group_equalities = guaranteed_equalities(expression);
+        inherited.insert(group_equalities.begin(), group_equalities.end());
+    }
+    for (const AvailabilityExpr& child : expression.children)
+    {
+        validate_node_self_contained(owner, child, expressions, inherited);
+    }
+}
+
+} // namespace
+
+void validate_availability_self_contained(
+    const std::string& owner,
+    const AvailabilityExpr& expression,
+    const std::map<std::string, AvailabilityExpr>& expressions)
+{
+    validate_node_self_contained(owner, expression, expressions, EqualitySet{});
 }
 
 } // namespace ModuleIO
