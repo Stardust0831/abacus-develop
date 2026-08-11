@@ -143,10 +143,11 @@ def format_description(desc: str) -> str:
 
 def link_availability(availability: str, name_anchors: Dict[str, str]) -> str:
     """
-    Render each parameter keyword that appears in an availability expression as
-    a link to that parameter's own documentation section, so readers can jump to
-    the meaning of the parameter (and the values listed in its description)
-    without leaving the generated reference.
+    Link only parameter names on the left side of a condition.
+
+    This deliberately recognizes the condition boundary instead of linking
+    every identifier: a value such as ``pw`` may happen to have the same name
+    as another parameter, but it is not a parameter reference.
     """
     def replace(match):
         name = match.group(0)
@@ -154,7 +155,11 @@ def link_availability(availability: str, name_anchors: Dict[str, str]) -> str:
         if anchor:
             return f"[`{name}`]({anchor})"
         return name
-    return re.sub(r'\b[A-Za-z_][A-Za-z0-9_]*\b', replace, availability)
+    condition_name = (
+        r'\b[A-Za-z_][A-Za-z0-9_]*\b'
+        r'(?=\s*(?:==|!=|>=|<=|>|<|\bin\b|\bcontains\b))'
+    )
+    return re.sub(condition_name, replace, availability)
 
 def generate_parameter_markdown(param: Dict[str, str],
                                 name_anchors: Dict[str, str]) -> str:
