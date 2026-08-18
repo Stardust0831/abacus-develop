@@ -18,7 +18,6 @@ jobs:
     environment: gpu-ci-manual
     timeout-minutes: 60
     env:
-      REMOTE_USER: ${{ secrets.REMOTE_USER }}
       REMOTE_ROOT: ~/sai-hpc-controller-smoke
       REMOTE_HOST: c0.sai.ai-4s.com
       REMOTE_PORT: "12022"
@@ -37,9 +36,19 @@ jobs:
           ref: ${{ env.SOURCE_SHA }}
           path: source
           persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Stardust0831/abacus-develop
+          ref: develop
+          path: site-config
+          sparse-checkout: .ci/slurm/config.ini
+          persist-credentials: false
       - name: Validate smoke plan
         run: |
           set -euo pipefail
+          REMOTE_USER=$(awk -F ' *= *' '$1 == "user" {print $2; exit}' site-config/.ci/slurm/config.ini)
+          test -n "$REMOTE_USER"
+          export REMOTE_USER
           cat > plan.json <<EOF
           {"version":1,"cluster_profile":"sai-cuda12-openmpi5","source":{"repository":"Stardust0831/LibDDLA","sha":"$SOURCE_SHA"},"tests":[{"name":"container-smoke","nodes":1,"gpus_per_node":1,"ranks_per_node":1,"timeout_minutes":20,"working_directory":".","command":["sh","-c","test -f CMakeLists.txt && hostname && printf container-ok\\n"]}]}
           EOF
