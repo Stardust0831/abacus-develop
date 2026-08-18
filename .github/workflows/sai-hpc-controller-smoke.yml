@@ -46,9 +46,6 @@ jobs:
       - name: Validate smoke plan
         run: |
           set -euo pipefail
-          REMOTE_USER=$(awk -F ' *= *' '$1 == "user" {print $2; exit}' site-config/.ci/slurm/config.ini)
-          test -n "$REMOTE_USER"
-          export REMOTE_USER
           cat > plan.json <<EOF
           {"version":1,"cluster_profile":"sai-cuda12-openmpi5","source":{"repository":"Stardust0831/LibDDLA","sha":"$SOURCE_SHA"},"tests":[{"name":"container-smoke","nodes":1,"gpus_per_node":1,"ranks_per_node":1,"timeout_minutes":20,"working_directory":".","command":["sh","-c","test -f CMakeLists.txt && hostname && printf container-ok\\n"]}]}
           EOF
@@ -64,6 +61,9 @@ jobs:
           mkdir -m 700 "$root"
           printf '%s\n' "$REMOTE_SSH_PRIVATE_KEY" > "$root/id_ed25519"
           chmod 600 "$root/id_ed25519"
+          REMOTE_USER=$(awk -F ' *= *' '$1 == "user" {print $2; exit}' site-config/.ci/slurm/config.ini)
+          test -n "$REMOTE_USER"
+          export REMOTE_USER
           printf '%s\n' '[c0.sai.ai-4s.com]:12022 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBurYQExmMdgat4VU1Twmu2pqxsBjLP6eff9oc6/8N3KUCtoe8HU9eONghETLECdA7A+O9DpefDRba0AcSXTfQc=' > "$root/known_hosts"
           cat > "$root/config" <<EOF
           Host gpu-ci
