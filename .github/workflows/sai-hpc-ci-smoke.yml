@@ -19,7 +19,7 @@ jobs:
     uses: AI4SAI/sai-hpc-ci/.github/workflows/hpc-test.yml@1ba8c48f8f03f1cac603512ea408af163bbd1ce8
     with:
       source_repository: Stardust0831/abacus-develop
-      source_sha: ${{ inputs.source_sha }}
+      source_sha: ${{ inputs.source_sha || github.sha }}
       cluster_profile: sai-cuda12-openmpi5
       remote_root: ~/sai-hpc-ci-abacus
       ssh_port: "12022"
@@ -27,7 +27,7 @@ jobs:
         [c0.sai.ai-4s.com]:12022 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBurYQExmMdgat4VU1Twmu2pqxsBjLP6eff9oc6/8N3KUCtoe8HU9eONghETLECdA7A+O9DpefDRba0AcSXTfQc=
       secret_environment: gpu-ci-manual
       tests_json: >-
-        {"version":1,"cluster_profile":"sai-cuda12-openmpi5","source":{"repository":"Stardust0831/abacus-develop","sha":"${{ inputs.source_sha }}"},"tests":[{"name":"abacus-source-container-smoke","nodes":1,"gpus_per_node":1,"ranks_per_node":1,"timeout_minutes":20,"working_directory":".","command":["sh","-c","test -f CMakeLists.txt && command -v abacus >/dev/null && hostname && printf abacus-container-ok\\n"]}]}
+        {"version":1,"cluster_profile":"sai-cuda12-openmpi5","source":{"repository":"Stardust0831/abacus-develop","sha":"${{ inputs.source_sha || github.sha }}"},"tests":[{"name":"abacus-source-container-smoke","nodes":1,"gpus_per_node":1,"ranks_per_node":1,"timeout_minutes":20,"working_directory":".","command":["sh","-c","test -f CMakeLists.txt && command -v abacus >/dev/null && hostname && printf abacus-container-ok\\n"]}]}
     secrets:
       REMOTE_USER: ${{ secrets.REMOTE_USER }}
       REMOTE_SSH_PRIVATE_KEY: ${{ secrets.REMOTE_SSH_PRIVATE_KEY }}
