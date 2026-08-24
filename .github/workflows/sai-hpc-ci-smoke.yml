@@ -1,6 +1,8 @@
 name: SAI HPC CI smoke
 
 on:
+  push:
+    branches: [sai-hpc-ci-smoke]
   workflow_dispatch:
     inputs:
       source_sha:
