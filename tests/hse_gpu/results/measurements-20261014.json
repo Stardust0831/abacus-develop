@@ -1,0 +1,1540 @@
+{
+  "baseline2": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/baseline2-20261014-1",
+      "source_sha": "377e488d14f43e39bc650ebe7848b2a843b9ea46"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 2,
+          "exit_code": 0,
+          "job_id": "1789103_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 2,
+          "exit_code": 1,
+          "job_id": "1789103_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 56,
+          "exit_code": 1,
+          "job_id": "1789103_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789098",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789103",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "FAIL"
+        }
+      ],
+      "failed": 2,
+      "infrastructure": 0,
+      "passed": 1,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789103",
+      "hostname": "16v100n01.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-f88c45fe-ae22-3173-dfa4-ad4883d9d2e8, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.0089140916243196,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393358744
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.88996465690434,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393343638
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.002796344459057,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393344014
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.71596613060683,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109039335017
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 3.7820368306711316,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393401382
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 5.782147252000868,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1088775272352
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 5.9120417246595025,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1088775272501
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 3.7660717694088817,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393393574
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.71015783585608,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393347497
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.040595513768494,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393346157
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.834092630073428,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393351363
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.999726987443864,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393335764
+      }
+    ]
+  },
+  "candidate": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/candidate-20261014-1",
+      "source_sha": "ce6deba0fc5fef9866b604c3e50a1283fcfc7e51"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 2,
+          "exit_code": 0,
+          "job_id": "1789116_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 2,
+          "exit_code": 1,
+          "job_id": "1789116_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 54,
+          "exit_code": 1,
+          "job_id": "1789116_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789102",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789116",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "FAIL"
+        }
+      ],
+      "failed": 2,
+      "infrastructure": 0,
+      "passed": 1,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789116",
+      "hostname": "16v100n01.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-990f8684-3d28-ecbb-80a3-eaabb3ceffc7, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.910816680639982,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393346614
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.809553049504757,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393339058
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.7048313841223717,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393343786
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.80968408100307,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393346557
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 3.8223591409623623,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109039339108
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 5.926810663193464,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1088775272464
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 5.901242540217936,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1088775272418
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 3.8343654247000813,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393403721
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.7976606087759137,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393348701
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.742107936181128,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393101429
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 3.815600285306573,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393347114
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.137329837307334,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090393336779
+      }
+    ]
+  },
+  "baseline4": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/baseline4-20261014-1",
+      "source_sha": "377e488d14f43e39bc650ebe7848b2a843b9ea46"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 2,
+          "exit_code": 0,
+          "job_id": "1789246_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 3,
+          "exit_code": 0,
+          "job_id": "1789246_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 99,
+          "exit_code": 1,
+          "job_id": "1789246_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789150",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789246",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "FAIL"
+        }
+      ],
+      "failed": 1,
+      "infrastructure": 0,
+      "passed": 2,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789246",
+      "hostname": "16v100n02.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-07668e47-91a4-e05c-a2a7-5199e8fa188c, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.199094300158322,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600620105
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 8.544689401984215,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600569455
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.399538643658161,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600573314
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.399990690872073,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600534184
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.739569373428822,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600556621
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.376600524410605,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600552177
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 4.590377222746611,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109060059891
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 8.685895566828549,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090403177144
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 8.564582635648549,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090403175446
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 4.651968201622367,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600632865
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.477505153976381,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600564191
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.579987457022071,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600554127
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.709633664228022,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600554963
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.6438209023326635,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600561192
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 8.475015542469919,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600553239
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.793335826136172,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600482789
+      }
+    ]
+  },
+  "candidate3": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/candidate3-20261014-1",
+      "source_sha": "f8f9ea0bfa051a7b3db51513f254cd61fadf366f"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 2,
+          "exit_code": 0,
+          "job_id": "1789245_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 3,
+          "exit_code": 0,
+          "job_id": "1789245_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 94,
+          "exit_code": 1,
+          "job_id": "1789245_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "1:0",
+          "slurm_state": "FAILED",
+          "state": "FAIL"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789151",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789245",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "FAIL"
+        }
+      ],
+      "failed": 1,
+      "infrastructure": 0,
+      "passed": 2,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789245",
+      "hostname": "16v100n01.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-d876e9c6-d01d-12af-4168-05d12725dfdd, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.2938282415270805,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109060055369
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.48113907314837,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600472899
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.625779463909566,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600549236
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.04478510376066,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109060055963
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.722770664840937,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600546826
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.598964762873948,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600573048
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 4.68173645157367,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600602904
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 8.827350530773401,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090403174702
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 8.806017928756773,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090403177299
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 4.71905585937202,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600612177
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.654827110469341,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600563087
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.616149913519621,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600560007
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.685791430063546,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600551082
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 4.685463207773864,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600559091
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.708840281702578,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090600482848
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.58944902382791,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109060053596
+      }
+    ]
+  },
+  "baseline5": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/baseline5-20261014-1",
+      "source_sha": "377e488d14f43e39bc650ebe7848b2a843b9ea46"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 2,
+          "exit_code": 0,
+          "job_id": "1789333_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 3,
+          "exit_code": 0,
+          "job_id": "1789333_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 134,
+          "exit_code": 0,
+          "job_id": "1789333_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789320",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789333",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "PASS"
+        }
+      ],
+      "failed": 0,
+      "infrastructure": 0,
+      "passed": 3,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789333",
+      "hostname": "16v100n01.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-d876e9c6-d01d-12af-4168-05d12725dfdd, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.07259654905647,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619231209,
+        "delta_ev_per_atom": 0.0
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 11.469564501196146,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619221233,
+        "delta_ev_per_atom": 1.2470025012589758e-10
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.919135401956737,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619272413,
+        "delta_ev_per_atom": -5.150582182977814e-10
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.093904189765453,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619221933,
+        "delta_ev_per_atom": 1.1594636362133315e-10
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.817720928229392,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619187223,
+        "delta_ev_per_atom": 5.498179689311655e-10
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.859059696085751,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619273103,
+        "delta_ev_per_atom": -5.23684207109909e-10
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 6.071046309545636,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619154674,
+        "delta_ev_per_atom": 9.56688950282114e-10
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 12.463291025720537,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090610334057,
+        "delta_ev_per_atom": 1.1121439058570104e-07
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 11.769145024009049,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090610307222,
+        "delta_ev_per_atom": 1.1154983781125338e-07
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 6.107380145229399,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619080038,
+        "delta_ev_per_atom": 1.8896315623351256e-09
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.093110543675721,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619273363,
+        "delta_ev_per_atom": -5.269242819849751e-10
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 7.1487650871276855,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619085329,
+        "delta_ev_per_atom": 1.8234942444905755e-09
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.1061794413253665,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619273781,
+        "delta_ev_per_atom": -5.321538765201694e-10
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.151874652132392,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619179075,
+        "delta_ev_per_atom": 6.516671646750183e-10
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 11.765745951794088,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619305141,
+        "delta_ev_per_atom": -9.241603038390167e-10
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.372313573025167,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619043392,
+        "delta_ev_per_atom": 2.347704253224947e-09
+      }
+    ]
+  },
+  "candidate4": {
+    "run": {
+      "project_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment",
+      "run_root": "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/hse-experiment/candidate4-20261014-1",
+      "source_sha": "3ce8507b08abc981b6ca43ccde04731894e73e12"
+    },
+    "result": {
+      "cases": [
+        {
+          "case_id": "01_PW/scf_pbe0_spin1",
+          "elapsed_seconds": 1,
+          "exit_code": 0,
+          "job_id": "1789335_0",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "08_RI/scf_hse_gamma",
+          "elapsed_seconds": 3,
+          "exit_code": 0,
+          "job_id": "1789335_1",
+          "resource": "gpu1",
+          "runner": "autotest_gpu",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "case_id": "hse_gpu/si8",
+          "elapsed_seconds": 122,
+          "exit_code": 0,
+          "job_id": "1789335_2",
+          "resource": "gpu1",
+          "runner": "hse_benchmark",
+          "slurm_exit_code": "0:0",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        }
+      ],
+      "components": [
+        {
+          "exit_code": "0:0",
+          "job_id": "1789321",
+          "label": "Compile",
+          "name": "build",
+          "slurm_state": "COMPLETED",
+          "state": "PASS"
+        },
+        {
+          "exit_code": "",
+          "job_id": "1789335",
+          "label": "1 GPU",
+          "name": "gpu1",
+          "slurm_state": "",
+          "state": "PASS"
+        }
+      ],
+      "failed": 0,
+      "infrastructure": 0,
+      "passed": 3,
+      "protocol": 1,
+      "total": 3
+    },
+    "metadata": {
+      "job": "1789335",
+      "hostname": "16v100n02.mr-sai.ai",
+      "version": "ABACUS version v3.11.0-beta10\n",
+      "gpu": "name, uuid, memory.total [MiB], driver_version\nTesla V100-SXM2-16GB, GPU-b1fe2be0-a64f-ca8d-29c3-3c6954b49d20, 16384 MiB, 550.163.01\n"
+    },
+    "measurements": [
+      {
+        "name": "cpu_full",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.109419020824134,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109061922088,
+        "delta_ev_per_atom": 0.0
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 0,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.339757701382041,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619281382,
+        "delta_ev_per_atom": -7.562732662336202e-10
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.939941302873194,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619074205,
+        "delta_ev_per_atom": 1.833441842791217e-09
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.715350647456944,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619283258,
+        "delta_ev_per_atom": -7.797211765137035e-10
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.919923587702215,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619271155,
+        "delta_ev_per_atom": -6.28432417215663e-10
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.946236547082663,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090618950304,
+        "delta_ev_per_atom": 3.382197633072792e-09
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 5.850769666023552,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619326227,
+        "delta_ev_per_atom": -1.3168346413294785e-09
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 0,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 10.899609968997538,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.109061038469,
+        "delta_ev_per_atom": 1.1045237613416248e-07
+      },
+      {
+        "name": "gpu_noace",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": false,
+        "seconds": 11.411441501230001,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090610369296,
+        "delta_ev_per_atom": 1.1064480531786103e-07
+      },
+      {
+        "name": "gpu_small",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 60,
+        "ace": true,
+        "seconds": 5.896238099783659,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619263156,
+        "delta_ev_per_atom": -5.284448434395017e-10
+      },
+      {
+        "name": "gpu_chunk19",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 19,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.317755826748908,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619274959,
+        "delta_ev_per_atom": -6.759819370927289e-10
+      },
+      {
+        "name": "gpu_chunk6",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 6.047737087123096,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619215544,
+        "delta_ev_per_atom": 6.67057520331582e-11
+      },
+      {
+        "name": "gpu_chunk5",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 5,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.8996069664135575,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619253616,
+        "delta_ev_per_atom": -4.092015615242417e-10
+      },
+      {
+        "name": "gpu_full",
+        "repeat": 1,
+        "device": "gpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 5.822157603688538,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619258713,
+        "delta_ev_per_atom": -4.729088232124923e-10
+      },
+      {
+        "name": "cpu_chunk6",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 6,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.268018784932792,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619492238,
+        "delta_ev_per_atom": -3.391974701116851e-09
+      },
+      {
+        "name": "cpu_full",
+        "repeat": 1,
+        "device": "cpu",
+        "batch": 0,
+        "ecutexx": 120,
+        "ace": true,
+        "seconds": 10.169019451364875,
+        "exit_code": 0,
+        "valid": true,
+        "energy_ev": -848.1090619027999,
+        "delta_ev_per_atom": 2.411013610981172e-09
+      }
+    ]
+  }
+}
