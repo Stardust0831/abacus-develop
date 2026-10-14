@@ -201,7 +201,7 @@ def load_config(path: Path = ROOT / "config.ini") -> Config:
         if not all(NAME.fullmatch(value) for value in (case.suite, case.name, case.resource)):
             raise ValueError("invalid case name")
         if case.resource not in profiles or case.runner not in (
-            "autotest", "autotest_gpu", "cusolvermp",
+            "autotest", "autotest_gpu", "cusolvermp", "hse_benchmark",
         ):
             raise ValueError("invalid case resource or runner")
         matrix.append(case)
@@ -527,7 +527,14 @@ def worker(source: Path, control: Path, install: Path, results: Path, manifest: 
     returncode = 2
     final_startup_failure = False
     try:
-        if runner in ("autotest", "autotest_gpu"):
+        if runner == "hse_benchmark":
+            command = (
+                "python3", str(control / "hse_benchmark.py"),
+                "--abacus", str(abacus), "--source", str(source),
+                "--output", str(artifacts / "benchmark"),
+            )
+            returncode = _stream(command, case, artifacts / "benchmark.log")
+        elif runner in ("autotest", "autotest_gpu"):
             cases_file = case.parent / "CASES.task.txt"
             cases_file.write_text(name + "\n", encoding="utf-8")
             command = (
