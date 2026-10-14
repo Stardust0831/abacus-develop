@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--target', required=True)
     parser.add_argument('--run-id', required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
+    parser.add_argument('--source-repository', type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parent
     control = args.artifacts.resolve() / 'control'
@@ -19,10 +20,14 @@ def main():
         parser.error('Use a fresh artifacts directory for each attempt')
     shutil.copytree(root, control, ignore=shutil.ignore_patterns('__pycache__'))
     shutil.copyfile(root / 'hse-config.ini', control / 'config.ini')
+    template = control / 'build.sbatch.in'
+    template.write_text(template.read_text().replace('-DENABLE_LIBXC=ON',
+                                                     '-DENABLE_LIBXC=ON -DENABLE_LIBRI=ON'))
+    source = args.source_repository.resolve() if args.source_repository else root.parent.parent
     command = [sys.executable, str(control / 'runner.py'), 'run',
                '--target', args.target, '--run-id', args.run_id,
                '--namespace', 'hse-experiment',
-               '--source-repository', str(root.parent.parent),
+               '--source-repository', str(source),
                '--artifacts', str(args.artifacts.resolve())]
     with (args.artifacts / 'client.log').open('w') as log:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

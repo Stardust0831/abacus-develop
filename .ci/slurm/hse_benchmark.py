@@ -23,9 +23,11 @@ def main():
         metadata[name] = result.stdout
     (args.output / 'metadata.json').write_text(json.dumps(metadata, indent=2))
     variants = [('cpu_full', 'cpu', 0, 120, True),
+                ('cpu_chunk6', 'cpu', 6, 120, True),
                 ('gpu_full', 'gpu', 0, 120, True),
                 ('gpu_chunk5', 'gpu', 5, 120, True),
                 ('gpu_chunk6', 'gpu', 6, 120, True),
+                ('gpu_chunk19', 'gpu', 19, 120, True),
                 ('gpu_small', 'gpu', 0, 60, True),
                 ('gpu_noace', 'gpu', 0, 120, False)]
     rows = []
@@ -63,7 +65,7 @@ Si
                               ecutwfc=30, ecutrho=120, ecutexx=cutoff,
                               dft_functional='hse', exx_separate_loop=1,
                               exxace=int(ace), exx_batch_size=chunk, exx_hybrid_step=50,
-                              scf_thr='1e-8', scf_nmax=100, symmetry=-1,
+                              scf_thr='1e-10', pw_diag_thr='1e-12', scf_nmax=100, symmetry=-1,
                               smearing_method='fixed', init_wfc='random', pw_seed=1,
                               mixing_beta=0.4, cal_force=0, cal_stress=0)
             (work / 'INPUT').write_text('INPUT_PARAMETERS\n' + ''.join('%s %s\n' % item for item in parameters.items()))
