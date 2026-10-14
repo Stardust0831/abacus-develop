@@ -65,7 +65,7 @@ Si
                               ecutwfc=30, ecutrho=120, ecutexx=cutoff,
                               dft_functional='hse', exx_separate_loop=1,
                               exxace=int(ace), exx_batch_size=chunk, exx_hybrid_step=50,
-                              scf_thr='1e-10', pw_diag_thr='1e-12', scf_nmax=100, symmetry=-1,
+                              scf_thr='1e-12', pw_diag_thr='1e-12', scf_nmax=100, symmetry=-1,
                               smearing_method='fixed', init_wfc='random', pw_seed=1,
                               mixing_beta=0.4, cal_force=0, cal_stress=0)
             (work / 'INPUT').write_text('INPUT_PARAMETERS\n' + ''.join('%s %s\n' % item for item in parameters.items()))

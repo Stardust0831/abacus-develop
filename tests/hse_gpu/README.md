@@ -11,7 +11,11 @@ python3 .ci/slurm/run_hse_experiment.py --target SAI-abacus \
 ```
 
 The wrapper copies the normal control files, substitutes `hse-config.ini`, and
-passes the committed checkout to `runner.py`. Uncommitted C++ changes are not
+enables LibRI in the copied build template, and passes the committed checkout
+to `runner.py`. Header-only dependencies are staged locally using the versions
+and SHA256 hashes in `toolchain/scripts/package_versions.sh`, because the
+compute nodes cannot reach GitHub. Cereal uses the existing toolchain install
+settings. No global cluster environment is changed. Uncommitted C++ changes are not
 compiled. Use a fresh run ID and artifacts directory for each revision.
 
 The matrix includes existing PW PBE0 and LCAO HSE reference comparisons plus
@@ -20,7 +24,9 @@ density cutoff, and a fixed random seed. The benchmark runs CPU and GPU,
 ACE and ordinary exchange, divisible and nondivisible band chunks, and a
 60 Ry exchange grid. Each configuration runs twice, reversing the order on
 the second pass. All calculations start fresh and use one MPI rank and one
-OpenMP thread. This CPU baseline is not an optimized full-node CPU benchmark.
+OpenMP thread. The strict round sets `scf_thr=1e-12` and the initial
+`pw_diag_thr=1e-12`, and additionally covers CPU chunk 6 and GPU chunk 19
+(a one-band tail). This CPU baseline is not an optimized full-node CPU benchmark.
 
 Full-grid results must agree within 1e-6 eV/atom; small-grid results are an
 accuracy/performance study and are not silently treated as equivalent.
@@ -46,4 +52,4 @@ No INPUT fields, physical approximations, arithmetic kernels, or accumulation
 orders change. The existing CPU/CUDA FFT interfaces are reused, so no new
 source or build linkage is required. Numerical verification is performed by
 the committed Slurm matrix rather than an implementation-mirroring unit test.
-Performance results are pending until recorded in a separate results report.
+Results and limitations are recorded in RESULTS.md.
