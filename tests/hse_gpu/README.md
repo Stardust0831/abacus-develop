@@ -23,8 +23,10 @@ Si8 HSE calculations at Gamma, 20 bands, 30 Ry wavefunction cutoff, 120 Ry
 density cutoff, and a fixed random seed. The benchmark runs CPU and GPU,
 ACE and ordinary exchange, divisible and nondivisible band chunks, and a
 60 Ry exchange grid. Each configuration runs twice, reversing the order on
-the second pass. All calculations start fresh and use one MPI rank and one
-OpenMP thread. The strict round sets `scf_thr=1e-12` and the initial
+the second pass. All calculations start fresh and use one MPI rank.
+The original runs actually used eight OpenMP threads: the cluster module
+overrode the pre-load setting. The 2026-10-15 review sets OMP_NUM_THREADS=1
+after loading modules and verifies the startup log. The strict round sets `scf_thr=1e-12` and the initial
 `pw_diag_thr=1e-12`, and additionally covers CPU chunk 6 and GPU chunk 19
 (a one-band tail). This CPU baseline is not an optimized full-node CPU benchmark.
 

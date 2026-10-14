@@ -28,7 +28,7 @@
 ## 最终实验
 
 Si8 conventional cell，Gamma，20 bands，ecutwfc=30 Ry，ecutrho=120 Ry，HSE 默认参数。
-`scf_thr=1e-12`，初始 `pw_diag_thr=1e-12`，固定随机种子，1 MPI rank，OMP_NUM_THREADS=1。
+`scf_thr=1e-12`，初始 `pw_diag_thr=1e-12`，固定随机种子，1 MPI rank，实际运行时 OMP_NUM_THREADS=8（2026-10-15 复核 stdout 后更正：模块覆盖了脚本中预设的 1）。
 每项两次，第二遍反向执行，均从头开始 SCF。
 下表时间为包含进程启动的实测墙钟时间；负的减少百分比表示该次测量变慢。
 
@@ -59,7 +59,7 @@ Si8 conventional cell，Gamma，20 bands，ecutwfc=30 Ry，ecutrho=120 Ry，HSE 
 - 此次没有新增 LCAO EXX GPU kernel，也没有补齐 PW GPU 应力。
 - 只有 Si8、Gamma 和单 GPU 数据；不能外推为大体系、多 GPU、SOC 或生产 MD 加速比。
 - 两次重复不足以解释小幅涨跌。基线和候选可能分配到不同 GPU/节点，应以尾块路径的稳定变化为主要结论。
-- CPU 对照是 1 MPI rank / 1 OpenMP thread，不代表最优全节点 CPU 性能。
+- CPU 对照是 1 MPI rank / 8 OpenMP threads，不代表最优全节点 CPU 性能。
 - ABACUS 内部内存统计未完整覆盖 cuFFT 私有工作区；未宣称峰值显存降低。
 
 ## 未隐藏的先行失败

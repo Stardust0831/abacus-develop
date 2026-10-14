@@ -1,0 +1,229 @@
+{
+  "source_sha": "93c41db70fe330c61634ee6a0a629fc2af935aca",
+  "numerical_matrix": [
+    {
+      "name": "cpu_full",
+      "repeat": 0,
+      "device": "cpu",
+      "batch": 0,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 13.06955557409674,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619186132,
+      "delta_ev_per_atom": 0.0
+    },
+    {
+      "name": "cpu_chunk1",
+      "repeat": 0,
+      "device": "cpu",
+      "batch": 1,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 13.029204246588051,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619186132,
+      "delta_ev_per_atom": 0.0
+    },
+    {
+      "name": "cpu_chunk7",
+      "repeat": 0,
+      "device": "cpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 12.914987239055336,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619186132,
+      "delta_ev_per_atom": 0.0
+    },
+    {
+      "name": "gpu_chunk1",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 1,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 5.995929869823158,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_chunk4",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 4,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 5.915918613784015,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_chunk7",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 5.919953193515539,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_chunk19",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 19,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 6.243558309040964,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_chunk20",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 20,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 6.194975051097572,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_chunk64",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 64,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 6.1739391619339585,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619091797,
+      "delta_ev_per_atom": 1.1791883025580319e-09
+    },
+    {
+      "name": "gpu_small_tail",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 7,
+      "ecutexx": 60,
+      "ace": true,
+      "seconds": 6.264705399982631,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619113799,
+      "delta_ev_per_atom": 9.041656312547275e-10
+    },
+    {
+      "name": "gpu_noace_tail",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": false,
+      "seconds": 12.500709677115083,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090610355551,
+      "delta_ev_per_atom": 1.1038225977699767e-07
+    },
+    {
+      "name": "cpu_mpi2_tail",
+      "repeat": 0,
+      "device": "cpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 8.227153110317886,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -848.1090619283744,
+      "delta_ev_per_atom": -1.2201581967019592e-09
+    },
+    {
+      "name": "cpu_multik",
+      "repeat": 0,
+      "device": "cpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 37.08774175681174,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -854.5061756157627,
+      "delta_ev_per_atom": 0.0
+    },
+    {
+      "name": "gpu_mpi2_tail",
+      "repeat": 0,
+      "device": "gpu",
+      "batch": 7,
+      "ecutexx": 120,
+      "ace": true,
+      "seconds": 9.440667886286974,
+      "exit_code": 0,
+      "valid": true,
+      "energy_ev": -854.5061768510291,
+      "delta_ev_per_atom": -1.5440829770341225e-07
+    }
+  ],
+  "sanitizer": {
+    "candidate": {
+      "job": "1789751_0",
+      "clean_pass": false,
+      "errors": [
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit."
+      ],
+      "summary": [
+        "LEAK SUMMARY: 0 bytes leaked in 0 allocations",
+        "ERROR SUMMARY: 10 errors"
+      ]
+    },
+    "baseline": {
+      "job": "1789775_0",
+      "clean_pass": false,
+      "errors": [
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit.",
+        "Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to \"invalid argument\" on CUDA API call to cuCtxGetLimit."
+      ],
+      "summary": [
+        "LEAK SUMMARY: 0 bytes leaked in 0 allocations",
+        "ERROR SUMMARY: 10 errors"
+      ]
+    }
+  }
+}

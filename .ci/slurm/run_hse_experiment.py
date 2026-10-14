@@ -22,6 +22,10 @@ def main():
         parser.error('Use a fresh artifacts directory for each attempt')
     shutil.copytree(root, control, ignore=shutil.ignore_patterns('__pycache__'))
     shutil.copyfile(root / 'hse-config.ini', control / 'config.ini')
+    case_template = control / 'case.sbatch.in'
+    case_template.write_text(case_template.read_text().replace(
+        'source @CONTROL@/modules.sh',
+        'source @CONTROL@/modules.sh\nexport OMP_NUM_THREADS=1'))
     # Compute nodes cannot reach codeload. Stage exactly the dependencies and
     # checksums maintained by ABACUS's existing toolchain, without site paths.
     versions = (root.parent.parent / 'toolchain/scripts/package_versions.sh').read_text()
