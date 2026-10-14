@@ -78,7 +78,7 @@ Si
             stdout = (work / 'stdout.log').read_text(errors='replace')
             energy = re.findall(r'!FINAL_ETOT_IS\s+([-+\d.eE]+)', data + '\n' + stdout)
             valid = result.returncode == 0 and bool(energy) and 'EXX IS NOT CONVERGED' not in data + stdout
-            valid = valid and 'convergence has been achieved' in data.lower()
+            valid = valid and '#SCF IS CONVERGED#' in data and '!!SCF IS NOT CONVERGED!!' not in data
             row = dict(name=name, repeat=repeat, device=device, batch=chunk, ecutexx=cutoff,
                        ace=ace, seconds=elapsed, exit_code=result.returncode, valid=valid,
                        energy_ev=float(energy[-1]) if energy else None)
