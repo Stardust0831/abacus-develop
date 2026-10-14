@@ -142,6 +142,7 @@ OperatorEXXPW<T, Device>::~OperatorEXXPW()
         delmem_complex_op()(dens_box_batch);
         delmem_complex_op()(dens_pw_batch);
         exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan);
+        exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan_alt);
         exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan1);
     }
     if (sg_map_rho != nullptr)
@@ -774,22 +775,38 @@ void OperatorEXXPW<T, Device>::ensure_exx_batch(const int nbands) const
     const int ny = exx_sg_ok ? sg_ny : wfcpw->ny;
     const int nz = exx_sg_ok ? sg_nz : wfcpw->nz;
     const int nxyz = exx_sg_ok ? sg_nxyz : wfcpw->nxyz;
-    if (exx_batch_alloc == nbands && exx_fft_plan_nx == nx && exx_fft_plan_ny == ny && exx_fft_plan_nz == nz)
+    const bool grid_changed = exx_fft_plan_nx != nx || exx_fft_plan_ny != ny || exx_fft_plan_nz != nz;
+    if (!grid_changed && exx_fft_plan_batch == nbands)
     {
         return;
     }
-    if (dens_box_batch != nullptr)
+    if (grid_changed)
     {
-        // resize_memory_op frees the old block itself; the plans need an
-        // explicit destroy (they are plain library handles)
         exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan);
+        exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan_alt);
         exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan1);
+        exx_fft_plan_batch = 0;
+        exx_fft_plan_alt_batch = 0;
+        exx_batch_fft_plan_create<T, Device>(&exx_fft_plan1, nx, ny, nz, 1);
     }
-    resmem_complex_op()(dens_box_batch, nbands * nxyz);
-    resmem_complex_op()(dens_pw_batch, nbands * rhopw_dev->npw);
-    exx_batch_fft_plan_create<T, Device>(&exx_fft_plan, nx, ny, nz, nbands);
-    exx_batch_fft_plan_create<T, Device>(&exx_fft_plan1, nx, ny, nz, 1);
-    exx_batch_alloc = nbands;
+    if (grid_changed || exx_batch_alloc < nbands)
+    {
+        // Keep peak chunk capacity: a tail must not shrink and then regrow
+        // these buffers for every occupied source orbital.
+        resmem_complex_op()(dens_box_batch, nbands * nxyz);
+        resmem_complex_op()(dens_pw_batch, nbands * rhopw_dev->npw);
+        exx_batch_alloc = nbands;
+    }
+    // Two plans cover full chunks and the tail without an unbounded cuFFT
+    // workspace cache when iterative solvers request varying band counts.
+    std::swap(exx_fft_plan, exx_fft_plan_alt);
+    std::swap(exx_fft_plan_batch, exx_fft_plan_alt_batch);
+    if (exx_fft_plan_batch != nbands)
+    {
+        exx_batch_fft_plan_destroy<T, Device>(&exx_fft_plan);
+        exx_batch_fft_plan_create<T, Device>(&exx_fft_plan, nx, ny, nz, nbands);
+        exx_fft_plan_batch = nbands;
+    }
     exx_fft_plan_nx = nx;
     exx_fft_plan_ny = ny;
     exx_fft_plan_nz = nz;

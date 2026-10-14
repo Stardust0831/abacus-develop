@@ -214,13 +214,16 @@ class OperatorEXXPW : public OperatorPW<T, Device>
     void calc_density_pw_nbatched(const int nbands, const T* nk_real, const T* psi_mq_real) const;
 
     mutable void* exx_fft_plan = nullptr;   // batched FFT plan (void* to keep FFTW/cuFFT out of the header)
+    mutable void* exx_fft_plan_alt = nullptr; // retain the other chunk width (usually the tail)
+    mutable int exx_fft_plan_batch = 0;
+    mutable int exx_fft_plan_alt_batch = 0;
     mutable void* exx_fft_plan1 = nullptr;  // batch-1 FFT plan (psi_mq on the active grid)
     mutable int exx_fft_plan_nx = 0;        // grid dims the plans were created for
     mutable int exx_fft_plan_ny = 0;
     mutable int exx_fft_plan_nz = 0;
     mutable T* dens_box_batch = nullptr;    // band-chunk * nxyz box buffer
     mutable T* dens_pw_batch = nullptr;     // band-chunk * npw (rhopw_dev) plane-wave buffer
-    mutable int exx_batch_alloc = 0;        // band chunk width the buffers/plan are allocated for
+    mutable int exx_batch_alloc = 0;        // buffer capacity; smaller tail chunks reuse it
     mutable int dens_chunk_base = 0;        // global band index of dens_pw_batch[0]
 
     // create/recreate the batched FFT plans and work buffers for the active grid
