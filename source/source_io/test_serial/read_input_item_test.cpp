@@ -63,7 +63,6 @@ TEST_F(InputTest, RelaxMethod)
     {
         it->second.str_values = {method};
         it->second.read_value(it->second, param);
-        it->second.check_value(it->second, param);
         EXPECT_EQ(TestParameters::input(param).relax_method, method);
         EXPECT_EQ(param.inp.uses_simultaneous_relaxation(), method == "cg");
         it->second.final_value.str("");
@@ -73,6 +72,7 @@ TEST_F(InputTest, RelaxMethod)
 
     for (const std::vector<std::string>& invalid : {
              std::vector<std::string>{},
+             std::vector<std::string>{"none"},
              std::vector<std::string>{"cg", "1"},
              std::vector<std::string>{"cg", "2"},
              std::vector<std::string>{"bfgs", "1"},
@@ -84,9 +84,6 @@ TEST_F(InputTest, RelaxMethod)
         it->second.str_values = invalid;
         EXPECT_EXIT(it->second.read_value(it->second, param), ::testing::ExitedWithCode(1), "");
     }
-    TestParameters::input(param).relax_method = "none";
-    EXPECT_EXIT(it->second.check_value(it->second, param), ::testing::ExitedWithCode(1), "");
-
     EXPECT_EQ(find_label("relax_new", readinput.input_lists), readinput.input_lists.end());
 }
 

@@ -28,19 +28,15 @@ void ReadInput::item_relax()
         item.default_value = "cg";
         item.unit = "";
         item.read_value = [](const Input_Item& item, Parameter& para) {
-            if (item.str_values.size() != 1)
-            {
-                ModuleBase::WARNING_QUIT("ReadInput", "relax_method requires exactly one scalar option");
-            }
-            para.input.relax_method = strvalue;
-        };
-        item.check_value = [](const Input_Item& item, const Parameter& para) {
             const std::vector<std::string> methods
                 = {"cg", "cg_nested", "bfgs", "bfgs_traditional", "sd", "cg_bfgs", "lbfgs"};
-            if (std::find(methods.begin(), methods.end(), para.inp.relax_method) == methods.end())
+            if (item.str_values.size() != 1 || std::find(methods.begin(), methods.end(), strvalue) == methods.end())
             {
-                ModuleBase::WARNING_QUIT("ReadInput", nofound_str(methods, "relax_method"));
+                const std::string message = "relax_method requires exactly one scalar option. "
+                                            + nofound_str(methods, "relax_method");
+                ModuleBase::WARNING_QUIT("ReadInput", message);
             }
+            para.input.relax_method = strvalue;
         };
         sync_string(input.relax_method);
         this->add_item(item);
