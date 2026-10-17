@@ -14,7 +14,7 @@ smearing_method      gauss
 smearing_sigma       0.01
 
 calculation          relax
-relax_method         cg  # cg; bfgs; lbfgs; cg_bfgs; sd
+relax_method         cg  # cg; cg_nested; bfgs; bfgs_traditional; lbfgs; cg_bfgs; sd
 relax_nmax           50
 force_thr_ev         1.0e-3
 

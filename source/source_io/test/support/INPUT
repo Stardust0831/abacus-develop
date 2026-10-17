@@ -115,8 +115,8 @@ cal_stress                     0 #calculate the stress or not
 fixed_axes                     None #which axes are fixed
 fixed_ibrav                    0 #whether to preseve lattice type during relaxation
 fixed_atoms                    0 #whether to preseve direct coordinates of atoms during relaxation
-relax_method                   cg #bfgs; sd; cg; cg_bfgs;
-relax_scale_force              0.5 #controls the size of the first CG 2 step
+relax_method                   cg #cg; cg_nested; bfgs; bfgs_traditional; lbfgs; sd; cg_bfgs
+relax_scale_force              0.5 #controls the size of the first simultaneous CG step
 out_level                      ie #ie(for electrons); i(for ions);
 out_dmk                        0 #>0 output density matrix DM(k)
 deepks_out_labels              0 #>0 compute descriptor for deepks
