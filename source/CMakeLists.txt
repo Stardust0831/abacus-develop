@@ -274,7 +274,7 @@ set(_abacus_feature_libs
   $<$<BOOL:${ENABLE_PEXSI}>:PEXSI::PEXSI>
   $<$<BOOL:${ENABLE_CNPY}>:cnpy>
   $<$<BOOL:${ENABLE_CNPY}>:ZLIB::ZLIB>
-  $<$<BOOL:${ENABLE_LIBRI}>:cereal::cereal>
+  $<$<BOOL:${ENABLE_LIBRI}>:LibRI::LibRI>
   $<$<BOOL:${ENABLE_LIBXC}>:Libxc::xc>
   $<$<BOOL:${ENABLE_PLUMED}>:PLUMED::plumed>)
 set(_abacus_feature_include_dirs)
@@ -305,12 +305,6 @@ if(ENABLE_CNPY)
   if(cnpy_SOURCE_DIR)
     list(APPEND _abacus_feature_include_dirs ${cnpy_SOURCE_DIR})
   endif()
-endif()
-
-if(ENABLE_LIBRI)
-  list(APPEND _abacus_feature_include_dirs
-    ${LIBRI_DIR}/include
-    ${LIBCOMM_DIR}/include)
 endif()
 
 if(DEFINED DeePMD_DIR)
@@ -395,6 +389,8 @@ target_compile_options(abacus_compile_requirements INTERFACE
 
 foreach(_abacus_feature_target IN ITEMS
     nlohmann_json::nlohmann_json
+    LibRI::LibRI
+    DDLA::DDLA
     cereal::cereal
     ELPA::ELPA
     Libxc::xc
