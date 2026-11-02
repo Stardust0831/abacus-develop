@@ -1,0 +1,59 @@
+{
+  "base": "d20090cc137fdc3b3baddd9217f792bb7af922d7",
+  "heads": {
+    "xc": "90f5c2536795cff162d42b7620265e6a248cdc5f",
+    "reuse": "06ab2be77f993b045a623948661663c86225c99b",
+    "radial": "dfc71eb145aef88d0e2f22c2e7739939bc8f351e"
+  },
+  "orders": [
+    {
+      "order": [
+        "xc",
+        "reuse",
+        "radial"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    },
+    {
+      "order": [
+        "xc",
+        "radial",
+        "reuse"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    },
+    {
+      "order": [
+        "reuse",
+        "xc",
+        "radial"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    },
+    {
+      "order": [
+        "reuse",
+        "radial",
+        "xc"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    },
+    {
+      "order": [
+        "radial",
+        "xc",
+        "reuse"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    },
+    {
+      "order": [
+        "radial",
+        "reuse",
+        "xc"
+      ],
+      "tree": "474865f66716ea285fe84b90f26bd091b45f8375"
+    }
+  ],
+  "passed": true
+}

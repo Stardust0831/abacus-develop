@@ -1,0 +1,138 @@
+Internal ctest changing into directory: WORK/build-cpu
+UpdateCTestConfiguration  from :WORK/build-cpu/DartConfiguration.tcl
+Parse Config file:WORK/build-cpu/DartConfiguration.tcl
+UpdateCTestConfiguration  from :WORK/build-cpu/DartConfiguration.tcl
+Parse Config file:WORK/build-cpu/DartConfiguration.tcl
+Test project WORK/build-cpu
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 207
+    Start 207: MODULE_HAMILT_XCTest_VXC
+
+207: Test command: WORK/build-cpu/source/source_hamilt/module_xc/test/MODULE_HAMILT_XCTest_VXC
+207: Working Directory: WORK/build-cpu/source/source_hamilt/module_xc/test
+207: Test timeout computed to be: 1500
+207: [==========] Running 18 tests from 7 test suites.
+207: [----------] Global test environment set-up.
+207: [----------] 1 test from XCTest_VXC
+207: [ RUN      ] XCTest_VXC.set_xc_type
+207: [       OK ] XCTest_VXC.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC (0 ms total)
+207:
+207: [----------] 1 test from XCTest_VXC_Libxc
+207: [ RUN      ] XCTest_VXC_Libxc.set_xc_type
+207: [       OK ] XCTest_VXC_Libxc.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC_Libxc (0 ms total)
+207:
+207: [----------] 2 tests from XCTest_VXC_meta
+207: [ RUN      ] XCTest_VXC_meta.set_xc_type
+207: [       OK ] XCTest_VXC_meta.set_xc_type (0 ms)
+207: [ RUN      ] XCTest_VXC_meta.vtxc_uses_valence_density
+207: [       OK ] XCTest_VXC_meta.vtxc_uses_valence_density (0 ms)
+207: [----------] 2 tests from XCTest_VXC_meta (0 ms total)
+207:
+207: [----------] 2 tests from GgaGradTools
+207: [ RUN      ] GgaGradTools.ConvertVNspin4HasMag
+207: [       OK ] GgaGradTools.ConvertVNspin4HasMag (0 ms)
+207: [ RUN      ] GgaGradTools.NoncolinRhoGlobalAxis
+207: [       OK ] GgaGradTools.NoncolinRhoGlobalAxis (0 ms)
+207: [----------] 2 tests from GgaGradTools (0 ms total)
+207:
+207: [----------] 4 tests from GgaGradVxc
+207: [ RUN      ] GgaGradVxc.BuiltinOriginalAlgorithmRuns
+207: [       OK ] GgaGradVxc.BuiltinOriginalAlgorithmRuns (0 ms)
+207: [ RUN      ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis
+207: [       OK ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy
+207: [       OK ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcZeroEqualsOne
+207: [       OK ] GgaGradVxc.LibxcZeroEqualsOne (0 ms)
+207: [----------] 4 tests from GgaGradVxc (0 ms total)
+207:
+207: [----------] 3 tests from LibxcSanitizer
+207: [ RUN      ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative
+207: [       OK ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative (0 ms)
+207: [ RUN      ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [ RUN      ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [----------] 3 tests from LibxcSanitizer (0 ms total)
+207:
+207: [----------] 5 tests from LibxcToolsSgnVxcTest
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2JointMasking
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2JointMasking (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored (0 ms)
+207: [----------] 5 tests from LibxcToolsSgnVxcTest (0 ms total)
+207:
+207: [----------] Global test environment tear-down
+207: [==========] 18 tests from 7 test suites ran. (0 ms total)
+207: [  PASSED  ] 18 tests.
+1/3 Test #207: MODULE_HAMILT_XCTest_VXC .........   Passed    1.64 sec
+test 291
+    Start 291: MODULE_LCAO_radial_tables
+
+291: Test command: WORK/build-cpu/source/source_lcao/test/MODULE_LCAO_radial_tables
+291: Working Directory: WORK/build-cpu/source/source_lcao/test
+291: Test timeout computed to be: 1500
+291: Running main() from DEPENDENCIES
+291: [==========] Running 2 tests from 2 test suites.
+291: [----------] Global test environment set-up.
+291: [----------] 1 test from Center2Orb11
+291: [ RUN      ] Center2Orb11.BatchedCpuMatchesIndividualTables
+291: [       OK ] Center2Orb11.BatchedCpuMatchesIndividualTables (700 ms)
+291: [----------] 1 test from Center2Orb11 (700 ms total)
+291:
+291: [----------] 1 test from Center2Orb21
+291: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+291: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (3 ms)
+291: [----------] 1 test from Center2Orb21 (3 ms total)
+291:
+291: [----------] Global test environment tear-down
+291: [==========] 2 tests from 2 test suites ran. (704 ms total)
+291: [  PASSED  ] 2 tests.
+2/3 Test #291: MODULE_LCAO_radial_tables ........   Passed    0.80 sec
+test 295
+    Start 295: MODULE_LCAO_integral_reuse
+
+295: Test command: WORK/build-cpu/source/source_lcao/test/MODULE_LCAO_integral_reuse
+295: Working Directory: WORK/build-cpu/source/source_lcao/test
+295: Test timeout computed to be: 1500
+295: Running main() from DEPENDENCIES
+295: [==========] Running 3 tests from 2 test suites.
+295: [----------] Global test environment set-up.
+295: [----------] 1 test from Center2Orb11
+295: [ RUN      ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation
+295: [       OK ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation (43 ms)
+295: [----------] 1 test from Center2Orb11 (43 ms total)
+295:
+295: [----------] 2 tests from Center2Orb21
+295: [ RUN      ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation
+295: [       OK ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation (339 ms)
+295: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+295: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (3 ms)
+295: [----------] 2 tests from Center2Orb21 (343 ms total)
+295:
+295: [----------] Global test environment tear-down
+295: [==========] 3 tests from 2 test suites ran. (387 ms total)
+295: [  PASSED  ] 3 tests.
+3/3 Test #295: MODULE_LCAO_integral_reuse .......   Passed    0.46 sec
+
+The following tests passed:
+	MODULE_HAMILT_XCTest_VXC
+	MODULE_LCAO_radial_tables
+	MODULE_LCAO_integral_reuse
+
+100% tests passed, 0 tests failed out of 3
+
+Total Test time (real) =   2.97 sec

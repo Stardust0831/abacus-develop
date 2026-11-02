@@ -1,0 +1,71 @@
+Internal ctest changing into directory: WORK/build
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+Test project WORK/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 293
+    Start 293: MODULE_LCAO_radial_tables
+
+293: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_radial_tables
+293: Working Directory: WORK/build/source/source_lcao/test
+293: Test timeout computed to be: 1500
+293: Running main() from DEPENDENCIES
+293: [==========] Running 2 tests from 2 test suites.
+293: [----------] Global test environment set-up.
+293: [----------] 1 test from Center2Orb11
+293: [ RUN      ] Center2Orb11.BatchedCpuMatchesIndividualTables
+293: [       OK ] Center2Orb11.BatchedCpuMatchesIndividualTables (696 ms)
+293: [----------] 1 test from Center2Orb11 (696 ms total)
+293:
+293: [----------] 1 test from Center2Orb21
+293: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+293: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (3 ms)
+293: [----------] 1 test from Center2Orb21 (3 ms total)
+293:
+293: [----------] Global test environment tear-down
+293: [==========] 2 tests from 2 test suites ran. (699 ms total)
+293: [  PASSED  ] 2 tests.
+1/2 Test #293: MODULE_LCAO_radial_tables ........   Passed    0.83 sec
+test 294
+    Start 294: MODULE_LCAO_radial_tables_gpu
+
+294: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_radial_tables_gpu
+294: Working Directory: WORK/build/source/source_lcao/test
+294: Test timeout computed to be: 1500
+294: Running main() from DEPENDENCIES
+294: [==========] Running 3 tests from 2 test suites.
+294: [----------] Global test environment set-up.
+294: [----------] 2 tests from Center2Orb11
+294: [ RUN      ] Center2Orb11.BatchedCpuMatchesIndividualTables
+294: [       OK ] Center2Orb11.BatchedCpuMatchesIndividualTables (681 ms)
+294: [ RUN      ] Center2Orb11.BatchedGpuMatchesIndividualTables
+294: [       OK ] Center2Orb11.BatchedGpuMatchesIndividualTables (1001 ms)
+294: [----------] 2 tests from Center2Orb11 (1683 ms total)
+294:
+294: [----------] 1 test from Center2Orb21
+294: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+294: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (2 ms)
+294: [----------] 1 test from Center2Orb21 (2 ms total)
+294:
+294: [----------] Global test environment tear-down
+294: [==========] 3 tests from 2 test suites ran. (1685 ms total)
+294: [  PASSED  ] 3 tests.
+2/2 Test #294: MODULE_LCAO_radial_tables_gpu ....   Passed    1.97 sec
+
+The following tests passed:
+	MODULE_LCAO_radial_tables
+	MODULE_LCAO_radial_tables_gpu
+
+100% tests passed, 0 tests failed out of 2
+
+Label Time Summary:
+gpu    =   1.97 sec*proc (1 test)
+
+Total Test time (real) =   2.83 sec

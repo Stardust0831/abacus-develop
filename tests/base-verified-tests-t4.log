@@ -1,0 +1,88 @@
+Internal ctest changing into directory: WORK/build
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+Test project WORK/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 207
+    Start 207: MODULE_HAMILT_XCTest_VXC
+
+207: Test command: WORK/build/source/source_hamilt/module_xc/test/MODULE_HAMILT_XCTest_VXC
+207: Working Directory: WORK/build/source/source_hamilt/module_xc/test
+207: Test timeout computed to be: 1500
+207: [==========] Running 18 tests from 7 test suites.
+207: [----------] Global test environment set-up.
+207: [----------] 1 test from XCTest_VXC
+207: [ RUN      ] XCTest_VXC.set_xc_type
+207: [       OK ] XCTest_VXC.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC (0 ms total)
+207:
+207: [----------] 1 test from XCTest_VXC_Libxc
+207: [ RUN      ] XCTest_VXC_Libxc.set_xc_type
+207: [       OK ] XCTest_VXC_Libxc.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC_Libxc (0 ms total)
+207:
+207: [----------] 2 tests from XCTest_VXC_meta
+207: [ RUN      ] XCTest_VXC_meta.set_xc_type
+207: [       OK ] XCTest_VXC_meta.set_xc_type (0 ms)
+207: [ RUN      ] XCTest_VXC_meta.vtxc_uses_valence_density
+207: [       OK ] XCTest_VXC_meta.vtxc_uses_valence_density (0 ms)
+207: [----------] 2 tests from XCTest_VXC_meta (0 ms total)
+207:
+207: [----------] 2 tests from GgaGradTools
+207: [ RUN      ] GgaGradTools.ConvertVNspin4HasMag
+207: [       OK ] GgaGradTools.ConvertVNspin4HasMag (0 ms)
+207: [ RUN      ] GgaGradTools.NoncolinRhoGlobalAxis
+207: [       OK ] GgaGradTools.NoncolinRhoGlobalAxis (0 ms)
+207: [----------] 2 tests from GgaGradTools (0 ms total)
+207:
+207: [----------] 4 tests from GgaGradVxc
+207: [ RUN      ] GgaGradVxc.BuiltinOriginalAlgorithmRuns
+207: [       OK ] GgaGradVxc.BuiltinOriginalAlgorithmRuns (0 ms)
+207: [ RUN      ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis
+207: [       OK ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy
+207: [       OK ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcZeroEqualsOne
+207: [       OK ] GgaGradVxc.LibxcZeroEqualsOne (0 ms)
+207: [----------] 4 tests from GgaGradVxc (0 ms total)
+207:
+207: [----------] 3 tests from LibxcSanitizer
+207: [ RUN      ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative
+207: [       OK ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative (0 ms)
+207: [ RUN      ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [ RUN      ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [----------] 3 tests from LibxcSanitizer (0 ms total)
+207:
+207: [----------] 5 tests from LibxcToolsSgnVxcTest
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2JointMasking
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2JointMasking (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored (0 ms)
+207: [----------] 5 tests from LibxcToolsSgnVxcTest (0 ms total)
+207:
+207: [----------] Global test environment tear-down
+207: [==========] 18 tests from 7 test suites ran. (1 ms total)
+207: [  PASSED  ] 18 tests.
+1/1 Test #207: MODULE_HAMILT_XCTest_VXC .........   Passed    1.80 sec
+
+The following tests passed:
+	MODULE_HAMILT_XCTest_VXC
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.85 sec

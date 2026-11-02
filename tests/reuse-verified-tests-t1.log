@@ -1,0 +1,44 @@
+Internal ctest changing into directory: WORK/build
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+Test project WORK/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 296
+    Start 296: MODULE_LCAO_integral_reuse
+
+296: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_integral_reuse
+296: Working Directory: WORK/build/source/source_lcao/test
+296: Test timeout computed to be: 1500
+296: Running main() from DEPENDENCIES
+296: [==========] Running 3 tests from 2 test suites.
+296: [----------] Global test environment set-up.
+296: [----------] 1 test from Center2Orb11
+296: [ RUN      ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation
+296: [       OK ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation (42 ms)
+296: [----------] 1 test from Center2Orb11 (42 ms total)
+296:
+296: [----------] 2 tests from Center2Orb21
+296: [ RUN      ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation
+296: [       OK ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation (387 ms)
+296: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+296: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (3 ms)
+296: [----------] 2 tests from Center2Orb21 (391 ms total)
+296:
+296: [----------] Global test environment tear-down
+296: [==========] 3 tests from 2 test suites ran. (434 ms total)
+296: [  PASSED  ] 3 tests.
+1/1 Test #296: MODULE_LCAO_integral_reuse .......   Passed    0.57 sec
+
+The following tests passed:
+	MODULE_LCAO_integral_reuse
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.60 sec

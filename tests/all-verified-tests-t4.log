@@ -1,0 +1,167 @@
+Internal ctest changing into directory: WORK/build
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :WORK/build/DartConfiguration.tcl
+Parse Config file:WORK/build/DartConfiguration.tcl
+Test project WORK/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 207
+    Start 207: MODULE_HAMILT_XCTest_VXC
+
+207: Test command: WORK/build/source/source_hamilt/module_xc/test/MODULE_HAMILT_XCTest_VXC
+207: Working Directory: WORK/build/source/source_hamilt/module_xc/test
+207: Test timeout computed to be: 1500
+207: [==========] Running 18 tests from 7 test suites.
+207: [----------] Global test environment set-up.
+207: [----------] 1 test from XCTest_VXC
+207: [ RUN      ] XCTest_VXC.set_xc_type
+207: [       OK ] XCTest_VXC.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC (0 ms total)
+207:
+207: [----------] 1 test from XCTest_VXC_Libxc
+207: [ RUN      ] XCTest_VXC_Libxc.set_xc_type
+207: [       OK ] XCTest_VXC_Libxc.set_xc_type (0 ms)
+207: [----------] 1 test from XCTest_VXC_Libxc (0 ms total)
+207:
+207: [----------] 2 tests from XCTest_VXC_meta
+207: [ RUN      ] XCTest_VXC_meta.set_xc_type
+207: [       OK ] XCTest_VXC_meta.set_xc_type (0 ms)
+207: [ RUN      ] XCTest_VXC_meta.vtxc_uses_valence_density
+207: [       OK ] XCTest_VXC_meta.vtxc_uses_valence_density (0 ms)
+207: [----------] 2 tests from XCTest_VXC_meta (0 ms total)
+207:
+207: [----------] 2 tests from GgaGradTools
+207: [ RUN      ] GgaGradTools.ConvertVNspin4HasMag
+207: [       OK ] GgaGradTools.ConvertVNspin4HasMag (0 ms)
+207: [ RUN      ] GgaGradTools.NoncolinRhoGlobalAxis
+207: [       OK ] GgaGradTools.NoncolinRhoGlobalAxis (0 ms)
+207: [----------] 2 tests from GgaGradTools (0 ms total)
+207:
+207: [----------] 4 tests from GgaGradVxc
+207: [ RUN      ] GgaGradVxc.BuiltinOriginalAlgorithmRuns
+207: [       OK ] GgaGradVxc.BuiltinOriginalAlgorithmRuns (0 ms)
+207: [ RUN      ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis
+207: [       OK ] GgaGradVxc.BuiltinGgaGrad1IgnoresGlobalAxis (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy
+207: [       OK ] GgaGradVxc.LibxcNspin4NearSaturationDifferentiatesTheWeightedEnergy (0 ms)
+207: [ RUN      ] GgaGradVxc.LibxcZeroEqualsOne
+207: [       OK ] GgaGradVxc.LibxcZeroEqualsOne (0 ms)
+207: [----------] 4 tests from GgaGradVxc (0 ms total)
+207:
+207: [----------] 3 tests from LibxcSanitizer
+207: [ RUN      ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative
+207: [       OK ] LibxcSanitizer.FullPolarizationUsesTheWeightedEnergyDerivative (0 ms)
+207: [ RUN      ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.GgaSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [ RUN      ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy
+207: [       OK ] LibxcSanitizer.UnpolarizedSelfSigmaReverseMatchesTheWeightedEnergy (0 ms)
+207: [----------] 3 tests from LibxcSanitizer (0 ms total)
+207:
+207: [----------] 5 tests from LibxcToolsSgnVxcTest
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaDensityTiers (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1GgaGradientTrigger (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin1LdaKeepsVsigmaMask (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2JointMasking
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2JointMasking (0 ms)
+207: [ RUN      ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored
+207: [       OK ] LibxcToolsSgnVxcTest.Nspin2CrossSigmaIgnored (0 ms)
+207: [----------] 5 tests from LibxcToolsSgnVxcTest (0 ms total)
+207:
+207: [----------] Global test environment tear-down
+207: [==========] 18 tests from 7 test suites ran. (2 ms total)
+207: [  PASSED  ] 18 tests.
+1/4 Test #207: MODULE_HAMILT_XCTest_VXC .........   Passed    1.94 sec
+test 293
+    Start 293: MODULE_LCAO_radial_tables
+
+293: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_radial_tables
+293: Working Directory: WORK/build/source/source_lcao/test
+293: Test timeout computed to be: 1500
+293: Running main() from DEPENDENCIES
+293: [==========] Running 2 tests from 2 test suites.
+293: [----------] Global test environment set-up.
+293: [----------] 1 test from Center2Orb11
+293: [ RUN      ] Center2Orb11.BatchedCpuMatchesIndividualTables
+293: [       OK ] Center2Orb11.BatchedCpuMatchesIndividualTables (679 ms)
+293: [----------] 1 test from Center2Orb11 (679 ms total)
+293:
+293: [----------] 1 test from Center2Orb21
+293: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+293: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (3 ms)
+293: [----------] 1 test from Center2Orb21 (3 ms total)
+293:
+293: [----------] Global test environment tear-down
+293: [==========] 2 tests from 2 test suites ran. (683 ms total)
+293: [  PASSED  ] 2 tests.
+2/4 Test #293: MODULE_LCAO_radial_tables ........   Passed    0.81 sec
+test 294
+    Start 294: MODULE_LCAO_radial_tables_gpu
+
+294: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_radial_tables_gpu
+294: Working Directory: WORK/build/source/source_lcao/test
+294: Test timeout computed to be: 1500
+294: Running main() from DEPENDENCIES
+294: [==========] Running 3 tests from 2 test suites.
+294: [----------] Global test environment set-up.
+294: [----------] 2 tests from Center2Orb11
+294: [ RUN      ] Center2Orb11.BatchedCpuMatchesIndividualTables
+294: [       OK ] Center2Orb11.BatchedCpuMatchesIndividualTables (627 ms)
+294: [ RUN      ] Center2Orb11.BatchedGpuMatchesIndividualTables
+294: [       OK ] Center2Orb11.BatchedGpuMatchesIndividualTables (1425 ms)
+294: [----------] 2 tests from Center2Orb11 (2053 ms total)
+294:
+294: [----------] 1 test from Center2Orb21
+294: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+294: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (2 ms)
+294: [----------] 1 test from Center2Orb21 (2 ms total)
+294:
+294: [----------] Global test environment tear-down
+294: [==========] 3 tests from 2 test suites ran. (2056 ms total)
+294: [  PASSED  ] 3 tests.
+3/4 Test #294: MODULE_LCAO_radial_tables_gpu ....   Passed    2.43 sec
+test 298
+    Start 298: MODULE_LCAO_integral_reuse
+
+298: Test command: WORK/build/source/source_lcao/test/MODULE_LCAO_integral_reuse
+298: Working Directory: WORK/build/source/source_lcao/test
+298: Test timeout computed to be: 1500
+298: Running main() from DEPENDENCIES
+298: [==========] Running 3 tests from 2 test suites.
+298: [----------] Global test environment set-up.
+298: [----------] 1 test from Center2Orb11
+298: [ RUN      ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation
+298: [       OK ] Center2Orb11.AllMagneticComponentsMatchScalarEvaluation (43 ms)
+298: [----------] 1 test from Center2Orb11 (43 ms total)
+298:
+298: [----------] 2 tests from Center2Orb21
+298: [ RUN      ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation
+298: [       OK ] Center2Orb21.AllMagneticComponentsMatchScalarEvaluation (355 ms)
+298: [ RUN      ] Center2Orb21.ProductGradientMatchesFiniteDifference
+298: [       OK ] Center2Orb21.ProductGradientMatchesFiniteDifference (4 ms)
+298: [----------] 2 tests from Center2Orb21 (359 ms total)
+298:
+298: [----------] Global test environment tear-down
+298: [==========] 3 tests from 2 test suites ran. (403 ms total)
+298: [  PASSED  ] 3 tests.
+4/4 Test #298: MODULE_LCAO_integral_reuse .......   Passed    0.55 sec
+
+The following tests passed:
+	MODULE_HAMILT_XCTest_VXC
+	MODULE_LCAO_radial_tables
+	MODULE_LCAO_radial_tables_gpu
+	MODULE_LCAO_integral_reuse
+
+100% tests passed, 0 tests failed out of 4
+
+Label Time Summary:
+gpu    =   2.43 sec*proc (1 test)
+
+Total Test time (real) =   5.76 sec
