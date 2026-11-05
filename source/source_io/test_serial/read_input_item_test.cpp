@@ -3199,3 +3199,37 @@ TEST_F(InputTest, DfptBroydenNdimRuleBoundaries)
         EXPECT_EQ(input.dfpt_broyden_ndim, previous_ndim);
     }
 }
+
+TEST_F(InputTest, LibxcDeviceSelection)
+{
+    ModuleIO::ReadInput readinput(0);
+    const auto item = find_label("xc_device", readinput.input_lists);
+    ASSERT_NE(item, readinput.input_lists.end());
+    Parameter param;
+    Input_para& input = TestParameters::input(param);
+    EXPECT_EQ(input.xc_device, "cpu");
+    check_item(item->second, param);
+
+    input.xc_device = "gpu";
+    input.device = "cpu";
+    testing::internal::CaptureStdout();
+    EXPECT_EXIT(check_item(item->second, param), ::testing::ExitedWithCode(1), "");
+    const std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_THAT(output, testing::HasSubstr("device==gpu"));
+
+    input.device = "gpu";
+#if defined(__CUDA) && defined(__LIBXC)
+    check_item(item->second, param);
+#else
+    testing::internal::CaptureStdout();
+    EXPECT_EXIT(check_item(item->second, param), ::testing::ExitedWithCode(1), "");
+    const std::string unavailable = testing::internal::GetCapturedStdout();
+    EXPECT_THAT(unavailable, testing::HasSubstr("USE_CUDA and ENABLE_LIBXC"));
+#endif
+
+    input.xc_device = "invalid";
+    testing::internal::CaptureStdout();
+    EXPECT_EXIT(check_item(item->second, param), ::testing::ExitedWithCode(1), "");
+    const std::string invalid = testing::internal::GetCapturedStdout();
+    EXPECT_THAT(invalid, testing::HasSubstr("xc_device"));
+}

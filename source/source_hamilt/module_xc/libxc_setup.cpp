@@ -282,17 +282,52 @@ const std::vector<double> external_xc_func_ext_params(const int id)
     return {};
 }
 
-std::vector<xc_func_type> 
-XC_Functional_Libxc::init_func(const std::vector<int> &func_id, 
+bool XC_Functional_Libxc::gpu_available()
+{
+#if defined(__CUDA) && defined(XC_FLAGS_ON_HOST)
+    const int flags = xc_func_info_get_default_flags();
+    return (flags & XC_FLAGS_ON_DEVICE) != 0;
+#else
+    return false;
+#endif
+}
+
+std::vector<xc_func_type>
+XC_Functional_Libxc::init_func(const std::vector<int>& func_id,
                                const int xc_polarized,
                                const double hybrid_alpha,
                                const double hse_omega)
 {
+    return init_func(func_id, xc_polarized, hybrid_alpha, hse_omega, false);
+}
+
+std::vector<xc_func_type>
+XC_Functional_Libxc::init_func(const std::vector<int>& func_id,
+                               const int xc_polarized,
+                               const double hybrid_alpha,
+                               const double hse_omega,
+                               const bool use_gpu)
+{
+    if (use_gpu && !gpu_available())
+    {
+        ModuleBase::WARNING_QUIT("XC_Functional_Libxc::init_func",
+                                "xc_device gpu requires CUDA-enabled ABACUS and Libxc >= 7.1 with ENABLE_CUDA=ON.");
+    }
     std::vector<xc_func_type> funcs;
     for (int id : func_id)
     {
         funcs.push_back({}); // create placeholder
-        xc_func_init(&funcs.back(), id, xc_polarized); // instantiate the XC term
+        int status = 0;
+#ifdef XC_FLAGS_ON_HOST
+        const int flags = use_gpu ? XC_FLAGS_ON_DEVICE : XC_FLAGS_ON_HOST;
+        status = xc_func_init_flags(&funcs.back(), id, xc_polarized, flags);
+#else
+        status = init_func_host(&funcs.back(), id, xc_polarized);
+#endif
+        if (status != 0)
+        {
+            ModuleBase::WARNING_QUIT("XC_Functional_Libxc::init_func", "Libxc functional initialization failed.");
+        }
 
         // Search for external parameters. User-supplied parameters take precedence
         // over ABACUS built-in overrides.

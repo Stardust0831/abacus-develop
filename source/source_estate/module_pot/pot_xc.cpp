@@ -15,6 +15,12 @@ void PotXC::cal_v_eff(const Charge*const chg, const UnitCell*const ucell, Module
 {
     ModuleBase::TITLE("PotXC", "cal_veff");
     ModuleBase::timer::start("PotXC", "cal_veff");
+#ifdef __LIBXC
+    if (xc_gpu_ && !XC_Functional_Libxc::gpu_available())
+    {
+        ModuleBase::WARNING_QUIT("PotXC", "xc_device gpu requires Libxc >= 7.1 built with ENABLE_CUDA=ON.");
+    }
+#endif
     const int nrxx_current = chg->nrxx;
     const int nspin = chg->nspin;
     
@@ -57,7 +63,8 @@ void PotXC::cal_v_eff(const Charge*const chg, const UnitCell*const ucell, Module
                                   domag_z_,
                                   gga_grad_,
                                   hybrid_alpha,
-                                  hse_omega);
+                                  hse_omega,
+                                  xc_gpu_);
         *(this->etxc_) = std::get<0>(etxc_vtxc_v);
         *(this->vtxc_) = std::get<1>(etxc_vtxc_v);
         v_eff += std::get<2>(etxc_vtxc_v);
