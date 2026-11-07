@@ -142,3 +142,50 @@ TEST(InputDomain, RejectsNonfiniteRuleLiteralsAndVectorScalarComparisons)
     vector_domain.add_requirement("axes==1", "flag==true");
     EXPECT_THROW(vector_domain.validate_schema("bad_vector", types), std::invalid_argument);
 }
+
+TEST(InputDomain, LiteralVectorChecksEveryTokenBeforeReading)
+{
+    ModuleIO::InputDomain domain;
+    domain.bind(ModuleIO::AvailabilityValueKind::RealVector,
+                [](const Parameter&) { return ModuleIO::InputValue(std::vector<double>{}); });
+    domain.set_size_parameter("ntype");
+    const std::map<std::string, ModuleIO::AvailabilityValueKind> types = {
+        {"ntype", ModuleIO::AvailabilityValueKind::Integer}};
+    EXPECT_NO_THROW(domain.validate_schema("per_type", types));
+    EXPECT_TRUE(domain.validate_explicit("per_type", {"0", "4.0"}).empty());
+    for (const std::vector<std::string> tokens : {
+             std::vector<std::string>{}, {"4", "nan"}, {"4", "inf"}, {"4", "2bad"}, {"1e999"}})
+    {
+        const std::string error = domain.validate_explicit("per_type", tokens);
+        EXPECT_NE(error.find("finite Real"), std::string::npos);
+        EXPECT_NE(error.find("input-main.html#per-type"), std::string::npos);
+    }
+    const ModuleIO::InputValues values = {{"ntype", ModuleIO::InputValue(2)}};
+    EXPECT_TRUE(domain.validate_size("per_type", {"0", "4"}, values).empty());
+    for (const std::vector<std::string> tokens : {std::vector<std::string>{"4"}, {"1", "2", "3"}})
+    {
+        const std::string error = domain.validate_size("per_type", tokens, values);
+        EXPECT_NE(error.find("Expected exactly 2 values (ntype)"), std::string::npos);
+        EXPECT_NE(error.find("input-main.html#per-type"), std::string::npos);
+    }
+}
+
+TEST(InputDomain, VectorSizeRequiresAnIntegerReferenceAndVectorBinding)
+{
+    ModuleIO::InputDomain domain;
+    EXPECT_THROW(domain.set_size_parameter(""), std::invalid_argument);
+    domain.set_size_parameter("ntype");
+    domain.bind(ModuleIO::AvailabilityValueKind::IntegerVector,
+                [](const Parameter&) { return ModuleIO::InputValue(std::vector<int>{}); });
+    EXPECT_THROW(domain.validate_schema("per_type", {}), std::invalid_argument);
+    const std::map<std::string, ModuleIO::AvailabilityValueKind> real_size = {
+        {"ntype", ModuleIO::AvailabilityValueKind::Real}};
+    EXPECT_THROW(domain.validate_schema("per_type", real_size), std::invalid_argument);
+    const std::map<std::string, ModuleIO::AvailabilityValueKind> integer_size = {
+        {"ntype", ModuleIO::AvailabilityValueKind::Integer}};
+    EXPECT_NO_THROW(domain.validate_schema("per_type", integer_size));
+    EXPECT_FALSE(domain.validate_explicit("per_type", {"1", "2.5"}).empty());
+    domain.bind(ModuleIO::AvailabilityValueKind::Integer,
+                [](const Parameter&) { return ModuleIO::InputValue(1); });
+    EXPECT_THROW(domain.validate_schema("per_type", integer_size), std::invalid_argument);
+}

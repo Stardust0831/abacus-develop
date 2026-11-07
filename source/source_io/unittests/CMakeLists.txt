@@ -40,6 +40,10 @@ foreach(
         duplicate_string_eof
         invalid_value
         invalid_dependency
+        invalid_vector_size
+        short_vector
+        invalid_vector_token
+        valid_vector
         valid)
   add_test(
     NAME MODULE_IO_input_error_mpi_${input_case}

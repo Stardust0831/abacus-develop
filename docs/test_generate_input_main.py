@@ -22,6 +22,13 @@ class InputDomainDocumentationTest(unittest.TestCase):
         self.assertIn("**Requirements**", rendered)
         self.assertIn("[`nspin`](#nspin)", rendered)
 
+    def test_vector_length_uses_the_runtime_parameter_reference(self):
+        rendered = generate_parameter_markdown(
+            {"name": "orbital_corr", "type": "Vector of Integer", "value_count": "ntype"},
+            {"ntype": "#ntype"},
+        )
+        self.assertIn("**Number of values**: exactly [`ntype`](#ntype)", rendered)
+
     def test_undeclared_domain_is_not_an_empty_restriction(self):
         rendered = generate_parameter_markdown({"name": "legacy", "type": "Real"}, {})
         self.assertNotIn("Allowed values", rendered)

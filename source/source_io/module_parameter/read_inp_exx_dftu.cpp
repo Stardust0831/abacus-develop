@@ -739,11 +739,12 @@ void ReadInput::item_dftu()
     }
     {
         Input_Item item("orbital_corr");
+        item.domain.set_size_parameter("ntype");
         item.annotation = "which correlated orbitals need corrected ; d:2 "
                           ",f:3, do not need correction:-1";
         item.category = "DFT+U correction";
         item.type = "Vector of Integer (n values where n is the number of atomic types)";
-        item.description = R"(Specifies which orbits need plus U correction for each atom type ( for atom type 1, 2, 3, respectively).
+        item.description = R"(Specifies which orbits need plus U correction for each atom type (for atom types 1, 2, 3, respectively). When supplied, give exactly ntype integer values; extra or missing entries are rejected.
 * -1: The plus U correction will not be calculated for this atom.
 * 1: For p-electron orbits, the plus U correction is needed.
 * 2: For d-electron orbits, the plus U correction is needed.
@@ -763,12 +764,6 @@ void ReadInput::item_dftu()
             {
                 return;
             }
-            if (para.input.l_channel.size() != para.input.ntype)
-            {
-                ModuleBase::WARNING_QUIT("ReadInput",
-                                         "orbital_corr should have the same "
-                                         "number of elements as ntype");
-            }
             for (auto& val: para.input.l_channel)
             {
                 if (val < -1 || val > 3)
@@ -782,10 +777,11 @@ void ReadInput::item_dftu()
     }
     {
         Input_Item item("hubbard_u");
+        item.domain.set_size_parameter("ntype");
         item.annotation = "Hubbard Coulomb interaction parameter U(ev)";
         item.category = "DFT+U correction";
         item.type = "Vector of Real (n values where n is the number of atomic types)";
-        item.description = R"(Specifies the Hubbard Coulomb interaction parameter U (eV) in plus U correction, which should be specified for each atom unless the Yukawa potential is used.
+        item.description = R"(Specifies the Hubbard Coulomb interaction parameter U (eV) in plus U correction for each atom type unless the Yukawa potential is used. When supplied, give exactly ntype finite real values; extra or missing entries are rejected.
 
 [NOTE] Note: Since only the simplified scheme by Duradev is implemented, the 'U' here is actually U-effective, which is given by Hubbard U minus Hund J.)";
         item.default_value = "0.0";
@@ -802,12 +798,6 @@ void ReadInput::item_dftu()
             if (!item.is_read())
             {
                 return;
-            }
-            if (para.sys.hubbard_u.size() != para.input.ntype)
-            {
-                ModuleBase::WARNING_QUIT("ReadInput",
-                                         "hubbard_u should have the same "
-                                         "number of elements as ntype");
             }
             for (auto& value: para.sys.hubbard_u)
             {

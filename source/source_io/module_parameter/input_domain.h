@@ -46,6 +46,12 @@ class InputDomain
     InputDomain() = default;
     void bind(AvailabilityValueKind kind, const std::function<InputValue(const Parameter&)>& getter);
     void scalar();
+    // Opt in a literal vector: one complete scalar token per element.
+    // Its exact length is supplied by a registered Integer parameter.
+    void set_size_parameter(const std::string& parameter);
+    std::string size_parameter() const;
+    std::string validate_size(const std::string& label, const std::vector<std::string>& tokens,
+                              const InputValues& values) const;
     void set_choices(const std::vector<std::string>& choices);
     // Predicates use "value", e.g. "value>0 and value<=1".
     void set_rule(const std::string& rule);
@@ -72,6 +78,7 @@ class InputDomain
     AvailabilityValueKind kind_ = AvailabilityValueKind::Unknown;
     std::function<InputValue(const Parameter&)> getter_;
     bool scalar_ = false;
+    std::string size_parameter_;
     std::vector<std::string> choices_;
     AvailabilityExpr rule_;
     AvailabilityExpr active_when_;
