@@ -73,6 +73,73 @@ TEST_F(InputDomainReaderTest, KeepsExplicitValuesAndContextualDefaults)
     EXPECT_EQ(input.inp.gga_grad, 0);
 }
 
+TEST_F(InputDomainReaderTest, PreservesExplicitDeltaSpinRestartThresholds)
+{
+    for (const std::string spin_threshold : {"0.001", "10"})
+    {
+        for (const std::string restart : {"0", "0.02"})
+        {
+            for (const bool restart_first : {false, true})
+            {
+                const std::string context = "nspin 2\nsc_mag_switch true\nsc_scf_thr " + spin_threshold + "\n";
+                const std::string explicit_restart = "mixing_restart " + restart + "\n";
+                const std::string values = restart_first ? explicit_restart + context : context + explicit_restart;
+                write_input(values);
+                ModuleIO::ReadInput reader(0);
+                reader.check_ntype_flag = false;
+                Parameter input;
+                reader.read_parameters(input, filename);
+                EXPECT_DOUBLE_EQ(input.inp.mixing_restart, std::stod(restart));
+            }
+        }
+    }
+}
+
+TEST_F(InputDomainReaderTest, ResolvesDeltaSpinDefaultsIndependentlyOfExplicitScfThreshold)
+{
+    for (const std::string basis : {"pw", "lcao"})
+    {
+        const double scf_default = basis == "pw" ? 1e-9 : 1e-7;
+        const std::string scf_token = basis == "pw" ? "1e-9" : "1e-7";
+        for (const bool explicit_scf : {false, true})
+        {
+            for (const std::string spin_threshold : {"0.001", "10"})
+            {
+                std::ofstream out(filename);
+                out << "INPUT_PARAMETERS\nbasis_type " << basis << "\nntype 1\nnspin 2\n"
+                    << "sc_mag_switch true\nsc_scf_thr " << spin_threshold << "\n";
+                if (explicit_scf) { out << "scf_thr " << scf_token << "\n"; }
+                out.close();
+                ModuleIO::ReadInput reader(0);
+                reader.check_ntype_flag = false;
+                Parameter input;
+                reader.read_parameters(input, filename);
+                const double expected_restart = spin_threshold == "10" ? scf_default / 10 : 0.001;
+                EXPECT_DOUBLE_EQ(input.inp.scf_thr, scf_default);
+                EXPECT_DOUBLE_EQ(input.inp.mixing_restart, expected_restart);
+            }
+        }
+    }
+    write_input("nspin 2\nsc_mag_switch true\nsc_scf_thr 10\nscf_thr 2e-8\n");
+    ModuleIO::ReadInput reader(0);
+    reader.check_ntype_flag = false;
+    Parameter input;
+    reader.read_parameters(input, filename);
+    EXPECT_DOUBLE_EQ(input.inp.mixing_restart, 2e-9);
+}
+
+TEST_F(InputDomainReaderTest, RejectsInvalidRestartThresholdBeforeDeltaSpinDefaults)
+{
+    for (const std::string value : {"-0.02", "nan", "0.02bad"})
+    {
+        const std::string values = "nspin 2\nsc_mag_switch true\nmixing_restart " + value + "\n";
+        const std::string output = reject_input(values);
+        EXPECT_NE(output.find("Invalid INPUT parameter 'mixing_restart'"), std::string::npos);
+        EXPECT_NE(output.find("value>=0"), std::string::npos);
+        EXPECT_NE(output.find("input-main.html#mixing-restart"), std::string::npos);
+    }
+}
+
 TEST_F(InputDomainReaderTest, RejectsMalformedAndOutOfDomainExplicitValues)
 {
     for (const std::string value : {"3", "0", "-1", "2abc", "2.0", "2 4", "999999999999999999999"})
