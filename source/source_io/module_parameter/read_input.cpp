@@ -240,6 +240,30 @@ void ReadInput::read_parameters(Parameter& param, const std::string& filename_in
         check_ntype(param.globalv.global_in_stru, param.input.ntype);
     }
 
+    // Validate explicit vector lengths after STRU resolves ntype, before any
+    // broadcast helper resizes vectors on the reading rank as well as peers.
+    if (this->rank == 0)
+    {
+        InputValues values;
+        for (const auto& entry : this->input_lists)
+        {
+            if (entry.second.domain.bound()) { values[entry.first] = entry.second.domain.value(param); }
+        }
+        for (const auto* item : this->readvalue_items)
+        {
+            input_error += item->domain.validate_size(item->label, item->str_values, values);
+        }
+    }
+#ifdef __MPI
+    Parallel_Common::bcast_string(input_error);
+#endif
+    if (!input_error.empty())
+    {
+        const std::string message = "Invalid parameters in " + filename_in + ":\n" + input_error;
+        ModuleBase::WARNING_QUIT("ReadInput", message);
+        return;
+    }
+
     // 3. broadcast input parameters
     // It must be after the check_ntype, because some parameters need to be filled due to ntype
     for (auto& bcastfunc: this->bcastfuncs)

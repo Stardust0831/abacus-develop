@@ -73,6 +73,71 @@ TEST_F(InputDomainReaderTest, KeepsExplicitValuesAndContextualDefaults)
     EXPECT_EQ(input.inp.gga_grad, 0);
 }
 
+TEST_F(InputDomainReaderTest, RejectsExtraDftuValuesBeforeResizing)
+{
+    for (const std::string values : {"orbital_corr 2 99\n", "hubbard_u 4 -7\n",
+                                     "orbital_corr 2 3\n", "hubbard_u 4 7\n"})
+    {
+        const std::string output = reject_input(values);
+        EXPECT_NE(output.find("Expected exactly 1 value (ntype); received 2"), std::string::npos);
+        EXPECT_NE(output.find("input-main.html#"), std::string::npos);
+    }
+}
+
+TEST_F(InputDomainReaderTest, RejectsEmptyAndMalformedDftuLists)
+{
+    for (const std::string values : {"orbital_corr\n", "hubbard_u\n", "orbital_corr 2bad\n",
+                                     "orbital_corr 2.5\n", "hubbard_u nan\n", "hubbard_u 4bad\n"})
+    {
+        const std::string output = reject_input(values);
+        EXPECT_NE(output.find("Expected a nonempty list"), std::string::npos);
+        EXPECT_NE(output.find("input-main.html#"), std::string::npos);
+    }
+}
+
+TEST_F(InputDomainReaderTest, PreservesCompleteDftuListsAndFillsOnlyOmittedLists)
+{
+    for (const bool explicit_lists : {false, true})
+    {
+        std::ofstream out(filename);
+        out << "INPUT_PARAMETERS\nbasis_type pw\nntype 2\n";
+        if (explicit_lists) { out << "orbital_corr -1 2\nhubbard_u 0 4\n"; }
+        out.close();
+        ModuleIO::ReadInput reader(0);
+        reader.check_ntype_flag = false;
+        Parameter input;
+        reader.read_parameters(input, filename);
+        const std::vector<int> expected_orbitals = explicit_lists ? std::vector<int>{-1, 2}
+                                                                 : std::vector<int>{-1, -1};
+        const std::vector<double> expected_u = explicit_lists ? std::vector<double>{0, 4}
+                                                             : std::vector<double>{0, 0};
+        EXPECT_EQ(input.inp.l_channel, expected_orbitals);
+        EXPECT_EQ(input.inp.hubbard_u_eV, expected_u);
+    }
+}
+
+TEST_F(InputDomainReaderTest, RejectsShortDftuListsWithInferredAtomTypeCount)
+{
+    const std::string structure = filename + ".stru";
+    std::ofstream stru(structure);
+    stru << "ATOMIC_SPECIES\nSi 28 Si.upf\nO 16 O.upf\n\nLATTICE_CONSTANT\n1\n";
+    stru.close();
+    for (const std::string values : {"orbital_corr 2\n", "hubbard_u 4\n"})
+    {
+        std::ofstream out(filename);
+        out << "INPUT_PARAMETERS\nbasis_type pw\nstru_file " << structure << "\n" << values;
+        out.close();
+        ModuleIO::ReadInput reader(0);
+        Parameter input;
+        testing::internal::CaptureStdout();
+        EXPECT_EXIT(reader.read_parameters(input, filename), testing::ExitedWithCode(1), "");
+        const std::string output = testing::internal::GetCapturedStdout();
+        EXPECT_NE(output.find("Expected exactly 2 values (ntype); received 1"), std::string::npos);
+        EXPECT_NE(output.find("input-main.html#"), std::string::npos);
+    }
+    std::remove(structure.c_str());
+}
+
 TEST_F(InputDomainReaderTest, RejectsMalformedAndOutOfDomainExplicitValues)
 {
     for (const std::string value : {"3", "0", "-1", "2abc", "2.0", "2 4", "999999999999999999999"})
@@ -349,6 +414,9 @@ TEST(InputDomainHelp, ExportsTheRuntimeRules)
     EXPECT_NE(dump.find("allowed_values: [\"-1\", \"0\", \"1\"]"), std::string::npos);
     EXPECT_NE(dump.find("value_rule:"), std::string::npos);
     EXPECT_NE(dump.find("requirements:"), std::string::npos);
+    EXPECT_NE(dump.find("value_count: ntype"), std::string::npos);
+    const auto orbital = ModuleIO::ParameterHelp::get_metadata("orbital_corr");
+    EXPECT_EQ(orbital.value_count, "ntype");
     const auto criterion = ModuleIO::ParameterHelp::get_metadata("scf_thr_type");
     EXPECT_EQ(criterion.allowed_values, "1, 2");
     EXPECT_NE(spin.requirements.find("nspin==4"), std::string::npos);

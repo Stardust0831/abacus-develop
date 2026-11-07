@@ -200,6 +200,24 @@ void InputDomain::bind(const Kind kind, const std::function<InputValue(const Par
     getter_ = getter;
 }
 void InputDomain::scalar() { scalar_ = true; }
+void InputDomain::set_size_parameter(const std::string& parameter)
+{
+    if (parameter.empty()) { throw std::invalid_argument("Missing INPUT vector size parameter."); }
+    size_parameter_ = parameter;
+}
+std::string InputDomain::size_parameter() const { return size_parameter_; }
+std::string InputDomain::validate_size(const std::string& label, const std::vector<std::string>& tokens,
+                                       const InputValues& values) const
+{
+    if (size_parameter_.empty()) { return ""; }
+    const double count = values.at(size_parameter_).numbers.front();
+    if (count > 0 && tokens.size() == count) { return ""; }
+    const std::string unit = count == 1 ? " value (" : " values (";
+    const std::string expected = "Expected exactly " + values.at(size_parameter_).format()
+        + unit + size_parameter_ + "); received " + std::to_string(tokens.size()) + ".";
+    const std::string supplied = join(tokens, " ");
+    return input_diagnostic(label, supplied, "supplied", expected);
+}
 void InputDomain::set_choices(const std::vector<std::string>& choices)
 {
     const std::set<std::string> unique(choices.begin(), choices.end());
@@ -223,7 +241,7 @@ void InputDomain::add_requirement(const std::string& when, const std::string& re
     rule.require = parse_availability(require);
     requirements_.push_back(rule);
 }
-bool InputDomain::empty() const { return !scalar_; }
+bool InputDomain::empty() const { return !scalar_ && size_parameter_.empty(); }
 bool InputDomain::bound() const { return static_cast<bool>(getter_); }
 bool InputDomain::can_write(const Parameter& input) const
 {
@@ -261,6 +279,15 @@ void InputDomain::validate_schema(const std::string& label, const std::map<std::
         const std::map<std::string, Kind> domain_types = {{"value", kind_}};
         validate_runtime_condition(label, rule_, domain_types);
     }
+    if (!size_parameter_.empty())
+    {
+        const auto size_type = types.find(size_parameter_);
+        if (scalar_ || !bound() || element_kind(kind_) == kind_
+            || size_type == types.end() || size_type->second != Kind::Integer)
+        {
+            throw std::invalid_argument("Invalid INPUT vector size binding for " + label);
+        }
+    }
     validate_runtime_condition(label, active_when_, types);
     for (const auto& rule : requirements_)
     {
@@ -271,7 +298,13 @@ void InputDomain::validate_schema(const std::string& label, const std::map<std::
 
 bool InputDomain::accepts(const InputValue& value) const
 {
-    if (kind_ == Kind::Real && !std::isfinite(value.numbers.front())) { return false; }
+    if (element_kind(kind_) == Kind::Real)
+    {
+        for (const double number : value.numbers)
+        {
+            if (!std::isfinite(number)) { return false; }
+        }
+    }
     if (!choices_.empty())
     {
         bool found = false;
@@ -285,10 +318,15 @@ bool InputDomain::accepts(const InputValue& value) const
 std::string InputDomain::expected() const
 {
     std::string type;
-    if (kind_ == Kind::Integer) { type = "Integer"; }
-    else if (kind_ == Kind::Real) { type = "finite Real"; }
-    else if (kind_ == Kind::Boolean) { type = "Boolean (true/false, 1/0, t/f, yes/no, y/n, on/off, .true./.false.)"; }
+    const Kind scalar_kind = element_kind(kind_);
+    if (scalar_kind == Kind::Integer) { type = "Integer"; }
+    else if (scalar_kind == Kind::Real) { type = "finite Real"; }
+    else if (scalar_kind == Kind::Boolean) { type = "Boolean (true/false, 1/0, t/f, yes/no, y/n, on/off, .true./.false.)"; }
     else { type = "String"; }
+    if (!size_parameter_.empty())
+    {
+        return "Expected a nonempty list of " + type + " values, one per " + size_parameter_ + ".";
+    }
     std::string result = "Expected one " + type;
     if (!choices_.empty()) { result += " from {" + format_choices() + "}"; }
     if (!format_rule().empty()) { result += " satisfying " + format_rule(); }
@@ -298,7 +336,18 @@ std::string InputDomain::expected() const
 std::string InputDomain::validate_explicit(const std::string& label, const std::vector<std::string>& tokens) const
 {
     if (empty()) { return ""; }
-    if (tokens.size() == 1)
+    if (!size_parameter_.empty() && !tokens.empty())
+    {
+        try
+        {
+            const Kind scalar_kind = element_kind(kind_);
+            for (const auto& token : tokens) { parse_scalar(scalar_kind, token); }
+            return "";
+        }
+        catch (const std::invalid_argument&) {}
+        catch (const std::out_of_range&) {}
+    }
+    else if (size_parameter_.empty() && tokens.size() == 1)
     {
         try
         {

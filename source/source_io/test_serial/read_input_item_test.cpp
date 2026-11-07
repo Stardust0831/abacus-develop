@@ -2411,12 +2411,6 @@ TEST_F(InputTest, Item_test2)
         it->second.str_values = {"1.0", "2.0"};
         TestParameters::sys(param).hubbard_u = {1.0, 2.0};
         check_item(it->second, param);
-        TestParameters::input(param).ntype = 3;
-        testing::internal::CaptureStdout();
-        EXPECT_EXIT(check_item(it->second, param), ::testing::ExitedWithCode(1), "");
-        output = testing::internal::GetCapturedStdout();
-        EXPECT_THAT(output, testing::HasSubstr("NOTICE"));
-
         TestParameters::input(param).ntype = 2;
         TestParameters::sys(param).hubbard_u = {1.0, -1.0};
         testing::internal::CaptureStdout();
@@ -2430,12 +2424,6 @@ TEST_F(InputTest, Item_test2)
         it->second.str_values = {"1", "2"};
         TestParameters::input(param).l_channel = {1, 2};
         check_item(it->second, param);
-        TestParameters::input(param).ntype = 3;
-        testing::internal::CaptureStdout();
-        EXPECT_EXIT(check_item(it->second, param), ::testing::ExitedWithCode(1), "");
-        output = testing::internal::GetCapturedStdout();
-        EXPECT_THAT(output, testing::HasSubstr("NOTICE"));
-
         TestParameters::input(param).ntype = 2;
         TestParameters::input(param).l_channel = {1, 4};
         testing::internal::CaptureStdout();

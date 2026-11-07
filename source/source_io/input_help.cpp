@@ -373,6 +373,7 @@ void ParameterHelp::build_registry() {
         meta.availability = item.get_availability();
         meta.allowed_values = item.domain.format_choices();
         meta.value_rule = item.domain.format_rule();
+        meta.value_count = item.domain.size_parameter();
         meta.requirements = item.domain.format_requirements();
 
         // Pre-compute lowercase name for fast fuzzy matching
@@ -410,6 +411,11 @@ bool ParameterHelp::show_parameter_help(const std::string& key, std::ostream& os
     if (!meta.value_rule.empty()) {
         const std::string value_rule = "Legal range: " + meta.value_rule;
         os << word_wrap(value_rule, MAX_WIDTH, INDENT_SIZE, 0) << "\n";
+    }
+
+    if (!meta.value_count.empty()) {
+        const std::string value_count = "Number of values: exactly " + meta.value_count;
+        os << word_wrap(value_count, MAX_WIDTH, INDENT_SIZE, 0) << "\n";
     }
 
     if (!meta.requirements.empty()) {
@@ -530,6 +536,9 @@ void ParameterHelp::generate_yaml(std::ostream& os) {
 
         if (!item.domain.format_rule().empty()) {
             os << "    value_rule: " << yaml_quote_if_needed(item.domain.format_rule()) << "\n";
+        }
+        if (!item.domain.size_parameter().empty()) {
+            os << "    value_count: " << yaml_quote_if_needed(item.domain.size_parameter()) << "\n";
         }
         if (!item.domain.format_requirements().empty()) {
             os << "    requirements: " << yaml_quote_if_needed(item.domain.format_requirements()) << "\n";

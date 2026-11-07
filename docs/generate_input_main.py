@@ -183,6 +183,12 @@ def generate_parameter_markdown(param: Dict[str, str],
         if param.get(key):
             lines.append(f"- **{title}**: " + link_availability(str(param[key]), name_anchors))
 
+    if param.get('value_count'):
+        count = str(param['value_count'])
+        anchor = name_anchors.get(count)
+        reference = f"[`{count}`]({anchor})" if anchor else escape_md_text(count)
+        lines.append(f"- **Number of values**: exactly {reference}")
+
     # Availability (before description, as in original format)
     if param.get('availability', '') != '':
         lines.append("- **Availability**: *"
