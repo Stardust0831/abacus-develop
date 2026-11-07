@@ -5,6 +5,29 @@
 
 namespace ModuleIO
 {
+namespace
+{
+// Resolve the same default for scf_thr and consumers of that default, without
+// depending on the registration order of their reset callbacks.
+double resolved_scf_threshold(const Input_para& input)
+{
+    if (input.scf_thr != -1.0)
+    {
+        return input.scf_thr;
+    }
+    if (input.basis_type == "lcao" || input.basis_type == "lcao_in_pw")
+    {
+        return 1.0e-7;
+    }
+    if (input.calculation == "nscf")
+    {
+        // NSCF uses 0.1*scf_thr/nelec as its diagonalization threshold.
+        return 1.0e-6;
+    }
+    return 1.0e-9;
+}
+} // namespace
+
 void ReadInput::item_elec_stru()
 {
     // NOTE: The order of add_item() calls below determines the parameter order
@@ -621,24 +644,31 @@ For systems that are difficult to converge, one could try increasing the value o
     }
     {
         Input_Item item("mixing_restart");
+        item.domain.set_rule("value>=0");
         item.annotation = "threshold to restart mixing during SCF";
         item.category = "Electronic structure";
         item.type = "Real";
-        item.description = "If the density difference between input and output drho is smaller than mixing_restart, SCF will restart at next step which means SCF will restart by using output charge density from perivos iteration as input charge density directly, and start a new mixing. Notice that mixing_restart will only take effect once in one SCF.";
-        item.default_value = "0";
+        item.description = "If the density difference between input and output drho is smaller than mixing_restart, "
+                           "SCF restarts mixing at the next step using the previous output charge density. "
+                           "A positive value enables this threshold; 0 disables it. An explicitly supplied value "
+                           "is preserved, including 0 in DeltaSpin calculations. If omitted with sc_mag_switch=true, "
+                           "the threshold defaults to sc_scf_thr, or scf_thr/10 when sc_scf_thr=10.";
+        item.default_value = "0; DeltaSpin: sc_scf_thr (scf_thr/10 if sc_scf_thr=10)";
         item.unit = "";
         read_sync_double(input.mixing_restart);
         item.reset_value = [](const Input_Item& item, Parameter& para) {
-            if (para.input.sc_mag_switch == 1)
-            {// for DeltaSpin calculation, the mixing_restart should be same as sc_scf_thr
-                if(para.input.sc_scf_thr != 10.0)
-                {
-                    para.input.mixing_restart = para.input.sc_scf_thr;
-                }
-                else
-                {// no mixing_restart until oscillation happen in PW base
-                    para.input.mixing_restart = para.input.scf_thr / 10.0;
-                }
+            if (item.is_read() || !para.inp.sc_mag_switch)
+            {
+                return;
+            }
+            if (para.inp.sc_scf_thr == 10.0)
+            {
+                const double scf_thr = resolved_scf_threshold(para.inp);
+                para.input.mixing_restart = scf_thr / 10.0;
+            }
+            else
+            {
+                para.input.mixing_restart = para.inp.sc_scf_thr;
             }
         };
         this->add_item(item);
@@ -809,27 +839,8 @@ Note: If gamma_only is set to 1, the KPT file will be overwritten. So make sure 
         item.default_value = "1.0e-9 (plane-wave basis), or 1.0e-7 (localized atomic orbital basis).";
         item.unit = "Ry if scf_thr_type=1, dimensionless if scf_thr_type=2";
         read_sync_double(input.scf_thr);
-        item.reset_value = [](const Input_Item& item, Parameter& para) {
-            if (para.input.scf_thr == -1.0)
-            {
-                if (para.input.basis_type == "lcao" || para.input.basis_type == "lcao_in_pw")
-                {
-                    para.input.scf_thr = 1.0e-7;
-                }
-                else if (para.input.basis_type == "pw" && para.input.calculation != "nscf")
-                {
-                    para.input.scf_thr = 1.0e-9;
-                }
-                else if (para.input.basis_type == "pw" && para.input.calculation == "nscf")
-                {
-                    para.input.scf_thr = 1.0e-6;
-                    // In NSCF calculation, the diagonalization threshold is set
-                    // to 0.1*scf/nelec. In other words, the scf_thr is used to
-                    // control diagonalization convergence threthod in NSCF. In
-                    // this case, the default 1.0e-9 is too strict. renxi
-                    // 20230908
-                }
-            }
+        item.reset_value = [](const Input_Item&, Parameter& para) {
+            para.input.scf_thr = resolved_scf_threshold(para.inp);
         };
         this->add_item(item);
     }
