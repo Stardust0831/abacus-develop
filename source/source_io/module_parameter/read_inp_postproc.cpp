@@ -327,6 +327,9 @@ void ReadInput::item_postprocess()
     }
     {
         Input_Item item("towannier90");
+        item.domain.add_requirement("towannier90==true", "basis_type in [pw, lcao]");
+        item.domain.add_requirement("towannier90==true", "calculation==nscf");
+        item.domain.add_requirement("towannier90==true and nspin==2", "wannier_spin in [up, down]");
         item.annotation = "use wannier90 code interface or not";
         item.category = "Berry phase and wannier90 interface";
         item.type = "Boolean";
@@ -336,24 +339,6 @@ void ReadInput::item_postprocess()
         item.default_value = "0";
         item.unit = "";
         read_sync_bool(input.towannier90);
-        item.check_value = [](const Input_Item& item, const Parameter& para) {
-            if (para.input.towannier90)
-            {
-                if (para.input.calculation != "nscf")
-                {
-                    ModuleBase::WARNING_QUIT("ReadInput", "to use towannier90, please set calculation = nscf");
-                }
-                if (para.input.nspin == 2)
-                {
-                    if (para.input.wannier_spin != "up" && para.input.wannier_spin != "down")
-                    {
-                        ModuleBase::WARNING_QUIT("ReadInput",
-                                                 "to use towannier90, please set wannier_spin = up "
-                                                 "or down");
-                    }
-                }
-            }
-        };
         this->add_item(item);
     }
     {
@@ -377,26 +362,6 @@ void ReadInput::item_postprocess()
 * 2: The overlap between atomic orbitals is calculated using grid integration. The radial grid points are generated using the Gauss-Legendre method, while the spherical grid points are generated using the Lebedev-Laikov method.)";
         item.default_value = "1";
         item.unit = "";
-        item.reset_value = [](const Input_Item& item, Parameter& para) {
-            /*
-                       Developer's notes: on the repair of lcao_in_pw
-
-                       lcao_in_pw is a special basis_type, for scf calculation,
-                      it follows workflow of pw, but for nscf the toW90
-                      calculation, the interface is in ESolver_KS_LCAO_elec,
-                       therefore lcao_in_pw for towannier90 calculation follows
-                      lcao.
-
-                       In the future lcao_in_pw will have its own ESolver.
-
-                       2023/12/22 use new psi_base to expand numerical
-                      atomic orbitals, ykhuang
-                   */
-            if (para.input.towannier90 && para.input.basis_type == "lcao_in_pw")
-            {
-                para.input.wannier_method = 1;
-            }
-        };
         read_sync_int(input.wannier_method);
         this->add_item(item);
     }

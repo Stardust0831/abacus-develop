@@ -23,15 +23,6 @@ void ReadInput::item_elec_stru()
         item.default_value = "pw";
         item.unit = "";
         read_sync_string(input.basis_type);
-        item.reset_value = [](const Input_Item& item, Parameter& para) {
-            if (para.input.towannier90)
-            {
-                if (para.input.basis_type == "lcao_in_pw")
-                {
-                    para.input.basis_type = "lcao";
-                }
-            }
-        };
         this->add_item(item);
     }
     // Electronic Structure
@@ -108,21 +99,6 @@ Then the user has to correct the input file and restart the calculation.)";
                     }
                 }
             }
-            if (para.input.towannier90)
-            {
-                if (para.input.basis_type == "lcao_in_pw")
-                {
-#ifdef __ELPA
-                    para.input.ks_solver = "genelpa";
-#else
-#ifdef __MPI
-                    para.input.ks_solver = "scalapack_gvx";
-#else
-                    para.input.ks_solver = "lapack";
-#endif
-#endif
-                }
-            };
         };
         item.check_value = [](const Input_Item& item, const Parameter& para) {
             const std::string& ks_solver = para.input.ks_solver;

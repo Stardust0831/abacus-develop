@@ -420,13 +420,21 @@ Socket mode always computes energy. Force and stress extraction follows cal_forc
     }
     {
         Input_Item item("cal_force");
+        item.domain.add_requirement("calculation in [relax, cell-relax, md]", "cal_force==true");
+        item.domain.add_requirement("calculation in [get_wf, get_pchg, get_s]", "cal_force==false");
         item.annotation = "if calculate the force at the end of the electronic iteration";
         item.category = "System variables";
         item.type = "Boolean";
         item.description = R"(If set to True, calculate the force at the end of the electronic iteration.
+The relaxation and MD drivers require True for calculation=relax, cell-relax, or md. The current MD driver also computes forces during fixed-ion propagation; disabling forces in this mode is not supported. The get_wf, get_pchg, and get_s modes do not calculate forces and require False. Conflicting explicit settings are rejected.
+If omitted, the default is True for relax, cell-relax, and md, and False otherwise.
 In socket_driver mode, this flag controls whether the returned frame advertises forces; it is not forced on by the socket protocol.)";
-        item.default_value = "False";
+        item.default_value = "True for calculation in [relax, cell-relax, md]; False otherwise";
         item.reset_value = [](const Input_Item& item, Parameter& para) {
+            if (item.is_read())
+            {
+                return;
+            }
             std::vector<std::string> use_force = {"cell-relax", "relax", "md"};
             std::vector<std::string> not_use_force = {"get_wf", "get_pchg", "get_s"};
             if (std::find(use_force.begin(), use_force.end(), para.input.calculation) != use_force.end())
@@ -834,13 +842,21 @@ Legal values are 0 and 1. For calculation=scf or relax, mem_saver must be 0; set
     }
     {
         Input_Item item("cal_stress");
+        item.domain.add_requirement("calculation==cell-relax", "cal_stress==true");
+        item.domain.add_requirement("calculation==md and md_type in [npt, msst]", "cal_stress==true");
         item.annotation = "calculate the stress or not";
         item.category = "System variables";
         item.type = "Boolean";
         item.description = R"(If set to True, calculate the stress at the end of the electronic iteration.
+Cell relaxation (calculation=cell-relax), NPT MD, and MSST MD require True. Conflicting explicit settings are rejected. Other MD ensembles allow an explicit False, including calculations using the LJ or DP solver.
+If omitted, the default is True for cell-relax and for MD using the LJ or DP solver or md_type=npt/msst, and False otherwise.
 In socket_driver mode, this flag independently controls whether the returned frame advertises stress/virial.)";
-        item.default_value = "False";
+        item.default_value = "True for cell-relax, or MD with LJ/DP or NPT/MSST; False otherwise";
         item.reset_value = [](const Input_Item& item, Parameter& para) {
+            if (item.is_read())
+            {
+                return;
+            }
             if (para.input.calculation == "md")
             {
                 if (para.input.esolver_type == "lj" || para.input.esolver_type == "dp"

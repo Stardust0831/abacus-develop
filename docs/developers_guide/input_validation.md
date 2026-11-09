@@ -55,6 +55,27 @@ negative disabled mode or negative physical value has different semantics.
 An effective domain can have an activation condition for unused defaults;
 explicit supplied values are still checked.
 
+## Replacing forced resets with requirements
+
+A requirement checks a configuration; it does not assign a value or require
+every referenced keyword to appear in INPUT. For example, the `towannier90`
+registration declares `towannier90==true` requires `basis_type in [pw, lcao]`.
+An explicit `lcao_in_pw` request is rejected instead of being converted to
+`lcao`, while an omitted basis retains its normal `pw` default.
+
+Keep contextual defaults separate from these checks. The `cal_force` and
+`cal_stress` default callbacks return immediately when their item is explicitly
+read. Their requirements reject unsupported combinations, and omitted values
+still receive the documented defaults. A historical default is not necessarily
+a requirement: LJ/DP MD defaults to calculating stress, but NVE/NVT accepts an
+explicit `cal_stress=false`; NPT/MSST requires stress.
+
+When removing a forced reset, also inspect callbacks that used to run after it.
+Removing the Wannier basis conversion alone would activate old branches that
+overwrite `ks_solver` and `wannier_method` before validation. All three overrides
+are removed together. Tests should check both refusal and preservation of the
+original explicit fields, including when INPUT lines are reordered.
+
 ## Documentation and defaults
 
 The normal numeric/Boolean/string reader registrations enforce scalar type contracts
