@@ -336,10 +336,12 @@ TEST_F(InputTest, RejectComplexLrForcesBeforeSCF)
     const std::string reason = "currently require gamma_only=1";
     const std::string cg = base + "cal_force 1\nlr_grad_solver cg\n";
     const std::string lapack = base + "cal_force 1\nlr_grad_solver lapack\n";
-    const std::string relax = base + "calculation relax\ncal_force 0\n";
+    const std::string relax = base + "calculation relax\n";
+    const std::string conflicting_relax = base + "calculation relax\ncal_force 0\n";
     expect_invalid_input("complex_force_cg_INPUT", cg, reason);
     expect_invalid_input("complex_force_lapack_INPUT", lapack, reason);
     expect_invalid_input("complex_relax_INPUT", relax, reason);
+    expect_invalid_input("complex_relax_force_INPUT", conflicting_relax, "Requires cal_force==true");
 
     Parameter valid;
     const std::string spectra = base + "cal_force 0\n";

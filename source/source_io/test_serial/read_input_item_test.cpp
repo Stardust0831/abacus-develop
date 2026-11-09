@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <string>
@@ -295,6 +296,313 @@ TEST_F(InputTest, AcceptSupportedMemSaverInputs)
         const int expected_value = param.inp.calculation == "nscf" ? 1 : 0;
         EXPECT_EQ(param.inp.mem_saver, expected_value);
         EXPECT_EQ(std::remove(filename.c_str()), 0);
+    }
+}
+
+TEST_F(InputTest, RejectsWannierBasisWithoutChangingExplicitRequests)
+{
+    for (const bool reverse : {false, true})
+    {
+        ModuleIO::ReadInput reader(0);
+        Parameter param;
+        std::vector<std::pair<std::string, std::string>> supplied = {
+            {"basis_type", "lcao_in_pw"}, {"towannier90", "true"},
+            {"calculation", "nscf"}, {"ks_solver", "cg"}, {"wannier_method", "2"}};
+        if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+        for (const auto& value : supplied)
+        {
+            auto item = find_label(value.first, reader.input_lists);
+            ASSERT_NE(item, reader.input_lists.end());
+            item->second.str_values = {value.second};
+            reader.readvalue_items.push_back(&item->second);
+        }
+
+        const std::string error = reader.prepare_input(param);
+        EXPECT_THAT(error, testing::HasSubstr("Invalid INPUT parameter 'towannier90'"));
+        EXPECT_THAT(error, testing::HasSubstr("basis_type=lcao_in_pw"));
+        EXPECT_THAT(error, testing::HasSubstr("Requires basis_type in [pw, lcao]"));
+        EXPECT_THAT(error, testing::HasSubstr("input-main.html#towannier90"));
+        EXPECT_EQ(param.inp.basis_type, "lcao_in_pw");
+        EXPECT_EQ(param.inp.ks_solver, "cg");
+        EXPECT_EQ(param.inp.wannier_method, 2);
+    }
+}
+
+TEST_F(InputTest, WannierRequirementsPreserveSupportedChoices)
+{
+    for (const std::string basis : {"pw", "lcao"})
+    {
+        for (const std::string spin : {"up", "down"})
+        {
+            for (const std::string method : {"1", "2"})
+            {
+                ModuleIO::ReadInput reader(0);
+                Parameter param;
+                const std::vector<std::pair<std::string, std::string>> supplied = {
+                    {"basis_type", basis}, {"towannier90", "true"}, {"calculation", "nscf"},
+                    {"nspin", "2"}, {"wannier_spin", spin}, {"wannier_method", method}};
+                for (const auto& value : supplied)
+                {
+                    auto item = find_label(value.first, reader.input_lists);
+                    ASSERT_NE(item, reader.input_lists.end());
+                    item->second.str_values = {value.second};
+                    reader.readvalue_items.push_back(&item->second);
+                }
+
+                EXPECT_TRUE(reader.prepare_input(param).empty());
+                EXPECT_EQ(param.inp.basis_type, basis);
+                EXPECT_EQ(param.inp.wannier_spin, spin);
+                const int expected_method = std::stoi(method);
+                EXPECT_EQ(param.inp.wannier_method, expected_method);
+            }
+        }
+    }
+}
+
+TEST_F(InputTest, WannierRequirementsDoNotInferCalculationOrSpin)
+{
+    for (const std::string calculation : {"scf", "nscf"})
+    {
+        ModuleIO::ReadInput reader(0);
+        Parameter param;
+        const std::vector<std::pair<std::string, std::string>> supplied = {
+            {"towannier90", "true"}, {"calculation", calculation}, {"nspin", "2"},
+            {"wannier_spin", "none"}};
+        for (const auto& value : supplied)
+        {
+            auto item = find_label(value.first, reader.input_lists);
+            ASSERT_NE(item, reader.input_lists.end());
+            item->second.str_values = {value.second};
+            reader.readvalue_items.push_back(&item->second);
+        }
+
+        const std::string error = reader.prepare_input(param);
+        EXPECT_THAT(error, testing::HasSubstr("Requires wannier_spin in [up, down]"));
+        EXPECT_THAT(error, testing::HasSubstr("input-main.html#towannier90"));
+        const bool calculation_error = error.find("Requires calculation==nscf") != std::string::npos;
+        EXPECT_EQ(calculation_error, calculation == "scf");
+        EXPECT_EQ(param.inp.calculation, calculation);
+        EXPECT_EQ(param.inp.wannier_spin, "none");
+    }
+}
+
+TEST_F(InputTest, ForceAndStressRequirementsRejectConflictsWithoutResettingRequests)
+{
+    struct Case
+    {
+        std::string calculation;
+        std::string md_type;
+        std::string label;
+        bool requested;
+    };
+    const std::vector<Case> cases = {
+        {"relax", "nvt", "cal_force", false},
+        {"cell-relax", "nvt", "cal_force", false},
+        {"md", "nve", "cal_force", false},
+        {"get_wf", "nvt", "cal_force", true},
+        {"get_pchg", "nvt", "cal_force", true},
+        {"get_s", "nvt", "cal_force", true},
+        {"cell-relax", "nvt", "cal_stress", false},
+        {"md", "npt", "cal_stress", false},
+        {"md", "msst", "cal_stress", false}};
+    for (const Case& test : cases)
+    {
+        for (const bool reverse : {false, true})
+        {
+            ModuleIO::ReadInput reader(0);
+            Parameter param;
+            const std::string token = test.requested ? "true" : "false";
+            std::vector<std::pair<std::string, std::string>> supplied = {
+                {"basis_type", "lcao"}, {"calculation", test.calculation},
+                {"md_type", test.md_type}, {test.label, token}};
+            if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+            for (const auto& value : supplied)
+            {
+                auto item = find_label(value.first, reader.input_lists);
+                ASSERT_NE(item, reader.input_lists.end());
+                item->second.str_values = {value.second};
+                reader.readvalue_items.push_back(&item->second);
+            }
+
+            const std::string error = reader.prepare_input(param);
+            const std::string diagnostic = "Invalid INPUT parameter '" + test.label + "'";
+            const std::string requirement = "Requires " + test.label + "=="
+                + (test.requested ? "false" : "true");
+            const std::string manual = ModuleIO::input_manual_link(test.label);
+            EXPECT_THAT(error, testing::HasSubstr(diagnostic));
+            EXPECT_THAT(error, testing::HasSubstr(requirement));
+            EXPECT_THAT(error, testing::HasSubstr(manual));
+            const bool actual = test.label == "cal_force" ? param.inp.cal_force : param.inp.cal_stress;
+            EXPECT_EQ(actual, test.requested);
+        }
+    }
+}
+
+TEST_F(InputTest, ForceAndStressKeepOmittedDefaultsAndSupportedExplicitValues)
+{
+    struct Case
+    {
+        std::string calculation;
+        std::string solver;
+        std::string md_type;
+        bool force;
+        bool stress;
+    };
+    const std::vector<Case> defaults = {
+        {"scf", "ksdft", "nvt", false, false},
+        {"relax", "ksdft", "nvt", true, false},
+        {"cell-relax", "ksdft", "nvt", true, true},
+        {"md", "ksdft", "nve", true, false},
+        {"md", "ksdft", "npt", true, true},
+        {"md", "ksdft", "msst", true, true},
+        {"md", "lj", "nve", true, true},
+        {"md", "dp", "nvt", true, true},
+        {"get_wf", "ksdft", "nvt", false, false}};
+    for (const Case& test : defaults)
+    {
+        for (const bool explicit_values : {false, true})
+        {
+            ModuleIO::ReadInput reader(0);
+            Parameter param;
+            std::vector<std::pair<std::string, std::string>> supplied = {
+                {"basis_type", "lcao"}, {"calculation", test.calculation},
+                {"esolver_type", test.solver}, {"md_type", test.md_type}};
+            if (explicit_values)
+            {
+                supplied.push_back({"cal_force", test.force ? "true" : "false"});
+                supplied.push_back({"cal_stress", test.stress ? "true" : "false"});
+            }
+            for (const auto& value : supplied)
+            {
+                auto item = find_label(value.first, reader.input_lists);
+                ASSERT_NE(item, reader.input_lists.end());
+                item->second.str_values = {value.second};
+                reader.readvalue_items.push_back(&item->second);
+            }
+
+            EXPECT_TRUE(reader.prepare_input(param).empty());
+            EXPECT_EQ(param.inp.cal_force, test.force);
+            EXPECT_EQ(param.inp.cal_stress, test.stress);
+        }
+    }
+
+    for (const std::string solver : {"lj", "dp"})
+    {
+        for (const std::string ensemble : {"nve", "nvt"})
+        {
+            ModuleIO::ReadInput reader(0);
+            Parameter param;
+            const std::vector<std::pair<std::string, std::string>> supplied = {
+                {"calculation", "md"}, {"esolver_type", solver}, {"md_type", ensemble},
+                {"cal_stress", "false"}};
+            for (const auto& value : supplied)
+            {
+                auto item = find_label(value.first, reader.input_lists);
+                ASSERT_NE(item, reader.input_lists.end());
+                item->second.str_values = {value.second};
+                reader.readvalue_items.push_back(&item->second);
+            }
+            EXPECT_TRUE(reader.prepare_input(param).empty());
+            EXPECT_FALSE(param.inp.cal_stress);
+        }
+    }
+}
+
+TEST_F(InputTest, SymmetryRequirementsPreserveExplicitRequestsAndRejectConflicts)
+{
+    struct Case
+    {
+        std::vector<std::pair<std::string, std::string>> context;
+        bool requires_minus_one;
+    };
+    const std::vector<Case> cases = {
+        {{{"calculation", "md"}}, false},
+        {{{"efield_flag", "true"}}, false},
+        {{{"calculation", "md"}, {"efield_flag", "true"}}, false},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}}, true},
+        {{{"qo_switch", "true"}}, true},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}}, true},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}, {"efield_flag", "true"}}, true},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}, {"efield_flag", "true"}}, true}};
+    for (const Case& test : cases)
+    {
+        for (const std::string requested : {"-1", "0", "1"})
+        {
+            for (const bool reverse : {false, true})
+            {
+                ModuleIO::ReadInput reader(0);
+                Parameter param;
+                std::vector<std::pair<std::string, std::string>> supplied = test.context;
+                supplied.push_back({"basis_type", "lcao"});
+                supplied.push_back({"symmetry", requested});
+                if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+                for (const auto& value : supplied)
+                {
+                    auto item = find_label(value.first, reader.input_lists);
+                    ASSERT_NE(item, reader.input_lists.end());
+                    item->second.str_values = {value.second};
+                    reader.readvalue_items.push_back(&item->second);
+                }
+
+                const std::string error = reader.prepare_input(param);
+                const bool accepted = requested == "-1" || (!test.requires_minus_one && requested == "0");
+                EXPECT_EQ(error.empty(), accepted) << error;
+                EXPECT_EQ(param.inp.symmetry, requested);
+                if (!accepted)
+                {
+                    const std::string requirement = test.requires_minus_one
+                        ? "Requires symmetry==-1" : "Requires symmetry in [-1, 0]";
+                    EXPECT_THAT(error, testing::HasSubstr("Invalid INPUT parameter 'symmetry'"));
+                    EXPECT_THAT(error, testing::HasSubstr(requirement));
+                    EXPECT_THAT(error, testing::HasSubstr("input-main.html#symmetry"));
+                }
+            }
+        }
+    }
+}
+
+TEST_F(InputTest, SymmetryOmittedDefaultsFollowFeaturePriority)
+{
+    struct Case
+    {
+        std::vector<std::pair<std::string, std::string>> context;
+        std::string expected;
+    };
+    const std::vector<Case> cases = {
+        {{}, "1"},
+        {{{"calculation", "md"}}, "0"},
+        {{{"efield_flag", "true"}}, "0"},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}}, "-1"},
+        {{{"qo_switch", "true"}}, "-1"},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}}, "-1"},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}, {"efield_flag", "true"}}, "-1"},
+        {{{"gamma_only", "true"}}, "0"},
+        {{{"calculation", "nscf"}, {"nspin", "4"}, {"lspinorb", "true"}}, "-1"},
+        {{{"calculation", "md"}, {"nspin", "4"}, {"lspinorb", "true"}}, "0"},
+        {{{"calculation", "nscf"}}, "0"},
+        {{{"calculation", "get_s"}}, "0"},
+        {{{"calculation", "get_pchg"}}, "0"},
+        {{{"calculation", "get_wf"}}, "0"}};
+    for (const Case& test : cases)
+    {
+        for (const bool reverse : {false, true})
+        {
+            ModuleIO::ReadInput reader(0);
+            Parameter param;
+            std::vector<std::pair<std::string, std::string>> supplied = test.context;
+            supplied.push_back({"basis_type", "lcao"});
+            if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+            for (const auto& value : supplied)
+            {
+                auto item = find_label(value.first, reader.input_lists);
+                ASSERT_NE(item, reader.input_lists.end());
+                item->second.str_values = {value.second};
+                reader.readvalue_items.push_back(&item->second);
+            }
+            const std::string error = reader.prepare_input(param);
+            EXPECT_TRUE(error.empty()) << error;
+            EXPECT_EQ(param.inp.symmetry, test.expected);
+        }
     }
 }
 
@@ -1100,24 +1408,6 @@ TEST_F(InputTest, Item_test)
         EXPECT_EXIT(check_item(it->second, param), ::testing::ExitedWithCode(1), "");
         output = testing::internal::GetCapturedStdout();
         EXPECT_THAT(output, testing::HasSubstr("Requires device==cpu"));
-#ifdef __ELPA
-        TestParameters::input(param).towannier90 = true;
-        TestParameters::input(param).basis_type = "lcao_in_pw";
-        it->second.reset_value(it->second, param);
-        EXPECT_EQ(TestParameters::input(param).ks_solver, "genelpa");
-#else
-#ifdef __MPI
-        TestParameters::input(param).towannier90 = true;
-        TestParameters::input(param).basis_type = "lcao_in_pw";
-        it->second.reset_value(it->second, param);
-        EXPECT_EQ(TestParameters::input(param).ks_solver, "scalapack_gvx");
-#else
-        TestParameters::input(param).towannier90 = true;
-        TestParameters::input(param).basis_type = "lcao_in_pw";
-        it->second.reset_value(it->second, param);
-        EXPECT_EQ(TestParameters::input(param).ks_solver, "lapack");
-#endif
-#endif
         TestParameters::input(param).ks_solver = "default";
         TestParameters::input(param).basis_type = "lcao";
         TestParameters::input(param).device = "cpu";
@@ -1343,11 +1633,6 @@ TEST_F(InputTest, Item_test)
     }
     { // basis_type
         auto it = find_label("basis_type", readinput.input_lists);
-        TestParameters::input(param).basis_type = "lcao_in_pw";
-        TestParameters::input(param).towannier90 = true;
-        it->second.reset_value(it->second, param);
-        EXPECT_EQ(TestParameters::input(param).basis_type, "lcao");
-
         TestParameters::input(param).basis_type = "gauss";
         testing::internal::CaptureStdout();
         EXPECT_EXIT(check_item(it->second, param), ::testing::ExitedWithCode(1), "");
@@ -2325,14 +2610,6 @@ TEST_F(InputTest, Item_test2)
         output = testing::internal::GetCapturedStdout();
         EXPECT_THAT(output, testing::HasSubstr("towannier90"));
     }
-    { // wannier_method
-        auto it = find_label("wannier_method", readinput.input_lists);
-        TestParameters::input(param).towannier90 = true;
-        TestParameters::input(param).basis_type = "lcao_in_pw";
-        TestParameters::input(param).wannier_method = 0;
-        it->second.reset_value(it->second, param);
-        EXPECT_EQ(TestParameters::input(param).wannier_method, 1);
-    }
     { // of_hold_rho0
         auto it = find_label("of_hold_rho0", readinput.input_lists);
         TestParameters::input(param).of_wt_rho0 = 1;
@@ -3020,15 +3297,18 @@ TEST_F(InputTest, PerAtomSccsCavityWidthsDisableSpatialSymmetry)
     input.sccs_solvent_mode = "full";
     input.sccs_corespread = {0.5};
     input.symmetry = "1";
+    it->second.str_values = {"1"};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "1");
     input.sccs_corespread = {0.5, 0.0};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "0");
     input.symmetry = "-1";
+    it->second.str_values = {"-1"};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "-1");
     input.symmetry = "1";
+    it->second.str_values = {"1"};
     input.sccs_solvent_mode = "electronic";
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "1");
