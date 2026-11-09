@@ -508,6 +508,104 @@ TEST_F(InputTest, ForceAndStressKeepOmittedDefaultsAndSupportedExplicitValues)
     }
 }
 
+TEST_F(InputTest, SymmetryRequirementsPreserveExplicitRequestsAndRejectConflicts)
+{
+    struct Case
+    {
+        std::vector<std::pair<std::string, std::string>> context;
+        bool requires_minus_one;
+    };
+    const std::vector<Case> cases = {
+        {{{"calculation", "md"}}, false},
+        {{{"efield_flag", "true"}}, false},
+        {{{"calculation", "md"}, {"efield_flag", "true"}}, false},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}}, true},
+        {{{"qo_switch", "true"}}, true},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}}, true},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}, {"efield_flag", "true"}}, true},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}, {"efield_flag", "true"}}, true}};
+    for (const Case& test : cases)
+    {
+        for (const std::string requested : {"-1", "0", "1"})
+        {
+            for (const bool reverse : {false, true})
+            {
+                ModuleIO::ReadInput reader(0);
+                Parameter param;
+                std::vector<std::pair<std::string, std::string>> supplied = test.context;
+                supplied.push_back({"basis_type", "lcao"});
+                supplied.push_back({"symmetry", requested});
+                if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+                for (const auto& value : supplied)
+                {
+                    auto item = find_label(value.first, reader.input_lists);
+                    ASSERT_NE(item, reader.input_lists.end());
+                    item->second.str_values = {value.second};
+                    reader.readvalue_items.push_back(&item->second);
+                }
+
+                const std::string error = reader.prepare_input(param);
+                const bool accepted = requested == "-1" || (!test.requires_minus_one && requested == "0");
+                EXPECT_EQ(error.empty(), accepted) << error;
+                EXPECT_EQ(param.inp.symmetry, requested);
+                if (!accepted)
+                {
+                    const std::string requirement = test.requires_minus_one
+                        ? "Requires symmetry==-1" : "Requires symmetry in [-1, 0]";
+                    EXPECT_THAT(error, testing::HasSubstr("Invalid INPUT parameter 'symmetry'"));
+                    EXPECT_THAT(error, testing::HasSubstr(requirement));
+                    EXPECT_THAT(error, testing::HasSubstr("input-main.html#symmetry"));
+                }
+            }
+        }
+    }
+}
+
+TEST_F(InputTest, SymmetryOmittedDefaultsFollowFeaturePriority)
+{
+    struct Case
+    {
+        std::vector<std::pair<std::string, std::string>> context;
+        std::string expected;
+    };
+    const std::vector<Case> cases = {
+        {{}, "1"},
+        {{{"calculation", "md"}}, "0"},
+        {{{"efield_flag", "true"}}, "0"},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}}, "-1"},
+        {{{"qo_switch", "true"}}, "-1"},
+        {{{"calculation", "nscf"}, {"berry_phase", "true"}}, "-1"},
+        {{{"calculation", "md"}, {"esolver_type", "tddft"}, {"efield_flag", "true"}}, "-1"},
+        {{{"gamma_only", "true"}}, "0"},
+        {{{"calculation", "nscf"}, {"nspin", "4"}, {"lspinorb", "true"}}, "-1"},
+        {{{"calculation", "md"}, {"nspin", "4"}, {"lspinorb", "true"}}, "0"},
+        {{{"calculation", "nscf"}}, "0"},
+        {{{"calculation", "get_s"}}, "0"},
+        {{{"calculation", "get_pchg"}}, "0"},
+        {{{"calculation", "get_wf"}}, "0"}};
+    for (const Case& test : cases)
+    {
+        for (const bool reverse : {false, true})
+        {
+            ModuleIO::ReadInput reader(0);
+            Parameter param;
+            std::vector<std::pair<std::string, std::string>> supplied = test.context;
+            supplied.push_back({"basis_type", "lcao"});
+            if (reverse) { std::reverse(supplied.begin(), supplied.end()); }
+            for (const auto& value : supplied)
+            {
+                auto item = find_label(value.first, reader.input_lists);
+                ASSERT_NE(item, reader.input_lists.end());
+                item->second.str_values = {value.second};
+                reader.readvalue_items.push_back(&item->second);
+            }
+            const std::string error = reader.prepare_input(param);
+            EXPECT_TRUE(error.empty()) << error;
+            EXPECT_EQ(param.inp.symmetry, test.expected);
+        }
+    }
+}
+
 TEST_F(InputTest, Item_test)
 {
     ModuleIO::ReadInput readinput(0);
@@ -3199,15 +3297,18 @@ TEST_F(InputTest, PerAtomSccsCavityWidthsDisableSpatialSymmetry)
     input.sccs_solvent_mode = "full";
     input.sccs_corespread = {0.5};
     input.symmetry = "1";
+    it->second.str_values = {"1"};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "1");
     input.sccs_corespread = {0.5, 0.0};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "0");
     input.symmetry = "-1";
+    it->second.str_values = {"-1"};
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "-1");
     input.symmetry = "1";
+    it->second.str_values = {"1"};
     input.sccs_solvent_mode = "electronic";
     it->second.reset_value(it->second, param);
     EXPECT_EQ(input.symmetry, "1");

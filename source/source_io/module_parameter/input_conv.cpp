@@ -263,17 +263,6 @@ void Input_Conv::Convert()
     }
 
     //----------------------------------------------------------
-    // reset symmetry flag to avoid error
-    //----------------------------------------------------------
-    // In these case, symmetry should be reset to 0
-    // efield does not support symmetry=1
-    if (PARAM.inp.efield_flag && ModuleSymmetry::Symmetry::symm_flag == 1)
-    {
-        ModuleSymmetry::Symmetry::symm_flag = 0;
-    }
-    // end of symmetry reset
-
-    //----------------------------------------------------------
     // main parameters / electrons / spin ( 2/16 )
     //----------------------------------------------------------
     //    electrons::nelup = PARAM.inp.nelup;

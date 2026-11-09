@@ -359,6 +359,11 @@ TEST(InputDomainHelp, ExportsTheRuntimeRules)
     EXPECT_NE(stress.requirements.find("md_type in [npt, msst]"), std::string::npos);
     const auto wannier = ModuleIO::ParameterHelp::get_metadata("towannier90");
     EXPECT_NE(wannier.requirements.find("basis_type in [pw, lcao]"), std::string::npos);
+    const auto symmetry = ModuleIO::ParameterHelp::get_metadata("symmetry");
+    EXPECT_NE(symmetry.requirements.find("symmetry in [-1, 0]"), std::string::npos);
+    EXPECT_NE(symmetry.requirements.find("symmetry==-1"), std::string::npos);
+    EXPECT_NE(symmetry.description.find("the first matching default"), std::string::npos);
+    EXPECT_NE(symmetry.description.find("including an explicit 1"), std::string::npos);
 }
 
 } // namespace

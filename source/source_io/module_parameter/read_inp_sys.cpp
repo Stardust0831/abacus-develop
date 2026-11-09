@@ -328,6 +328,8 @@ Socket mode always computes energy. Force and stress extraction follows cal_forc
     {
         Input_Item item("symmetry");
         item.domain.set_choices({"-1", "0", "1"});
+        item.domain.add_requirement("calculation==md or efield_flag==true", "symmetry in [-1, 0]");
+        item.domain.add_requirement("esolver_type==tddft or qo_switch==true or berry_phase==true", "symmetry==-1");
         item.annotation = "the control of symmetry";
         item.category = "System variables";
         item.type = "String";
@@ -336,51 +338,46 @@ Socket mode always computes energy. Force and stress extraction follows cal_forc
 * 0: Only time reversal symmetry would be considered in symmetry operations, which implied k point and -k point would be treated as a single k point with twice the weight.
 * 1: Symmetry analysis will be performed to determine the type of Bravais lattice and associated symmetry operations (point groups, space groups, primitive cells, and irreducible k-points). For a magnetic system, the symmetry of the initial magnetic structure will be analyzed and preserved.
 
+MD and electric-field calculations allow 0 or -1, subject to other enabled features. RT-TDDFT, quasiatomic-orbital analysis (qo_switch=True), and Berry-phase calculations require -1. Conflicting explicit settings are rejected; accepted explicit values are preserved in these modes.
+
+If omitted, the first matching default is used: -1 for RT-TDDFT, qo_switch, or berry_phase; 0 for MD or efield_flag; -1 for lspinorb; 0 for gamma_only, nscf, get_s, get_pchg, or get_wf; 0 for full SCCS with multiple sccs_corespread values; otherwise 1.
+
+[NOTE] Full SCCS with multiple sccs_corespread values changes symmetry=1 to 0, including an explicit 1.
+
 [NOTE] When symmetry is enabled (value 1), k-points are reduced to the irreducible Brillouin zone (IBZ). For explicit k-point lists with custom weights (see KPT file), the custom weights are preserved during symmetry reduction. For Monkhorst-Pack grids, uniform weights are used.)";
-        item.default_value = "1 normally; 0 or -1 depending on the calculation and enabled features.";
+        item.default_value = "1 normally; 0 or -1 according to the conditions below";
         read_sync_string(input.symmetry);
         item.reset_value = [](const Input_Item& item, Parameter& para) {
-            if (para.input.symmetry == "default")
+            const bool sccs_full = para.input.imp_sol == 2 && para.input.sccs_solvent_mode == "full";
+            const bool sccs_multiple_widths = sccs_full && para.input.sccs_corespread.size() > 1;
+            if (!item.is_read())
             {
-                if (para.input.lspinorb == 1)
+                if (para.input.esolver_type == "tddft" || para.input.qo_switch || para.input.berry_phase)
+                {
+                    para.input.symmetry = "-1";
+                }
+                else if (para.input.calculation == "md" || para.input.efield_flag)
+                {
+                    para.input.symmetry = "0";
+                }
+                else if (para.input.lspinorb == 1)
                 {
                     para.input.symmetry = "-1";
                 }
                 else if (para.input.gamma_only || para.input.calculation == "nscf" || para.input.calculation == "get_s"
-                    || para.input.calculation == "get_pchg" || para.input.calculation == "get_wf")
+                         || para.input.calculation == "get_pchg" || para.input.calculation == "get_wf"
+                         || sccs_multiple_widths)
                 {
-                    para.input.symmetry = "0"; // if md or exx, symmetry will be
-                                               // force-set to 0 or -1 later
+                    para.input.symmetry = "0";
                 }
                 else
                 {
                     para.input.symmetry = "1";
                 }
             }
-            if (para.input.calculation == "md")
-            {
-                para.input.symmetry = "0";
-            }
-            if (para.input.efield_flag)
-            {
-                para.input.symmetry = "0";
-            }
-            if (para.input.esolver_type == "tddft")
-            {
-                para.input.symmetry = "-1";
-            }
-            if (para.input.qo_switch)
-            {
-                para.input.symmetry = "-1"; // disable kpoint reduce
-            }
-            if (para.input.berry_phase)
-            {
-                para.input.symmetry = "-1"; // disable kpoint reduce
-            }
             // Per-atom SCCS cavity widths can differ between equivalent atoms,
             // which the symmetry analysis does not see.
-            const bool sccs_full = para.input.imp_sol == 2 && para.input.sccs_solvent_mode == "full";
-            if (sccs_full && para.input.sccs_corespread.size() > 1 && para.input.symmetry == "1")
+            if (sccs_multiple_widths && para.input.symmetry == "1")
             {
                 para.input.symmetry = "0";
             }

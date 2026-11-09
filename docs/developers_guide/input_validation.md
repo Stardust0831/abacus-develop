@@ -70,6 +70,13 @@ still receive the documented defaults. A historical default is not necessarily
 a requirement: LJ/DP MD defaults to calculating stress, but NVE/NVT accepts an
 explicit `cal_stress=false`; NPT/MSST requires stress.
 
+Requirements from simultaneous features all apply. MD permits `symmetry` in
+`[-1, 0]`, while RT-TDDFT requires `-1`, so TDDFT with `calculation=md` has
+the unambiguous allowed value `-1`. Do not turn the ordinary MD default `0`
+into an exact-value requirement. When `symmetry` is omitted, its callback
+selects the documented default directly, with TDDFT taking precedence over
+ordinary MD; validation does not solve requirements by changing inputs.
+
 When removing a forced reset, also inspect callbacks that used to run after it.
 Removing the Wannier basis conversion alone would activate old branches that
 overwrite `ks_solver` and `wannier_method` before validation. All three overrides
