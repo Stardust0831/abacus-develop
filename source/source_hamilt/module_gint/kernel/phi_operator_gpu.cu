@@ -286,6 +286,18 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     HContainer<double>& hRGint,
     double* hr_d) const
 {
+    phi_mul_phi(1, &phi_d, &phi_vldr3_d, hRGint, hr_d);
+}
+
+template<typename Real>
+void PhiOperatorGpu<Real>::phi_mul_phi(
+    const int num_components,
+    const Real* const* phi_d,
+    const Real* const* phi_vldr3_d,
+    HContainer<double>& hRGint,
+    double* hr_d) const
+{
+    assert(num_components > 0);
     // Shape-exact bucketing: group atom pairs by (nw1, nw2). K = mgrids_num_
     // is already batch-wide constant, so (nw1, nw2) fully determines the GEMM
     // shape. Each bucket hands gemm_tn_vbatch scalar (nw1, nw2, mgrids_num_),
@@ -338,50 +350,60 @@ void PhiOperatorGpu<Real>::phi_mul_phi(
     auto* h_ldb = gemm_ldb_.get_host_ptr();
     auto* h_ldc = gemm_ldc_.get_host_ptr();
 
-    CHECK_CUDA(cudaEventSynchronize(event_));
-
-    // Pass 2: scatter into the flat host arrays at per-bucket cursors.
-    auto& cursor = bucket_cursor_;
-    std::fill(cursor.begin(), cursor.end(), 0);
-    for (size_t i = 0; i < pair_cache_.size(); ++i)
+    for (int component = 0; component < num_components; ++component)
     {
-        const int hr = pair_scratch_offset_[i];
-        if (hr == -1) { continue; }
-        const auto& p = pair_cache_[i];
-        const int key = p.nw1 * nw_stride_ + p.nw2;
-        const int pos = key_to_base[key] + cursor[key]++;
-        h_A[pos]   = phi_d + p.phi_1_offset;
-        h_B[pos]   = phi_vldr3_d + p.phi_2_offset;
-        h_C[pos]   = hr_d + hr;
-        h_lda[pos] = p.phi_len_mgrid;
-        h_ldb[pos] = p.phi_len_mgrid;
-        h_ldc[pos] = p.nw2;
-    }
+        CHECK_CUDA(cudaEventSynchronize(event_));
 
-    gemm_A_.copy_host_to_device_async(ap_num);
-    gemm_B_.copy_host_to_device_async(ap_num);
-    gemm_C_.copy_host_to_device_async(ap_num);
-    gemm_lda_.copy_host_to_device_async(ap_num);
-    gemm_ldb_.copy_host_to_device_async(ap_num);
-    gemm_ldc_.copy_host_to_device_async(ap_num);
-    CHECK_CUDA(cudaEventRecord(event_, stream_));
+        // Pass 2: only the input base pointers change between components.
+        // Wait above before overwriting pinned buffers used by the last copy.
+        auto& cursor = bucket_cursor_;
+        std::fill(cursor.begin(), cursor.end(), 0);
+        for (size_t i = 0; i < pair_cache_.size(); ++i)
+        {
+            const int hr = pair_scratch_offset_[i];
+            if (hr == -1) { continue; }
+            const auto& p = pair_cache_[i];
+            const int key = p.nw1 * nw_stride_ + p.nw2;
+            const int pos = key_to_base[key] + cursor[key]++;
+            h_A[pos] = phi_d[component] + p.phi_1_offset;
+            h_B[pos] = phi_vldr3_d[component] + p.phi_2_offset;
+            if (component == 0)
+            {
+                h_C[pos] = hr_d + hr;
+                h_lda[pos] = p.phi_len_mgrid;
+                h_ldb[pos] = p.phi_len_mgrid;
+                h_ldc[pos] = p.nw2;
+            }
+        }
 
-    for (const auto& b : buckets)
-    {
-        const int nw1 = b.key / nw_stride_;
-        const int nw2 = b.key % nw_stride_;
-        gemm_tn_vbatch<Real>(nw1,
-                        nw2,
-                        mgrids_num_,
-                        gemm_A_.get_device_ptr() + b.off,
-                        gemm_lda_.get_device_ptr() + b.off,
-                        gemm_B_.get_device_ptr() + b.off,
-                        gemm_ldb_.get_device_ptr() + b.off,
-                        gemm_C_.get_device_ptr() + b.off,
-                        gemm_ldc_.get_device_ptr() + b.off,
-                        b.cnt,
-                        stream_,
-                        nullptr);
+        gemm_A_.copy_host_to_device_async(ap_num);
+        gemm_B_.copy_host_to_device_async(ap_num);
+        if (component == 0)
+        {
+            gemm_C_.copy_host_to_device_async(ap_num);
+            gemm_lda_.copy_host_to_device_async(ap_num);
+            gemm_ldb_.copy_host_to_device_async(ap_num);
+            gemm_ldc_.copy_host_to_device_async(ap_num);
+        }
+        CHECK_CUDA(cudaEventRecord(event_, stream_));
+
+        for (const auto& b : buckets)
+        {
+            const int nw1 = b.key / nw_stride_;
+            const int nw2 = b.key % nw_stride_;
+            gemm_tn_vbatch<Real>(nw1,
+                            nw2,
+                            mgrids_num_,
+                            gemm_A_.get_device_ptr() + b.off,
+                            gemm_lda_.get_device_ptr() + b.off,
+                            gemm_B_.get_device_ptr() + b.off,
+                            gemm_ldb_.get_device_ptr() + b.off,
+                            gemm_C_.get_device_ptr() + b.off,
+                            gemm_ldc_.get_device_ptr() + b.off,
+                            b.cnt,
+                            stream_,
+                            nullptr);
+        }
     }
 }
 
