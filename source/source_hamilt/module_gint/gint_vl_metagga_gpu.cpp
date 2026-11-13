@@ -64,6 +64,10 @@ void Gint_vl_metagga_gpu::cal_hr_gint_()
         CudaMemWrapper<double> dphi_x_vldr3(BatchBigGrid::get_max_phi_len(), stream, false);
         CudaMemWrapper<double> dphi_y_vldr3(BatchBigGrid::get_max_phi_len(), stream, false);
         CudaMemWrapper<double> dphi_z_vldr3(BatchBigGrid::get_max_phi_len(), stream, false);
+        const double* phi_components[] = {phi.get_device_ptr(), dphi_x.get_device_ptr(),
+                                          dphi_y.get_device_ptr(), dphi_z.get_device_ptr()};
+        const double* weighted_components[] = {phi_vldr3.get_device_ptr(), dphi_x_vldr3.get_device_ptr(),
+                                               dphi_y_vldr3.get_device_ptr(), dphi_z_vldr3.get_device_ptr()};
         #pragma omp for schedule(dynamic)
         for (int i = 0; i < gint_info_->get_bgrid_batches_num(); ++i)
         {
@@ -83,14 +87,8 @@ void Gint_vl_metagga_gpu::cal_hr_gint_()
                                  dphi_y.get_device_ptr(), dphi_y_vldr3.get_device_ptr());
             phi_op.phi_mul_vldr3(vofk_d_.get_device_ptr(), dr3_,
                                  dphi_z.get_device_ptr(), dphi_z_vldr3.get_device_ptr());
-            phi_op.phi_mul_phi(phi.get_device_ptr(), phi_vldr3.get_device_ptr(),
-                               hr_gint_, hr_gint_d_.get_device_ptr());
-            phi_op.phi_mul_phi(dphi_x.get_device_ptr(), dphi_x_vldr3.get_device_ptr(),
-                               hr_gint_, hr_gint_d_.get_device_ptr());
-            phi_op.phi_mul_phi(dphi_y.get_device_ptr(), dphi_y_vldr3.get_device_ptr(),
-                               hr_gint_, hr_gint_d_.get_device_ptr());
-            phi_op.phi_mul_phi(dphi_z.get_device_ptr(), dphi_z_vldr3.get_device_ptr(),
-                               hr_gint_, hr_gint_d_.get_device_ptr());
+            double* hr_d = hr_gint_d_.get_device_ptr();
+            phi_op.phi_mul_phi(4, phi_components, weighted_components, hr_gint_, hr_d);
         }
         CHECK_CUDA(cudaStreamSynchronize(stream));
         CHECK_CUDA(cudaStreamDestroy(stream));

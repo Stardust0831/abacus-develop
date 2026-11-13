@@ -78,6 +78,16 @@ public:
         HContainer<double>& hRGint,
         double* hr_d) const;
 
+    // Accumulate multiple orbital products into the same matrix, reusing the
+    // atom-pair lookup, shape buckets and leading dimensions within this call.
+    // Both arrays contain num_components device base pointers.
+    void phi_mul_phi(
+        const int num_components,
+        const Real* const* phi_d,
+        const Real* const* phi_vldr3_d,
+        HContainer<double>& hRGint,
+        double* hr_d) const;
+
     void phi_mul_dm(
         const Real* phi_d,
         const Real* dm_d,
