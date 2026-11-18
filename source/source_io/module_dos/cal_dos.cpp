@@ -237,7 +237,7 @@ bool ModuleIO::cal_dos(const int& is,  // index for spin
                  << " " << std::setw(12) << dos[n]
                  << " " << std::setw(12) << sum_elec[n]
                  << " " << std::setw(14) << dos_smear[n]
-                 << " " << std::setw(14) << sum2 << std::endl;
+                 << " " << std::setw(14) << sum2 << '\n';
         }
     }
 
