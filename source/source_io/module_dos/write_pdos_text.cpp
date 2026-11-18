@@ -131,7 +131,7 @@ void ModuleIO::write_pdos_text(
 
                     ofs << "  " << std::setw(8) << std::fixed << std::setprecision(6) << pdos_val;
                 }
-                ofs << std::endl;
+                ofs << '\n';
             }
         }
 
