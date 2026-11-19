@@ -97,3 +97,38 @@ The PDOS file uses a plain-text format. Each row corresponds to one energy point
 The `# istep:` line is only present for geometry-optimization (istep) output. Within each angular momentum `l`, the `2l+1` columns follow the magnetic-quantum-number order `m = 0, +1, -1, +2, -2, ...`.
 
 For nspin=2, two files are written (pdoss1* and pdoss2*), one per spin channel. For nspin=4, the two spinor components are summed into a single file. The unit of PDOS is also `(number of states)/(eV * unitcell)`.
+
+### HDF5 output for LCAO
+
+Configure ABACUS with `-DENABLE_HDF5=ON` and the HDF5 C++ development library (1.10 or newer). Select HDF5 for projected DOS in `INPUT` with
+
+```text
+out_dos      1
+pdos_format  hdf5
+```
+
+`pdos_format` defaults to `text`. Both formats use the same energy grid, zeta sums, spinor sums and threshold. HDF5 stores double-precision values before decimal formatting. Total DOS is written to the usual `doss*.txt` files.
+
+The file is named `pdos.h5`. With `out_app_flag 0` each write replaces the file. With mode 1 the first ionic step starts a new file and each subsequent write appends a complete record. Mode 2 uses the DOS output directory and a separate `pdosgN.h5` for each numbered ionic step, such as `DOS/pdosg3.h5`. An unnumbered single-point calculation uses `pdos.h5` in the selected output directory.
+
+Files carry the integer root attribute `schema_version = 1`. Each group `/records/1`, `/records/2`, etc. stores one output in write order. Its attributes are `ionic_step` (one-based, 1 for a single point) and the ABACUS `nspin`. Each record has its own grid and orbital metadata.
+
+| Dataset | Contents |
+| --- | --- |
+| `energy_eV` | Energy grid in eV |
+| `species` | UTF-8 species label for each atom in structure order |
+| `atom_offsets` | Zero-based offsets into the orbital axis, length `nat + 1` |
+| `l`, `m` | Angular momentum and signed magnetic quantum number of each orbital column |
+| `pdos` | Float64 array with axes `(spin channel, orbital, energy)` and units `1/eV` per unit cell |
+
+Each atom contributes only the orbitals in its own basis. For `nspin=2` the first axis contains spin up and spin down in that order. For `nspin=1` or `4` it has length one. The following reads the first atom and first spin channel with h5py.
+
+```python
+import h5py
+
+with h5py.File("OUT.ABACUS/pdos.h5") as f:
+    record = f["records/1"]
+    start, stop = record["atom_offsets"][:2]
+    energy = record["energy_eV"][:]
+    atom_pdos = record["pdos"][0, start:stop, :]
+```
