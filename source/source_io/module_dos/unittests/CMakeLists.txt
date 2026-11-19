@@ -30,10 +30,25 @@ if(ENABLE_MPI)
     LIBS parameter base device
     SOURCES test_write_pdos_text.cpp
             ../write_pdos_text.cpp
+            ../pdos_orbitals.cpp
             ../../../source_cell/atom_spec.cpp
             ../../../source_cell/atom_pseudo.cpp
             ../../../source_cell/pseudo.cpp
             ../../../source_cell/magnetism.cpp
             ../../../source_cell/test/support/mock_unitcell.cpp)
 
+endif()
+
+if(ENABLE_HDF5)
+  addtest(
+    TARGET MODULE_DOS_write_pdos_hdf5
+    LIBS parameter base device ${HDF5_CXX_LIBRARIES}
+    SOURCES test_write_pdos_hdf5.cpp
+            ../write_pdos_hdf5.cpp
+            ../pdos_orbitals.cpp
+            ../../../source_cell/atom_spec.cpp
+            ../../../source_cell/atom_pseudo.cpp
+            ../../../source_cell/pseudo.cpp
+            ../../../source_cell/magnetism.cpp
+            ../../../source_cell/test/support/mock_unitcell.cpp)
 endif()

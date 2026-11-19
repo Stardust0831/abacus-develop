@@ -60,6 +60,7 @@ set(_abacus_feature_definitions
     $<$<BOOL:${ENABLE_FLOAT_FFTW}>:__FLOAT_FFTW>
     $<$<BOOL:${ENABLE_MLALGO}>:__MLALGO>
     $<$<BOOL:${ENABLE_CNPY}>:__CNPY>
+    $<$<BOOL:${ENABLE_HDF5}>:ABACUS_USE_HDF5>
     $<$<BOOL:${ENABLE_LIBRI}>:__EXX>
     $<$<BOOL:${ENABLE_LIBRI}>:EXX_DM=3>
     $<$<BOOL:${ENABLE_LIBRI}>:EXX_H_COMM=2>
@@ -299,6 +300,11 @@ set(_abacus_feature_libs
     $<$<BOOL:${ENABLE_PLUMED}>:PLUMED::plumed>)
 set(_abacus_feature_include_dirs)
 set(_abacus_feature_compile_options)
+
+if(ENABLE_HDF5)
+  list(APPEND _abacus_feature_libs ${HDF5_CXX_LIBRARIES})
+  list(APPEND _abacus_feature_include_dirs ${HDF5_INCLUDE_DIRS})
+endif()
 
 if(ENABLE_ELPA)
   list(APPEND _abacus_feature_include_dirs ${ELPA_INCLUDE_DIR})

@@ -52,6 +52,8 @@ option(ENABLE_LIBXC "Enable using the LibXC package" OFF)
 option(ENABLE_FLOAT_FFTW "Enable using single-precision FFTW library." OFF)
 
 option(ENABLE_LCAO "Enable LCAO algorithm" ON)
+cmake_dependent_option(ENABLE_HDF5 "Enable HDF5 output for LCAO PDOS" OFF
+                       "ENABLE_LCAO" OFF)
 option(ENABLE_DFTD4 "Enable DFT-D4 dispersion correction" OFF)
 option(ENABLE_PLUMED "Enable using the PLUMED enhanced-sampling library" OFF)
 
@@ -163,6 +165,10 @@ if(NOT DEFINED NVHPC_ROOT_DIR AND DEFINED ENV{NVHPC_ROOT})
   set(NVHPC_ROOT_DIR
       "$ENV{NVHPC_ROOT}"
       CACHE PATH "Path to NVIDIA HPC SDK root directory.")
+endif()
+
+if(ENABLE_HDF5)
+  find_package(HDF5 1.10 REQUIRED COMPONENTS CXX)
 endif()
 
 # enable json support

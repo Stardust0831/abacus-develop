@@ -10,6 +10,35 @@ void ReadInput::item_postprocess()
     // in the generated documentation (docs/advanced/input_files/input-main.md).
     // Please preserve this ordering when adding new parameters.
     {
+        Input_Item item("pdos_format");
+        item.domain.set_choices({"text", "hdf5"});
+        item.annotation = "LCAO projected DOS file format";
+        item.category = "Density of states";
+        item.type = "String";
+        item.description = "With out_dos 1, select text (pdoss*.txt) or hdf5 (pdos*.h5) for LCAO projected DOS. "
+                           "HDF5 requires a build with ENABLE_HDF5=ON. Total DOS is written as text.";
+        item.default_value = "text";
+        read_sync_string(input.pdos_format);
+        item.check_value = [](const Input_Item&, const Parameter& para) {
+            const auto& format = para.input.pdos_format;
+            if (format != "text" && format != "hdf5")
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "pdos_format must be text or hdf5");
+            }
+            if (format == "hdf5")
+            {
+                if (para.input.basis_type != "lcao")
+                {
+                    ModuleBase::WARNING_QUIT("ReadInput", "pdos_format hdf5 requires basis_type lcao");
+                }
+#ifndef ABACUS_USE_HDF5
+                ModuleBase::WARNING_QUIT("ReadInput", "pdos_format hdf5 requires a build with ENABLE_HDF5=ON");
+#endif
+            }
+        };
+        this->add_item(item);
+    }
+    {
         Input_Item item("dos_edelta_ev");
         item.annotation = "delta energy for dos";
         item.category = "Density of states";
