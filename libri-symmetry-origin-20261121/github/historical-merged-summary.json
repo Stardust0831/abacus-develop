@@ -1,0 +1,529 @@
+{
+  "passed": true,
+  "job_id": "1921419",
+  "manifest": {
+    "upstream_master": "6534722c2c4925d521793b3d279052ef3c7be886",
+    "pr15": "e72194dc104f47294c733ef314255ccec4995c11",
+    "pr15_before": "2cf829054e2bbbc3a5ebd2bb9e2bb6d38e6060fa",
+    "pr15_tree": "c123f2fe72aa163b94c46b8fd03fcd178923cc03",
+    "pr15_before_tree": "c123f2fe72aa163b94c46b8fd03fcd178923cc03",
+    "pr16": "7025df62cc4d3c7a609d1acec1733ab4a95dc7fb",
+    "pr16_before": "27951e74f428decceca7805297838db6130cf8da",
+    "abacus_base": "b30b66a5a333a2667d618932f8430a80dd92146a",
+    "abacus_test_patch": "abacus-validation-only.patch",
+    "source_sha256": "1a8790fbb19181e31201d85c7b890f279b6932fad3291716669b444486bfc8d5",
+    "pr15_sha256": "1ef98ff8b59768f47b9305556df68744e599a322eb324e5cb00f452e7db43de6",
+    "abacus_sha256": "9b3470efb9f83de123e4f6e0184fed74dc19457a448a08efd5d670252fefc178"
+  },
+  "steps": [
+    {
+      "name": "environment/compiler",
+      "command": [
+        "mpicxx",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "environment/gpu",
+      "command": [
+        "nvidia-smi",
+        "-q"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/cpu/configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source/unittests/gpu_symmetry",
+        "-B",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-cpu",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DLIBRI_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source",
+        "-DLIBCOMM_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/libcomm",
+        "-DCEREAL_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/cereal-install",
+        "-DDDLA_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/install/ddla",
+        "-DBLA_VENDOR=OpenBLAS",
+        "-DENABLE_GPU=OFF"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/cpu/build",
+      "command": [
+        "cmake",
+        "--build",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-cpu",
+        "--verbose",
+        "--parallel",
+        "2"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/cpu/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-cpu/test_lri_gpu_symmetry"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/cpu/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-cpu/test_lri_gpu_symmetry"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/gpu/configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source/unittests/gpu_symmetry",
+        "-B",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-gpu",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DLIBRI_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source",
+        "-DLIBCOMM_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/libcomm",
+        "-DCEREAL_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/cereal-install",
+        "-DDDLA_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/install/ddla",
+        "-DBLA_VENDOR=OpenBLAS",
+        "-DENABLE_GPU=ON"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/gpu/build",
+      "command": [
+        "cmake",
+        "--build",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-gpu",
+        "--verbose",
+        "--parallel",
+        "2"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/gpu/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-gpu/test_lri_gpu_symmetry"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "symmetry/gpu/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-symmetry-gpu/test_lri_gpu_symmetry"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "callbacks/build",
+      "command": [
+        "g++",
+        "-std=c++11",
+        "-I/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source/include",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source/unittests/physics/test_exx_gpu_symmetry.cpp",
+        "-o",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/callback-test"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "callbacks/test",
+      "command": [
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/callback-test"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/control",
+        "-B",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DRUN_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024",
+        "-DLIBCOMM_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/libcomm",
+        "-DCEREAL_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/cereal-install",
+        "-DDDLA_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/install/ddla",
+        "-DTEST_BLAS=/opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/build",
+      "command": [
+        "cmake",
+        "--build",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation",
+        "--verbose",
+        "--parallel",
+        "2"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_float/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_double/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_complex_float/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_complex_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_complex_double/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_complex_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_float/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_double/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_complex_float/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_complex_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_complex_double/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_complex_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/hartree/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/hartree"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/atom_lists/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/atom_lists"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/gpu_physics/omp1",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_physics"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_float/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_double/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_complex_float/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_complex_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/cpu_complex_double/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/cpu_complex_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_float/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_double/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_complex_float/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_complex_float"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "accumulation/gpu_complex_double/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_complex_double"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/hartree/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/hartree"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/atom_lists/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/atom_lists"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "physics/gpu_physics/omp4",
+      "command": [
+        "mpirun",
+        "-np",
+        "1",
+        "--map-by",
+        "ppr:2:node:pe=4",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/build-accumulation/gpu_physics"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "abacus/configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/abacus-source",
+        "-B",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/abacus-build",
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DENABLE_LIBXC=ON",
+        "-DENABLE_LIBRI=ON",
+        "-DENABLE_LIBRI_GPU=ON",
+        "-DENABLE_ELPA=OFF",
+        "-DENABLE_NCCL_PARALLEL_DEVICE=OFF",
+        "-DBUILD_TESTING=OFF",
+        "-DGIT_SUBMODULE=OFF",
+        "-DCMAKE_CUDA_ARCHITECTURES=70",
+        "-DUSE_CUDA=ON",
+        "-DUSE_CUDA_MPI=ON",
+        "-DENABLE_CUSOLVERMP=ON",
+        "-DENABLE_CUBLASMP=ON",
+        "-DLIBRI_DIR=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/source",
+        "-DLIBCOMM_DIR=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/libcomm",
+        "-Dcereal_DIR=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/build/hse-deps/cereal-install/lib/cmake/cereal",
+        "-DDDLA_ROOT=/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/exx-device-20261018-3/install/ddla"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "abacus/build",
+      "command": [
+        "cmake",
+        "--build",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/abacus-build",
+        "--target",
+        "abacus_std_gpu",
+        "--verbose",
+        "--parallel",
+        "12"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "abacus/version",
+      "command": [
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/abacus-build/abacus_std_gpu",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "abacus/help",
+      "command": [
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/abacus-build/abacus_std_gpu",
+        "-h",
+        "device_exx"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "abacus/cases",
+      "command": [
+        "python3",
+        "/org/abacus-group/abacususer01/abacus_hse_gpu_experiment/runs/lcao-hse/libri-pr15-pr16-merge-20261024/control/abacus_cases.py"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

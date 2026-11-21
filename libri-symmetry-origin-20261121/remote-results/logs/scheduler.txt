@@ -1,0 +1,4 @@
+JobID|JobName|Partition|QOS|State|ExitCode|Elapsed|AllocTRES|NodeList
+2670730|libri-sym-origin|16V100|flood-1o2gpu|COMPLETED|0:0|00:01:51|billing=150,cpu=8,gres/gpu=1,mem=15G,node=1|16v100n09
+2670730.batch|batch|||COMPLETED|0:0|00:01:51|cpu=8,gres/gpu=1,mem=15G,node=1|16v100n09
+2670730.extern|extern|||COMPLETED|0:0|00:01:51|billing=150,cpu=8,gres/gpu=1,mem=15G,node=1|16v100n09

@@ -1,0 +1,3 @@
+48eee98b509bf9730d105f8cce8ab5eb0cdf1bbf7a44b7a4893036758678e4db  sources/dev-current-ddla/include/RI/ri/LRI-cal_loop3_GPU.hpp
+d74656200f890006cee04e6f109ea101831df60d4ebff61f776039609525f1f0  sources/release-patched/include/RI/ri/LRI-cal_loop3_GPU.hpp
+a15c44b7d65a55555813a9bf05fd64061dfc3114094e076268760d6a536c35f7  sources/release/include/RI/ri/LRI-cal_loop3_GPU.hpp

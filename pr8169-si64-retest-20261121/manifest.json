@@ -1,0 +1,45 @@
+{
+  "abacus_pr_head": "f2667c6eed30e661a36bfb0ae1844802c99f171e",
+  "changed_files": {
+    "docs/advanced/install.md": "216bdcbcc6ac0eb4c942e94daa6946f54a90fef2287c0d65ca727d2d4121a227",
+    "source/source_io/module_parameter/read_inp_exx_dftu.cpp": "1ea9cd2adc073860c4bf9899977509ecfb6977d1b2355dbbd906312f4ba9fed8",
+    "source/source_io/unittests/test_read_inp_exx_dftu.cpp": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb"
+  },
+  "source_matches": true,
+  "partition": "16V100",
+  "build_job": 2670062,
+  "benchmark_jobs": [
+    2670088,
+    2670089
+  ],
+  "benchmark_configuration": {
+    "atoms": 64,
+    "gpus": 1,
+    "mpi": 1,
+    "omp": 4,
+    "blas_threads": 1,
+    "symmetry": -1,
+    "forces": true,
+    "stress": false
+  },
+  "design": "Two independent one-GPU allocations; paired four-build comparison within each allocation, forward/reverse order. Two additional displaced-Si64 runs compare current PR CPU/GPU RI.",
+  "comparators": {
+    "module": "v3.11.0-beta13 4e9f1636b7ca preinstalled SAI module",
+    "experimental": "beta13 4e9f1636b7ca with GPU LibRI 0e8afc393 and GPU LibXC 3c7794c5047d",
+    "pr_cpu": "same current PR executable, device_exx cpu, LibXC 7.0.0 CPU",
+    "pr_gpu": "same current PR executable, device_exx gpu, LibRI v0.3.0.0, LibXC 7.0.0 CPU"
+  },
+  "recovery_jobs": [
+    2670638
+  ],
+  "mistaken_recovery_jobs": [
+    2670593
+  ],
+  "recovery_reason": "2670089 driver asserted cusolvermp but frozen displaced INPUT uses elpa; original eight ideal calculations retained",
+  "recovery_harness_changes": [
+    "normalize exactly one known ks_solver line to cusolver",
+    "batch wrapper forwards all arguments",
+    "displaced-only plan selects exactly two requests",
+    "dedicated recovery output directory and job name"
+  ]
+}

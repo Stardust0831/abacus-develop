@@ -1,0 +1,58 @@
+{
+  "include/RI/ri/LRI-cal_loop3_GPU.hpp": {
+    "pr16_merged_sha256": "48eee98b509bf9730d105f8cce8ab5eb0cdf1bbf7a44b7a4893036758678e4db",
+    "dev_0e8_sha256": "48eee98b509bf9730d105f8cce8ab5eb0cdf1bbf7a44b7a4893036758678e4db",
+    "identical": true
+  },
+  "include/RI/physics/symmetry/Filter_Atom_Symmetry.h": {
+    "pr16_merged_sha256": "400d96d52183fd935caff49cd68b8e4e1bdaa9f985ed749fcc6c87135219f179",
+    "dev_0e8_sha256": "400d96d52183fd935caff49cd68b8e4e1bdaa9f985ed749fcc6c87135219f179",
+    "identical": true
+  },
+  "unittests/gpu_symmetry/test_lri_gpu_symmetry.cpp": {
+    "pr16_merged_sha256": "c4ff2468fd581a1d1fd5e39211801546153e41e115b24f989d634f700317e193",
+    "dev_0e8_sha256": "c4ff2468fd581a1d1fd5e39211801546153e41e115b24f989d634f700317e193",
+    "identical": true
+  },
+  "041-to-release/include/RI/physics/symmetry/Filter_Atom_Symmetry_GPU.h": {
+    "identical": true,
+    "sha256": "3accc96041831e5706a165e06bd257d1878d1bc34a6f981ebf478f71bae5f77d"
+  },
+  "041-to-release/include/RI/physics/symmetry/Filter_Atom_Symmetry_Wrapper.h": {
+    "identical": true,
+    "sha256": "13811b374af4f27ec06456b0ae1d145a338ae9e2c9c77f0352aa0f261afd7d8f"
+  },
+  "041-to-release/include/RI/physics/Exx.hpp": {
+    "identical": true,
+    "sha256": "28457ea5d0140853599630568a8042a4f11af1b79747be6bf2f029f33d5b036e"
+  },
+  "041-to-release/unittests/gpu_symmetry/test_lri_gpu_symmetry.cpp": {
+    "identical": true,
+    "sha256": "c4ff2468fd581a1d1fd5e39211801546153e41e115b24f989d634f700317e193"
+  },
+  "4ed-to-041/include/RI/physics/symmetry/Filter_Atom_Symmetry_GPU.h": {
+    "identical": true,
+    "sha256": "3accc96041831e5706a165e06bd257d1878d1bc34a6f981ebf478f71bae5f77d"
+  },
+  "4ed-to-041/include/RI/physics/symmetry/Filter_Atom_Symmetry_Wrapper.h": {
+    "identical": true,
+    "sha256": "13811b374af4f27ec06456b0ae1d145a338ae9e2c9c77f0352aa0f261afd7d8f"
+  },
+  "4ed-to-041/include/RI/physics/Exx.hpp": {
+    "identical": true,
+    "sha256": "28457ea5d0140853599630568a8042a4f11af1b79747be6bf2f029f33d5b036e"
+  },
+  "4ed-to-041/include/RI/ri/LRI-cal_loop3_GPU.hpp": {
+    "identical": true,
+    "sha256": "d107c08a13b6bf8cbb5b5c6193c211e299eb54070f3e0fc39d7e9d1b3b292e58"
+  },
+  "4ed-to-041/unittests/gpu_symmetry/test_lri_gpu_symmetry.cpp": {
+    "identical": true,
+    "sha256": "c4ff2468fd581a1d1fd5e39211801546153e41e115b24f989d634f700317e193"
+  },
+  "first_bad_candidate": {
+    "commit": "4ed89410a5a6d7a891015879e8f0be0868af632d",
+    "parent": "6c6c8711894f6379d47448f71fd718170995d2fe",
+    "basis": "exact source comparison; newer-DDLA numerical endpoints separately tested; no unmodified historical binary bisect"
+  }
+}

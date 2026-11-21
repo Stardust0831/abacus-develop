@@ -1,0 +1,1014 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "check": "pinned_pr_source_tree",
+      "passed": true,
+      "commit": "f2667c6eed30e661a36bfb0ae1844802c99f171e",
+      "compared": 7693,
+      "mismatches": [],
+      "declared_crlf_checkouts": [
+        {
+          "path": "source/source_basis/module_ao/1_Documents/sphinx/make.bat",
+          "passed": true,
+          "byte_exact": false,
+          "actual_git_blob_sha1": "6247f7e231716482115f34084ac61030743e0715",
+          "eol_normalized_match": true
+        },
+        {
+          "path": "tools/04_windows_installation/install-abacus.bat",
+          "passed": true,
+          "byte_exact": false,
+          "actual_git_blob_sha1": "f9b6d16d0e82fbcb67e12217208e5d8fdf892c3c",
+          "eol_normalized_match": true
+        },
+        {
+          "path": "tools/04_windows_installation/uninstall-abacus.bat",
+          "passed": true,
+          "byte_exact": false,
+          "actual_git_blob_sha1": "145a6da2136cad4750b329cad299f4f3f966a754",
+          "eol_normalized_match": true
+        }
+      ]
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-cusolvermp-loop0/INPUT"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-cusolvermp-loop0/KPT"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-cusolvermp-loop0/STRU"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-displaced-normal/INPUT"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-displaced-normal/KPT"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "frozen-inputs/abacus-si64-displaced-normal/STRU"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "data/Si.upf"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "data/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/manifest.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/source-sha256.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/modified-files.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/patch-verification.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/build-env.sh"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/build-abacus.sbatch"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/build-deps.sbatch"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/abacus-gpu-libs.patch"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/REPRODUCE.md"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-CMakeCache.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-compile_commands.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-complete"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-info.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-install.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-ldd.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/abacus-sha256.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/build-accounting.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/build-gpu.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/build-lscpu.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/build-modules.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/compiler.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/ddla-CMakeCache.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/ddla-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/ddla-built"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/dependency-library-sha256.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/deps-complete"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/final-accounting.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/library-sha256.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libri-mpi1-omp1.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libri-mpi1-omp4.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libri-mpi2-omp1.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libri-test-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libri-test-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libxc-CMakeCache.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libxc-adapter-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libxc-adapter-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libxc-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/libxc-built"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/original-CMakeCache.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/logs/remote-source-sha256.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source-verification.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source-verification-before-guard.json"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/validate.sbatch"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/CMakeCache-cpu.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/CMakeCache-gpu.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-cpu-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-cpu-input-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-cpu-input-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-gpu-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-gpu-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-gpu-input-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-gpu-input-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-ldd.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/abacus-version.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/build-passed"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/compiler.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-cpu-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-cpu-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-cpu-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-gpu-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-gpu-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-gpu-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-old-cpu-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-old-cpu-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/consumer-old-cpu-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/ddla-sha256.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/device-exx-help.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/gpus.txt"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/input-passed"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/old-gpu-reject.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/symmetry-build.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/symmetry-configure.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/symmetry-test.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/earlier-build-logs/symmetry-unadapted-fixture-failed.log"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/docs/advanced/install.md"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_io/module_parameter/read_inp_exx_dftu.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_io/unittests/test_read_inp_exx_dftu.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/.gitattributes"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_base/timer.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/cmake/modules/FindLibRI.cmake"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_estate/module_pot/potential_new.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_lcao/module_ri/exx_lri.hpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/pr/source/source/source_hamilt/module_xc/libxc_pot.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/source/source/source_estate/module_pot/potential_new.cpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "provenance/experimental/source/source/source_lcao/module_ri/exx_lri.hpp"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "cli-assets/PP_ORB/Si_dojo_nsoc.upf"
+    },
+    {
+      "check": "copied_input_or_provenance_hash",
+      "passed": true,
+      "path": "cli-assets/PP_ORB/Si_dojo_6au_sz.orb"
+    },
+    {
+      "check": "original_module_image",
+      "passed": true,
+      "evidence": {
+        "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/16V100.sif",
+        "resolved_image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/16V100.sif",
+        "bytes": 184926208,
+        "catalog_sha256": "a085b32d873f6815e28e39342ad4fbcdf245c0488c2eec24ad9ff161a82ba531",
+        "actual_sha256": "a085b32d873f6815e28e39342ad4fbcdf245c0488c2eec24ad9ff161a82ba531",
+        "passed": true,
+        "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911"
+      }
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "mask": "40-43,104-107",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "experimental_gpu_libxc_linked",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "mask": "40-43,104-107",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "mask": "40-43,104-107",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "mask": "40-43,104-107",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "mask": "32-35,96-99",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "mask": "32-35,96-99",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "experimental_gpu_libxc_linked",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "mask": "32-35,96-99",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "mask": "32-35,96-99",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "mask": "0-3,64-67",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "exact_input_transformation",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu/STRU"
+    },
+    {
+      "check": "frozen_input_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu/KPT"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu/Si.upf"
+    },
+    {
+      "check": "frozen_data_asset",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu/Si_gga_7au_100Ry_2s2p1d.orb"
+    },
+    {
+      "check": "standard_cpu_libxc_linked",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "native_ddla_linked",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "four_core_affinity_mask",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "mask": "0-3,64-67",
+      "interpretation": "four physical cores, two SMT siblings per core"
+    },
+    {
+      "check": "same_lattice",
+      "passed": true
+    },
+    {
+      "check": "only_first_si_displaced",
+      "passed": true,
+      "observed_first_atom_angstrom": [
+        0.010000000000292,
+        0.020000000000584,
+        -0.015000000000438002
+      ]
+    },
+    {
+      "check": "cli_eight_expected_outcomes",
+      "passed": true,
+      "observed": [
+        {
+          "case": "gpu_realspace_on",
+          "exit_code": 1,
+          "passed": true
+        },
+        {
+          "case": "gpu_default_realspace",
+          "exit_code": 1,
+          "passed": true
+        },
+        {
+          "case": "gpu_default_symmetry",
+          "exit_code": 1,
+          "passed": true
+        },
+        {
+          "case": "gpu_kpoint_symmetry",
+          "exit_code": 1,
+          "passed": true
+        },
+        {
+          "case": "cpu_realspace_on",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "case": "gpu_time_reversal",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "case": "gpu_no_symmetry",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "case": "cpu_realspace_off",
+          "exit_code": 0,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "check": "input_unit_tests_cpu",
+      "passed": true
+    },
+    {
+      "check": "input_unit_tests_gpu",
+      "passed": true
+    },
+    {
+      "check": "build_success_marker",
+      "passed": true
+    }
+  ],
+  "failed_checks": [],
+  "displacement_angstrom": [
+    0.010000000000292,
+    0.020000000000584,
+    -0.015000000000438002
+  ],
+  "limitations": [
+    "Affinity is the recorded mpirun rank-placement probe using the same binding flags; per-thread scheduling during each calculation was not sampled.",
+    "OMP_PLACES/OMP_PROC_BIND/MKL_NUM_THREADS/SAI_RI_DEVICE/SAI_LIBXC_DEVICE are evidenced by the run script; runtime logs independently confirm MPI=1 and OpenMP=4."
+  ]
+}

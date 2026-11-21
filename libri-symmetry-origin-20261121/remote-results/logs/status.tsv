@@ -1,0 +1,24 @@
+case	arguments	exit_code
+release-original-all	-1 all all	1
+release-wrapper-cpu	-1 cpu all	0
+release-wrapper-label-0	0 gpu all	0
+release-wrapper-label-1	1 gpu all	1
+release-wrapper-label-2	2 gpu all	0
+release-wrapper-label-3	3 gpu all	1
+release-wrapper-label-4	4 gpu all	0
+release-wrapper-label-5	5 gpu all	0
+release-wrapper-label-6	6 gpu all	0
+release-wrapper-label-7	7 gpu all	1
+release-wrapper-label-8	8 gpu all	0
+release-wrapper-label-9	9 gpu all	1
+release-wrapper-label-10	10 gpu all	0
+release-wrapper-label-11	11 gpu all	0
+release-wrapper-label-12	12 gpu all	1
+release-wrapper-label-13	13 gpu all	1
+release-wrapper-label-14	14 gpu all	1
+release-wrapper-label-15	15 gpu all	1
+release-wrapper-label-16	16 gpu all	0
+release-wrapper-label-17	17 gpu all	0
+release-wrapper-label-18	18 gpu all	1
+release-patched-all	-1 all all	0
+dev-current-ddla-all	-1 all all	0

@@ -1,0 +1,10 @@
+block,structure,before,after,comparison,energy_delta_ev_atom,max_force_vector_delta_ev_angstrom,total_energy_delta_ev,energy_limit_ev_atom,force_limit_ev_angstrom,energy_passed,force_passed,passed
+0,ideal,module,experimental,cross_build,2.169301183130301e-09,1.2727922061349827e-09,1.3883527572033927e-07,1e-06,1e-05,True,True,True
+0,ideal,module,pr_cpu,cross_build,2.2737367544323206e-13,2.2360679775046928e-10,1.4551915228366852e-11,1e-06,1e-05,True,True,True
+0,ideal,module,pr_gpu,cross_build,7.389644451905042e-13,4.582575694956184e-10,4.729372449219227e-11,1e-06,1e-05,True,True,True
+0,ideal,pr_cpu,pr_gpu,same_PR_binary,9.663381206337363e-13,3.162277660166608e-10,6.184563972055912e-11,1e-08,1e-06,True,True,True
+1,displaced,pr_cpu,pr_gpu,same_PR_binary,5.684341886080802e-14,1.4142135628553501e-10,3.637978807091713e-12,1e-08,1e-06,True,True,True
+1,ideal,module,experimental,cross_build,2.169301183130301e-09,1.2727922061349827e-09,1.3883527572033927e-07,1e-06,1e-05,True,True,True
+1,ideal,module,pr_cpu,cross_build,2.1316282072803006e-13,2.2360679775046928e-10,1.3642420526593924e-11,1e-06,1e-05,True,True,True
+1,ideal,module,pr_gpu,cross_build,4.263256414560601e-14,3.162277660166608e-10,2.7284841053187847e-12,1e-06,1e-05,True,True,True
+1,ideal,pr_cpu,pr_gpu,same_PR_binary,1.7053025658242404e-13,1.4142135623746988e-10,1.0913936421275139e-11,1e-08,1e-06,True,True,True

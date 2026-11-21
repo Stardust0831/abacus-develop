@@ -1,0 +1,211 @@
+[
+  {
+    "case": "release-original-all",
+    "arguments": "-1 all all",
+    "exit_code": 1,
+    "checks": 6,
+    "passes": 0,
+    "failures": [
+      "real label=a1b1_a2b2 sector=1 mode=2: output block count differs"
+    ]
+  },
+  {
+    "case": "release-wrapper-cpu",
+    "arguments": "-1 cpu all",
+    "exit_code": 0,
+    "checks": 304,
+    "passes": 38,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-0",
+    "arguments": "0 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-1",
+    "arguments": "1 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a1b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=4.89589",
+      "real label=a1b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-2",
+    "arguments": "2 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-3",
+    "arguments": "3 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a1b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.06813",
+      "real label=a1b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-4",
+    "arguments": "4 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-5",
+    "arguments": "5 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-6",
+    "arguments": "6 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-7",
+    "arguments": "7 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=4.88398",
+      "real label=a0b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-8",
+    "arguments": "8 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-9",
+    "arguments": "9 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.05577",
+      "real label=a0b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-10",
+    "arguments": "10 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-11",
+    "arguments": "11 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-12",
+    "arguments": "12 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b1_a1b2 sector=1 mode=2: output atom count differs"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-13",
+    "arguments": "13 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b2_a1b1 sector=1 mode=2: output atom count differs"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-14",
+    "arguments": "14 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b0_a1b2 sector=1 mode=2: output atom count differs"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-15",
+    "arguments": "15 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=a0b2_a1b0 sector=1 mode=2: output atom count differs"
+    ]
+  },
+  {
+    "case": "release-wrapper-label-16",
+    "arguments": "16 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-17",
+    "arguments": "17 gpu all",
+    "exit_code": 0,
+    "checks": 8,
+    "passes": 2,
+    "failures": []
+  },
+  {
+    "case": "release-wrapper-label-18",
+    "arguments": "18 gpu all",
+    "exit_code": 1,
+    "checks": 2,
+    "passes": 0,
+    "failures": [
+      "real label=all sector=1 mode=2 atoms=1,0 cell=1 element=0 error=39.2883",
+      "real label=all sector=1 mode=2: contraction differs from masked CPU reference"
+    ]
+  },
+  {
+    "case": "release-patched-all",
+    "arguments": "-1 all all",
+    "exit_code": 0,
+    "checks": 456,
+    "passes": 38,
+    "failures": []
+  },
+  {
+    "case": "dev-current-ddla-all",
+    "arguments": "-1 all all",
+    "exit_code": 0,
+    "checks": 456,
+    "passes": 38,
+    "failures": []
+  }
+]

@@ -1,0 +1,268 @@
+SAI static build information (no module load required)
+{
+  "catalog_sha256": "febe11d92f9b5ba06accb9fffbb8e12488ba21f0ea2a966b2bb399be3ed7e4f2",
+  "identity": {
+    "build_id": "develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5",
+    "cpu_arch": "znver3",
+    "cuda_arch": "70",
+    "dependency_isa": "avx2",
+    "gpus": 1,
+    "install_prefix": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100",
+    "partition": "16V100",
+    "recipe_sha256": "4555f0f84db5646a40ea1d7178d171eb6900ea9454ed3a9df1f7ed12eb9b063c",
+    "repository": "deepmodeling/abacus-develop",
+    "schema": 2,
+    "software": "abacus",
+    "source_ref": "develop",
+    "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+    "source_version": "develop-2026-11-16",
+    "stack_digest": null,
+    "stack_sources": {},
+    "target": "16v100-avx2",
+    "track": "development",
+    "version_label": "develop-2026-11-16"
+  },
+  "image_sha256": "a085b32d873f6815e28e39342ad4fbcdf245c0488c2eec24ad9ff161a82ba531",
+  "job": "2525556",
+  "schema": 1
+}
+
+$ abacus --info
+WARNING: Skipping mount /usr/bin/nvidia-debugdump [files]: /usr/bin/nvidia-debugdump doesn't exist in container
+WARNING: Skipping mount /usr/bin/nvidia-persistenced [files]: /usr/bin/nvidia-persistenced doesn't exist in container
+WARNING: Skipping mount /usr/bin/nvidia-cuda-mps-control [files]: /usr/bin/nvidia-cuda-mps-control doesn't exist in container
+WARNING: Skipping mount /usr/bin/nvidia-cuda-mps-server [files]: /usr/bin/nvidia-cuda-mps-server doesn't exist in container
+WARNING: Skipping mount /usr/share/vulkan/implicit_layer.d/nvidia_layers.json [files]: /usr/share/vulkan/implicit_layer.d/nvidia_layers.json doesn't exist in container
+WARNING: Skipping mount /usr/share/egl/egl_external_platform.d/15_nvidia_gbm.json [files]: /usr/share/egl/egl_external_platform.d/15_nvidia_gbm.json doesn't exist in container
+WARNING: Skipping mount /usr/share/glvnd/egl_vendor.d/10_nvidia.json [files]: /usr/share/glvnd/egl_vendor.d/10_nvidia.json doesn't exist in container
+WARNING: Skipping mount /usr/share/vulkan/icd.d/nvidia_icd.json [files]: /usr/share/vulkan/icd.d/nvidia_icd.json doesn't exist in container
+WARNING: Skipping mount /usr/share/egl/egl_external_platform.d/10_nvidia_wayland.json [files]: /usr/share/egl/egl_external_platform.d/10_nvidia_wayland.json doesn't exist in container
+WARNING: Skipping mount /usr/share/nvidia/nvoptix.bin [files]: /usr/share/nvidia/nvoptix.bin doesn't exist in container
+WARNING: Skipping mount /usr/bin/nvidia-smi [files]: /usr/bin/nvidia-smi doesn't exist in container
+
+----------------- ABACUS Core & Platform -----------------
+ABACUS Version:                v3.11.0-beta13
+Git Commit:                    4e9f163 (Mon Nov 16 20:17:43 2026 +0800)
+Target Platform:               CPU + NVIDIA CUDA
+Build Type:                    Release
+
+----------------- Build Environment -----------------
+Built By:                      root
+Built On:                      16v100n12.mr-sai.ai
+Built At:                      Nov 16 2026 19:38:31
+
+----------------- Compiler & Flags -----------------
+C++ Compiler:                  GNU (/usr/bin/g++)
+C++ Compiler Ver:              13.3.0
+C++ Flags:                     -march=native -mtune=native
+Linker Flags:                  
+CUDA Flags:                    
+
+----------------- Sanitizers & Debugging -----------------
+AddressSanitizer:              no
+Debug Symbols:                 no
+
+----------------- CMake Configuration Summary -----------------
+Build Options:  ENABLE_MPI=ON  ENABLE_OPENMP=ON  USE_CUDA=ON  USE_ROCM=OFF  ENABLE_LCAO=ON  ENABLE_ELPA=ON  ENABLE_LIBXC=ON  ENABLE_MLALGO=ON  ENABLE_ASAN=OFF  BUILD_TESTING=OFF
+
+FindPackage Results:  MPI Found=TRUE  OpenMP Found=TRUE  CUDA Found=  ROCm Found=  ELPA Found=TRUE  Libxc Found=1  PEXSI Found=  LibRI Found=TRUE
+
+----------------- Parallelism & Communication -----------------
+MPI Implementation:            OpenMPI
+MPI Version:                   (MPI standard: 3.1)
+CUDA-aware MPI:                yes
+OpenMP Support:                yes (v4.5)
+
+----------------- Core Math Libraries -----------------
+LCAO Algorithm:                yes
+ELPA Support:                  yes (v)
+MKL Support:                   no
+LibXC Support:                 yes (v7.0.0)
+FFTW Support:                  yes (v3.3.10)
+
+----------------- Accelerators & Hardware -----------------
+NVIDIA CUDA Support:           yes (v12.9.86)
+AMD ROCm Support:              no
+CUSOLVERMP Support:            yes (version unknown)
+
+----------------- Hybrid Functional Libraries -----------------
+Cereal Serialization:          yes (version unknown)
+LibRI Support:                 yes (v2.1.1)
+LibComm Support:               yes (path: /opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/dependencies/LibComm-master)
+
+----------------- AI & Machine Learning -----------------
+LibTorch Support:              yes (v2.1.2)
+Libnpy Support:                yes (path: /opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/dependencies/libnpy-1.0.1/include)
+DeePMD-kit Support:            no
+NEP Support:                   yes (path: /opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/dependencies/nep)
+TensorFlow Support:            no
+
+----------------- Other Libraries -----------------
+DFT-D4 Support:                no
+JSON Support:                  yes (nlohmann-json v3.12.0)
+PEXSI Support:                 no
+cnpy Support:                  no
+
+----------------- Testing -----------------
+GTest Support:                 no
+Google Benchmark:              Disabled
+
+
+{
+  "applications": {
+    "abacus": {
+      "build_revision": "5b5f95b9e21c",
+      "partitions": {
+        "16V100": {
+          "binds": [
+            "/opt/apps/conda_env/deepmd-kit-3.1.2"
+          ],
+          "build_verified": true,
+          "evidence": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/43934692710-1-development-16v100-avx2-2026-11-16-4e9f1636b7ca.json",
+          "evidence_sha256": "f960b8fe8193c0461a5b70da5055d7d4e08bee1f727c4b84b885933c9d097807",
+          "identity": {
+            "build_id": "develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5",
+            "cpu_arch": "znver3",
+            "cuda_arch": "70",
+            "dependency_isa": "avx2",
+            "gpus": 1,
+            "install_prefix": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100",
+            "partition": "16V100",
+            "recipe_sha256": "4555f0f84db5646a40ea1d7178d171eb6900ea9454ed3a9df1f7ed12eb9b063c",
+            "repository": "deepmodeling/abacus-develop",
+            "schema": 2,
+            "software": "abacus",
+            "source_ref": "develop",
+            "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+            "source_version": "develop-2026-11-16",
+            "stack_digest": null,
+            "stack_sources": {},
+            "target": "16v100-avx2",
+            "track": "development",
+            "version_label": "develop-2026-11-16"
+          },
+          "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/16V100.sif",
+          "mpi_prefix": "/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2",
+          "scientific_verified": true,
+          "sha256": "a085b32d873f6815e28e39342ad4fbcdf245c0488c2eec24ad9ff161a82ba531",
+          "source_image": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/43934692710-1-development-16v100-avx2-2026-11-16-4e9f1636b7ca.sif"
+        },
+        "4V100": {
+          "binds": [
+            "/opt/apps/conda_env/deepmd-kit-3.1.2"
+          ],
+          "build_verified": true,
+          "evidence": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/4V100/43934692710-1-development-4v100-avx512-2026-11-16-4e9f1636b7ca.json",
+          "evidence_sha256": "9404e3943c6c3ad6f0324079bd88f6bddc062283147649e094de4eca9663d084",
+          "identity": {
+            "build_id": "develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5",
+            "cpu_arch": "znver4",
+            "cuda_arch": "70",
+            "dependency_isa": "avx512",
+            "gpus": 1,
+            "install_prefix": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/4V100",
+            "partition": "4V100",
+            "recipe_sha256": "4555f0f84db5646a40ea1d7178d171eb6900ea9454ed3a9df1f7ed12eb9b063c",
+            "repository": "deepmodeling/abacus-develop",
+            "schema": 2,
+            "software": "abacus",
+            "source_ref": "develop",
+            "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+            "source_version": "develop-2026-11-16",
+            "stack_digest": null,
+            "stack_sources": {},
+            "target": "4v100-avx512",
+            "track": "development",
+            "version_label": "develop-2026-11-16"
+          },
+          "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/4V100.sif",
+          "mpi_prefix": "/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx512",
+          "scientific_verified": true,
+          "sha256": "90675864f814c045f5475fff660cb49dafc2955c1c92630ac0ff53e05d032463",
+          "source_image": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/4V100/43934692710-1-development-4v100-avx512-2026-11-16-4e9f1636b7ca.sif"
+        },
+        "8V100V0": {
+          "binds": [
+            "/opt/apps/conda_env/deepmd-kit-3.1.2"
+          ],
+          "build_verified": true,
+          "evidence": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/8V100V0/43934692710-1-development-8v100v0-avx512-2026-11-16-4e9f1636b7ca.json",
+          "evidence_sha256": "a08cfce1e6c6748a12eb7bdc94db9452c00baa006e2d9bb80d5c5bab7297b65c",
+          "identity": {
+            "build_id": "develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5",
+            "cpu_arch": "skylake-avx512",
+            "cuda_arch": "70",
+            "dependency_isa": "avx2",
+            "gpus": 1,
+            "install_prefix": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/8V100V0",
+            "partition": "8V100V0",
+            "recipe_sha256": "4555f0f84db5646a40ea1d7178d171eb6900ea9454ed3a9df1f7ed12eb9b063c",
+            "repository": "deepmodeling/abacus-develop",
+            "schema": 2,
+            "software": "abacus",
+            "source_ref": "develop",
+            "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+            "source_version": "develop-2026-11-16",
+            "stack_digest": null,
+            "stack_sources": {},
+            "target": "8v100v0-avx512",
+            "track": "development",
+            "version_label": "develop-2026-11-16"
+          },
+          "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/8V100V0.sif",
+          "mpi_prefix": "/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2",
+          "scientific_verified": true,
+          "sha256": "6c10ff4f3de1c744642f6c77c91d82a5c0abd8feeb696c32379f2a1974cfa330",
+          "source_image": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/8V100V0/43934692710-1-development-8v100v0-avx512-2026-11-16-4e9f1636b7ca.sif"
+        },
+        "DSPRHBM": {
+          "binds": [
+            "/opt/apps/conda_env/deepmd-kit-3.1.2"
+          ],
+          "build_verified": true,
+          "evidence": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/DSPRHBM/43934692710-1-development-dsprhbm-2026-11-16-4e9f1636b7ca.json",
+          "evidence_sha256": "d54137c9e6966baa776fdc7ba9ab4c476bb0f0fe020c0c0f05b603ddd78d8d32",
+          "identity": {
+            "build_id": "develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5",
+            "cpu_arch": "x86-64-v4",
+            "cuda_arch": "",
+            "dependency_isa": "avx512",
+            "gpus": 0,
+            "install_prefix": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/DSPRHBM",
+            "partition": "DSPRHBM",
+            "recipe_sha256": "4555f0f84db5646a40ea1d7178d171eb6900ea9454ed3a9df1f7ed12eb9b063c",
+            "repository": "deepmodeling/abacus-develop",
+            "schema": 2,
+            "software": "abacus",
+            "source_ref": "develop",
+            "source_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+            "source_version": "develop-2026-11-16",
+            "stack_digest": null,
+            "stack_sources": {},
+            "target": "dsprhbm",
+            "track": "development",
+            "version_label": "develop-2026-11-16"
+          },
+          "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/images/abacus/DSPRHBM.sif",
+          "mpi_prefix": "/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx512",
+          "scientific_verified": true,
+          "sha256": "4d79260aa349f416902202b248212c58b2b78524d15a9200b137655b524609f2",
+          "source_image": "/org/org-open-sai/proj-sai-hpc-software/containers/software/abacus/development/develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/DSPRHBM/43934692710-1-development-dsprhbm-2026-11-16-4e9f1636b7ca.sif"
+        }
+      },
+      "version": "develop-20261116-g4e9f1636b7ca"
+    }
+  },
+  "daily_publication": {
+    "attempt": "1",
+    "workflow": "43934692710"
+  },
+  "memory_bootstrap": {
+    "image": "/home/stardust/sai-hpc-software/sif-beta/runtimes/daily-20261116-43934692710-1-abacus/libexec/memory-bootstrap.sif",
+    "sha256": "eb467d87aa7a41ab80f982929d23a1fff1d59e1625fae57e62fba03fc643c7e2",
+    "source_image": "/org/org-open-sai/proj-sai-hpc-software/operations/daily-beta/43934692710-1-abacus-e1bf0906a597/bundle/libexec/memory-bootstrap.sif"
+  },
+  "runtime_sha256": "f678a701a42f66920311d7fb5149dc25beda6fbf1511dfacb257b171f1aacb42",
+  "schema": 1,
+  "snapshot": "20261116"
+}

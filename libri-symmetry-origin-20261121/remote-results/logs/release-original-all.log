@@ -1,0 +1,7 @@
+CHECK real label=a1b1_a2b2 sector=0 mode=0
+CHECK real label=a1b1_a2b2 sector=0 mode=1
+CHECK real label=a1b1_a2b2 sector=0 mode=2
+CHECK real label=a1b1_a2b2 sector=1 mode=0
+CHECK real label=a1b1_a2b2 sector=1 mode=1
+CHECK real label=a1b1_a2b2 sector=1 mode=2
+real label=a1b1_a2b2 sector=1 mode=2: output block count differs

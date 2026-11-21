@@ -1,0 +1,121 @@
+[
+  {
+    "sha": "a385ac9b1d04c151f26f9d14cc0c2588f96557ab",
+    "parents": [
+      "8032cad042a7af1d63738a45956e33d0edbb22c5"
+    ],
+    "date": "2026-11-21T03:52:22Z",
+    "subject": "1. update version 0.3.0.0",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/a385ac9b1d04c151f26f9d14cc0c2588f96557ab"
+  },
+  {
+    "sha": "8032cad042a7af1d63738a45956e33d0edbb22c5",
+    "parents": [
+      "9802c98968cf1a287f12bf61e9954e0a8d11b666"
+    ],
+    "date": "2026-11-21T03:26:18Z",
+    "subject": "fix(gpu): align the DDLA adapter with LibDDLA's public API (#23)",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/8032cad042a7af1d63738a45956e33d0edbb22c5"
+  },
+  {
+    "sha": "9802c98968cf1a287f12bf61e9954e0a8d11b666",
+    "parents": [
+      "e8cf65997137dd6dd29e56934e7e4fc9ed0fa169"
+    ],
+    "date": "2026-11-20T18:48:30Z",
+    "subject": "1. update README",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/9802c98968cf1a287f12bf61e9954e0a8d11b666"
+  },
+  {
+    "sha": "e8cf65997137dd6dd29e56934e7e4fc9ed0fa169",
+    "parents": [
+      "0415707188ba17386f7ee6a0eb6b50a16e284b05"
+    ],
+    "date": "2026-11-20T18:16:57Z",
+    "subject": "1. add tools",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/e8cf65997137dd6dd29e56934e7e4fc9ed0fa169"
+  },
+  {
+    "sha": "0415707188ba17386f7ee6a0eb6b50a16e284b05",
+    "parents": [
+      "4ed89410a5a6d7a891015879e8f0be0868af632d",
+      "0e8afc3931ee4cdf564699811ca220215570dd6b"
+    ],
+    "date": "2026-11-10T08:04:24Z",
+    "subject": "Merge branch 'master' into symfilter_refactor",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/0415707188ba17386f7ee6a0eb6b50a16e284b05"
+  },
+  {
+    "sha": "4ed89410a5a6d7a891015879e8f0be0868af632d",
+    "parents": [
+      "6c6c8711894f6379d47448f71fd718170995d2fe"
+    ],
+    "date": "2026-11-10T08:04:21Z",
+    "subject": "1. add Filter_Atom_Symmetry_Wrapper",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/4ed89410a5a6d7a891015879e8f0be0868af632d"
+  },
+  {
+    "sha": "0e8afc3931ee4cdf564699811ca220215570dd6b",
+    "parents": [
+      "ab81ac939d820b1350c1e00f0e09e8e1edfc3d96"
+    ],
+    "date": "2026-11-10T03:07:50Z",
+    "subject": "fix(gpu): support LibDDLA 0.0.6 public API (#19)",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/0e8afc3931ee4cdf564699811ca220215570dd6b"
+  },
+  {
+    "sha": "6c6c8711894f6379d47448f71fd718170995d2fe",
+    "parents": [
+      "ab81ac939d820b1350c1e00f0e09e8e1edfc3d96"
+    ],
+    "date": "2026-11-09T15:34:23Z",
+    "subject": "Separate GPU symmetry filtering from CPU loop conventions",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/6c6c8711894f6379d47448f71fd718170995d2fe"
+  },
+  {
+    "sha": "ab81ac939d820b1350c1e00f0e09e8e1edfc3d96",
+    "parents": [
+      "a0661cbb4b4f89ceeb23e040d49accb00943093f"
+    ],
+    "date": "2026-11-09T15:06:13Z",
+    "subject": "Merge pull request #18 from minyez/fix/macos-malloc-trim",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/ab81ac939d820b1350c1e00f0e09e8e1edfc3d96"
+  },
+  {
+    "sha": "a0661cbb4b4f89ceeb23e040d49accb00943093f",
+    "parents": [
+      "b66eb24b114666e6b2caf7d767dac16f5a41e89e",
+      "7025df62cc4d3c7a609d1acec1733ab4a95dc7fb"
+    ],
+    "date": "2026-10-24T11:53:41Z",
+    "subject": "Merge branch 'gpu-symmetry-upstream'",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/a0661cbb4b4f89ceeb23e040d49accb00943093f"
+  },
+  {
+    "sha": "11de9ee6458ee8acc4ba21a3b961277198aa0d00",
+    "parents": [
+      "4a41b91335013e36c8e623370389cc7243c1dc26"
+    ],
+    "date": "2026-10-23T16:10:24Z",
+    "subject": "fix(gpu): filter output pairs without truncating intermediate sums",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/11de9ee6458ee8acc4ba21a3b961277198aa0d00"
+  },
+  {
+    "sha": "4a41b91335013e36c8e623370389cc7243c1dc26",
+    "parents": [
+      "cdeab5750d748381e661f356027ade1c45d712b0"
+    ],
+    "date": "2026-10-23T16:10:23Z",
+    "subject": "Fix GPU symmetry filtering for all LibRI contraction labels",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/4a41b91335013e36c8e623370389cc7243c1dc26"
+  },
+  {
+    "sha": "cdeab5750d748381e661f356027ade1c45d712b0",
+    "parents": [
+      "bc79bb2ca52af2dbd9ab612c38e248f6c9dd96f1"
+    ],
+    "date": "2026-10-23T16:10:23Z",
+    "subject": "Fix GPU EXX real-space symmetry filtering",
+    "url": "https://github.com/abacusmodeling/LibRI/commit/cdeab5750d748381e661f356027ade1c45d712b0"
+  }
+]

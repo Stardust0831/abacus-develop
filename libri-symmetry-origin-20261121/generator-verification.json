@@ -1,0 +1,10 @@
+{
+  "command": "python cal_loop3_GPU.py",
+  "cwd": "sources/release-patched/tools/cal_loop3",
+  "exit_code": 0,
+  "before_sha256": "d74656200f890006cee04e6f109ea101831df60d4ebff61f776039609525f1f0",
+  "after_sha256": "d74656200f890006cee04e6f109ea101831df60d4ebff61f776039609525f1f0",
+  "identical": true,
+  "stdout": "",
+  "stderr": ""
+}

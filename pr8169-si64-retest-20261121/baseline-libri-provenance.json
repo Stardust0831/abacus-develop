@@ -1,0 +1,16 @@
+{
+  "abacus_commit": "4e9f1636b7ca27d1dc634711915c18087654b911",
+  "libri_selected_commit": "b0eff7ad70abe16176bc59f93dd787139ab81c77",
+  "libri_commit_date": "2026-08-10T09:19:59Z",
+  "libri_header_version": "2.1.1",
+  "dependency_path_in_image": "/opt/apps/abacus/abacus-development-develop-2026-11-16-g4e9f1636b7ca-r4555f0f84db5/16V100/dependencies/LibRI-b0eff7a",
+  "image_sha256": "a085b32d873f6815e28e39342ad4fbcdf245c0488c2eec24ad9ff161a82ba531",
+  "evidence": [
+    "Original executable --build-info reports LibRI yes (v2.1.1).",
+    "Read-only inspection of the frozen image found the version.h file in LibRI-b0eff7a with MAJOR=2, MINOR=1, PATCH=1.",
+    "The pinned ABACUS FindLibRI.cmake downloads commit b0eff7a by default.",
+    "GitHub resolves b0eff7a to the full commit above."
+  ],
+  "scope": "The selected source revision and header version are recorded; this supplemental check does not claim a new byte-by-byte audit of every baseline LibRI header.",
+  "version_warning": "The header version is shared by multiple development commits; it is not a unique release or source identifier."
+}

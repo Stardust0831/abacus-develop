@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "archive": "abacus-si64-symmetry-guard-retest-20261121.tar.gz",
+  "sha256": "4ca994d552094f9e3180751b6572653798d1463ccec9c893c3308f5143fe5587",
+  "files": 490,
+  "payload_hashes_checked": 489,
+  "manifest_self_reference": false,
+  "coordinator_drafts_excluded": true,
+  "reviewer_file_unchanged": true,
+  "offline_reanalysis": [
+    {
+      "script": "analyze.py",
+      "exitcode": 0
+    },
+    {
+      "script": "audit-assets.py",
+      "exitcode": 0
+    },
+    {
+      "script": "verify-analysis.py",
+      "exitcode": 0
+    },
+    {
+      "script": "make-report.py",
+      "exitcode": 0
+    }
+  ],
+  "all_payloads_unchanged_after_reanalysis": true
+}

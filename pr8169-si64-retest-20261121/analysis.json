@@ -1,0 +1,3306 @@
+{
+  "passed": true,
+  "partial": false,
+  "expected_runs": 10,
+  "observed_runs": 10,
+  "run_checks_passed": 10,
+  "limits": {
+    "energy_ev_atom": 1e-06,
+    "force_vector_ev_angstrom": 1e-05,
+    "same_binary_energy_ev_atom": 1e-08,
+    "same_binary_force_vector_ev_angstrom": 1e-06
+  },
+  "groups": {
+    "module": {
+      "samples": 2,
+      "ranges_s": {
+        "wall_s": [
+          841.74,
+          843.92
+        ],
+        "exx_electronic_s": [
+          359.71,
+          360.08
+        ],
+        "exx_force_s": [
+          397.61,
+          398.42
+        ],
+        "remainder_s": [
+          84.05000000000001,
+          85.78999999999996
+        ],
+        "exx_ions_s": null,
+        "scf_s": [
+          422.58,
+          423.95
+        ],
+        "force_s": [
+          402.96,
+          404.14
+        ],
+        "solver_s": [
+          30.26,
+          31.92
+        ],
+        "libxc_s": [
+          20.15,
+          20.35
+        ],
+        "effective_potential_s": [
+          30.31,
+          30.4
+        ]
+      },
+      "wall_s": 842.8299999999999,
+      "exx_electronic_s": 359.895,
+      "exx_force_s": 398.015,
+      "remainder_s": 84.91999999999999,
+      "exx_ions_s": null,
+      "scf_s": 423.265,
+      "force_s": 403.54999999999995,
+      "solver_s": 31.090000000000003,
+      "libxc_s": 20.25,
+      "effective_potential_s": 30.354999999999997
+    },
+    "experimental": {
+      "samples": 2,
+      "ranges_s": {
+        "wall_s": [
+          78.71,
+          92.62
+        ],
+        "exx_electronic_s": [
+          23.86,
+          28.73
+        ],
+        "exx_force_s": [
+          26.29,
+          31.92
+        ],
+        "remainder_s": [
+          28.559999999999995,
+          31.97
+        ],
+        "exx_ions_s": [
+          2.39,
+          2.45
+        ],
+        "scf_s": [
+          42.31,
+          50.19
+        ],
+        "force_s": [
+          27.72,
+          33.53
+        ],
+        "solver_s": [
+          6.39,
+          9.59
+        ],
+        "libxc_s": [
+          3.89,
+          4.16
+        ],
+        "effective_potential_s": [
+          10.1,
+          10.22
+        ]
+      },
+      "wall_s": 85.66499999999999,
+      "exx_electronic_s": 26.295,
+      "exx_force_s": 29.105,
+      "remainder_s": 30.264999999999997,
+      "exx_ions_s": 2.42,
+      "scf_s": 46.25,
+      "force_s": 30.625,
+      "solver_s": 7.99,
+      "libxc_s": 4.025,
+      "effective_potential_s": 10.16
+    },
+    "pr_cpu": {
+      "samples": 2,
+      "ranges_s": {
+        "wall_s": [
+          252.45,
+          252.73
+        ],
+        "exx_electronic_s": [
+          104.09,
+          104.44
+        ],
+        "exx_force_s": [
+          115.36,
+          115.93
+        ],
+        "remainder_s": [
+          32.359999999999985,
+          32.999999999999986
+        ],
+        "exx_ions_s": [
+          2.6,
+          2.61
+        ],
+        "scf_s": [
+          126.02,
+          126.46
+        ],
+        "force_s": [
+          117.35,
+          117.94
+        ],
+        "solver_s": [
+          5.96,
+          7.15
+        ],
+        "libxc_s": [
+          8.15,
+          8.18
+        ],
+        "effective_potential_s": [
+          13.53,
+          13.86
+        ]
+      },
+      "wall_s": 252.58999999999997,
+      "exx_electronic_s": 104.265,
+      "exx_force_s": 115.64500000000001,
+      "remainder_s": 32.679999999999986,
+      "exx_ions_s": 2.605,
+      "scf_s": 126.24,
+      "force_s": 117.645,
+      "solver_s": 6.555,
+      "libxc_s": 8.165,
+      "effective_potential_s": 13.695
+    },
+    "pr_gpu": {
+      "samples": 2,
+      "ranges_s": {
+        "wall_s": [
+          82.75,
+          88.45
+        ],
+        "exx_electronic_s": [
+          24.55,
+          25.41
+        ],
+        "exx_force_s": [
+          26.35,
+          29.69
+        ],
+        "remainder_s": [
+          31.85,
+          33.35000000000001
+        ],
+        "exx_ions_s": [
+          2.6,
+          2.7
+        ],
+        "scf_s": [
+          45.7,
+          48.25
+        ],
+        "force_s": [
+          28.21,
+          31.57
+        ],
+        "solver_s": [
+          5.96,
+          7.22
+        ],
+        "libxc_s": [
+          8.02,
+          8.35
+        ],
+        "effective_potential_s": [
+          13.49,
+          13.91
+        ]
+      },
+      "wall_s": 85.6,
+      "exx_electronic_s": 24.98,
+      "exx_force_s": 28.020000000000003,
+      "remainder_s": 32.60000000000001,
+      "exx_ions_s": 2.6500000000000004,
+      "scf_s": 46.975,
+      "force_s": 29.89,
+      "solver_s": 6.59,
+      "libxc_s": 8.184999999999999,
+      "effective_potential_s": 13.7
+    }
+  },
+  "comparisons": [
+    {
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "experimental",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.169301183130301e-09,
+      "max_force_vector_delta_ev_angstrom": 1.2727922061349827e-09,
+      "total_energy_delta_ev": 1.3883527572033927e-07,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_cpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.2737367544323206e-13,
+      "max_force_vector_delta_ev_angstrom": 2.2360679775046928e-10,
+      "total_energy_delta_ev": 1.4551915228366852e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_gpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 7.389644451905042e-13,
+      "max_force_vector_delta_ev_angstrom": 4.582575694956184e-10,
+      "total_energy_delta_ev": 4.729372449219227e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 0,
+      "structure": "ideal",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 9.663381206337363e-13,
+      "max_force_vector_delta_ev_angstrom": 3.162277660166608e-10,
+      "total_energy_delta_ev": 6.184563972055912e-11,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 1,
+      "structure": "displaced",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 5.684341886080802e-14,
+      "max_force_vector_delta_ev_angstrom": 1.4142135628553501e-10,
+      "total_energy_delta_ev": 3.637978807091713e-12,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "experimental",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.169301183130301e-09,
+      "max_force_vector_delta_ev_angstrom": 1.2727922061349827e-09,
+      "total_energy_delta_ev": 1.3883527572033927e-07,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_cpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.1316282072803006e-13,
+      "max_force_vector_delta_ev_angstrom": 2.2360679775046928e-10,
+      "total_energy_delta_ev": 1.3642420526593924e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_gpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 4.263256414560601e-14,
+      "max_force_vector_delta_ev_angstrom": 3.162277660166608e-10,
+      "total_energy_delta_ev": 2.7284841053187847e-12,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    },
+    {
+      "block": 1,
+      "structure": "ideal",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 1.7053025658242404e-13,
+      "max_force_vector_delta_ev_angstrom": 1.4142135623746988e-10,
+      "total_energy_delta_ev": 1.0913936421275139e-11,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true,
+      "passed": true
+    }
+  ],
+  "decompositions": [
+    {
+      "before": "module",
+      "after": "experimental",
+      "speedup": 9.83867390416156,
+      "saved_s": 757.165,
+      "phases": [
+        {
+          "component": "exx_electronic_s",
+          "before": 359.895,
+          "after": 26.295,
+          "saved_s": 333.59999999999997,
+          "share_of_total_saving": 0.4405908883796794
+        },
+        {
+          "component": "exx_force_s",
+          "before": 398.015,
+          "after": 29.105,
+          "saved_s": 368.90999999999997,
+          "share_of_total_saving": 0.48722537359756457
+        },
+        {
+          "component": "remainder_s",
+          "before": 84.91999999999999,
+          "after": 30.264999999999997,
+          "saved_s": 54.65499999999999,
+          "share_of_total_saving": 0.07218373802275592
+        }
+      ]
+    },
+    {
+      "before": "module",
+      "after": "pr_gpu",
+      "speedup": 9.846144859813084,
+      "saved_s": 757.2299999999999,
+      "phases": [
+        {
+          "component": "exx_electronic_s",
+          "before": 359.895,
+          "after": 24.98,
+          "saved_s": 334.91499999999996,
+          "share_of_total_saving": 0.442289661001281
+        },
+        {
+          "component": "exx_force_s",
+          "before": 398.015,
+          "after": 28.020000000000003,
+          "saved_s": 369.995,
+          "share_of_total_saving": 0.4886164045270262
+        },
+        {
+          "component": "remainder_s",
+          "before": 84.91999999999999,
+          "after": 32.60000000000001,
+          "saved_s": 52.31999999999998,
+          "share_of_total_saving": 0.06909393447169286
+        }
+      ]
+    },
+    {
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "speedup": 2.9508177570093457,
+      "saved_s": 166.98999999999998,
+      "phases": [
+        {
+          "component": "exx_electronic_s",
+          "before": 104.265,
+          "after": 24.98,
+          "saved_s": 79.285,
+          "share_of_total_saving": 0.47478890951553987
+        },
+        {
+          "component": "exx_force_s",
+          "before": 115.64500000000001,
+          "after": 28.020000000000003,
+          "saved_s": 87.625,
+          "share_of_total_saving": 0.52473201988143
+        },
+        {
+          "component": "remainder_s",
+          "before": 32.679999999999986,
+          "after": 32.60000000000001,
+          "saved_s": 0.07999999999997698,
+          "share_of_total_saving": 0.00047907060302998376
+        }
+      ]
+    }
+  ],
+  "paired_speedups": [
+    {
+      "block": 0,
+      "node": "16v100n14",
+      "before": "module",
+      "after": "experimental",
+      "speedup": 10.694193876254607,
+      "saved_s": 763.03
+    },
+    {
+      "block": 1,
+      "node": "16v100n22",
+      "before": "module",
+      "after": "experimental",
+      "speedup": 9.111638954869358,
+      "saved_s": 751.3
+    },
+    {
+      "block": 0,
+      "node": "16v100n14",
+      "before": "module",
+      "after": "pr_gpu",
+      "speedup": 10.172084592145016,
+      "saved_s": 758.99
+    },
+    {
+      "block": 1,
+      "node": "16v100n22",
+      "before": "module",
+      "after": "pr_gpu",
+      "speedup": 9.541209723007348,
+      "saved_s": 755.4699999999999
+    },
+    {
+      "block": 0,
+      "node": "16v100n14",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "speedup": 3.0541389728096675,
+      "saved_s": 169.98
+    },
+    {
+      "block": 1,
+      "node": "16v100n22",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "speedup": 2.8541548897682305,
+      "saved_s": 164.0
+    }
+  ],
+  "checks": [
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": -361.3506923886
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 6.56734e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": {
+        "INPUT": "9332f2eb7106d9e2b44810e0d00cebc9e899c179ed1b117ad4078367a30c43e4",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 360.08,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 397.61,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 422.58,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 402.96,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 30.26,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 20.15,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 30.31,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": 84.05000000000001
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": -361.3506923974
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 6.56521e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": {
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "INPUT": "9332f2eb7106d9e2b44810e0d00cebc9e899c179ed1b117ad4078367a30c43e4"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 23.86,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 26.29,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 2.45,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 42.31,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 27.72,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 6.39,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 3.89,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 10.22,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": 28.559999999999995
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": -361.3506923887
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 6.567e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": "cpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": {
+        "INPUT": "ae5c1da16f5751e9a9924d00b6f8e7aab3844d9ecb9e0e5c724f36d0035c7e0f",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 104.44,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 115.93,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 2.6,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 126.02,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 117.94,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 5.96,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 8.15,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 13.86,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": 32.359999999999985
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": -361.3506923888
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 6.56628e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": {
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "INPUT": "22b22df9d33c7f2d49345084fcc5654bd8e3dea812563a6b8ff3000412c66d0c",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 24.55,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 26.35,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 2.6,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 45.7,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 28.21,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 5.96,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 8.02,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 13.49,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": 31.85
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": -361.3506923887
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 6.56664e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": {
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "INPUT": "22b22df9d33c7f2d49345084fcc5654bd8e3dea812563a6b8ff3000412c66d0c",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 25.41,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 29.69,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 2.7,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 48.25,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 31.57,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 7.22,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 8.35,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 13.91,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": 33.35000000000001
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": -361.3506923887
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 6.56706e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": "cpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": {
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "INPUT": "ae5c1da16f5751e9a9924d00b6f8e7aab3844d9ecb9e0e5c724f36d0035c7e0f",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 104.09,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 115.36,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 2.61,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 126.46,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 117.35,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 7.15,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 8.18,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 13.53,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": 32.999999999999986
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": -361.3506923976
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 6.56368e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": {
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "INPUT": "9332f2eb7106d9e2b44810e0d00cebc9e899c179ed1b117ad4078367a30c43e4",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 28.73,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 31.92,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 2.39,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 50.19,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 33.53,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 9.59,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 4.16,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 10.1,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": 31.97
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": -361.3506923887
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": [
+        12,
+        8
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 6.56688e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": [
+        20,
+        20
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": {
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "INPUT": "9332f2eb7106d9e2b44810e0d00cebc9e899c179ed1b117ad4078367a30c43e4",
+        "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 359.71,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 398.42,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 423.95,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 404.14,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 31.92,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 20.35,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 30.4,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": 85.78999999999996
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module",
+      "observed": [
+        8,
+        1
+      ]
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": -361.3504014091
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": [
+        12,
+        12
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 9.742e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": [
+        24,
+        24
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": "cpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": {
+        "INPUT": "ae5c1da16f5751e9a9924d00b6f8e7aab3844d9ecb9e0e5c724f36d0035c7e0f",
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "STRU": "c91e5b65d932b647e36ac72118f1eb51a515107cc4ef0b7c153de4c54c58a4ba",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 163.15,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 120.49,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 192.58,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 122.49,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 7.6,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 12.53,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 19.37,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": 41.489999999999995
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu",
+      "observed": [
+        12,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "exit_codes",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": [
+        0,
+        0
+      ]
+    },
+    {
+      "check": "converged_and_normal_termination",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "finite_final_energy",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "nonzero_finite_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": -361.3504014091
+    },
+    {
+      "check": "64_finite_force_vectors",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 64
+    },
+    {
+      "check": "gga_and_hse_iterations",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": [
+        12,
+        12
+      ]
+    },
+    {
+      "check": "final_residual_threshold",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 9.742e-09,
+      "limit": 1e-08
+    },
+    {
+      "check": "iteration_log_agreement",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": [
+        24,
+        24
+      ]
+    },
+    {
+      "check": "setting_symmetry",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "-1",
+      "observed": "-1"
+    },
+    {
+      "check": "setting_exx_symmetry_realspace",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_gamma_only",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_force",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "1",
+      "observed": "1"
+    },
+    {
+      "check": "setting_cal_stress",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_device",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "setting_ks_solver",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "cusolver",
+      "observed": "cusolver"
+    },
+    {
+      "check": "setting_init_chg",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "atomic",
+      "observed": "atomic"
+    },
+    {
+      "check": "setting_nbands",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "128",
+      "observed": "128"
+    },
+    {
+      "check": "setting_exx_separate_loop",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "0",
+      "observed": "0"
+    },
+    {
+      "check": "setting_dft_functional",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": "hse",
+      "observed": "hse"
+    },
+    {
+      "check": "setting_scf_thr",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": 1e-08,
+      "observed": "1e-08"
+    },
+    {
+      "check": "setting_ecutwfc",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "expected": 100,
+      "observed": "100"
+    },
+    {
+      "check": "device_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": "gpu"
+    },
+    {
+      "check": "original_request_asset_hashes",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": {
+        "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+        "STRU": "c91e5b65d932b647e36ac72118f1eb51a515107cc4ef0b7c153de4c54c58a4ba",
+        "INPUT": "22b22df9d33c7f2d49345084fcc5654bd8e3dea812563a6b8ff3000412c66d0c",
+        "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249",
+        "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece"
+      }
+    },
+    {
+      "check": "timer_exx_electronic_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 40.61,
+      "timer": "Exx_LRI::cal_exx_elec"
+    },
+    {
+      "check": "timer_exx_force_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 30.93,
+      "timer": "Exx_LRI::cal_exx_force"
+    },
+    {
+      "check": "timer_exx_ions_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 2.99,
+      "timer": "Exx_LRI::cal_exx_ions"
+    },
+    {
+      "check": "timer_scf_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 70.03,
+      "timer": "ESolver_KS::scf_loop"
+    },
+    {
+      "check": "timer_force_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 32.93,
+      "timer": "ESolver_KS_LCAO::cal_force"
+    },
+    {
+      "check": "timer_solver_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 7.56,
+      "timer": "HSolverLCAO::solve"
+    },
+    {
+      "check": "timer_libxc_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 12.3,
+      "timer": "XC_Functional_Libxc::v_xc_libxc"
+    },
+    {
+      "check": "timer_effective_potential_s",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 19.25,
+      "timer": "Potential::cal_veff"
+    },
+    {
+      "check": "wall_positive_nonoverlapping_partition",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": 41.07
+    },
+    {
+      "check": "exx_call_counts",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu",
+      "observed": [
+        12,
+        1
+      ]
+    },
+    {
+      "check": "executable_sha256",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "omp4_blas1_one_visible_gpu",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "runtime_mpi1_omp4",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "all_ten_runs_present",
+      "passed": true,
+      "observed": 10,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "check": "campaign_complete",
+      "passed": true,
+      "job_id": 2670088
+    },
+    {
+      "check": "original_ideal_runs_complete_before_driver_failure",
+      "passed": true,
+      "job_id": 2670089
+    },
+    {
+      "check": "recovery_campaign_complete",
+      "passed": true,
+      "job_id": 2670638
+    },
+    {
+      "check": "recovery_exactly_missing_pair",
+      "passed": true,
+      "job_id": 2670638
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/01-ideal-experimental"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "experimental",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.169301183130301e-09,
+      "max_force_vector_delta_ev_angstrom": 1.2727922061349827e-09,
+      "total_energy_delta_ev": 1.3883527572033927e-07,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/00-ideal-module"
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/02-ideal-pr_cpu"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_cpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.2737367544323206e-13,
+      "max_force_vector_delta_ev_angstrom": 2.2360679775046928e-10,
+      "total_energy_delta_ev": 1.4551915228366852e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block0-2670088/03-ideal-pr_gpu"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 0,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_gpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 7.389644451905042e-13,
+      "max_force_vector_delta_ev_angstrom": 4.582575694956184e-10,
+      "total_energy_delta_ev": 4.729372449219227e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 0,
+      "structure": "ideal",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 9.663381206337363e-13,
+      "max_force_vector_delta_ev_angstrom": 3.162277660166608e-10,
+      "total_energy_delta_ev": 6.184563972055912e-11,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/00-displaced-pr_cpu"
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/recovery-block1-2670638/01-displaced-pr_gpu"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 1,
+      "structure": "displaced",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 5.684341886080802e-14,
+      "max_force_vector_delta_ev_angstrom": 1.4142135628553501e-10,
+      "total_energy_delta_ev": 3.637978807091713e-12,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "displaced_nontrivial_forces",
+      "passed": true,
+      "observed": [
+        0.39801315743195637,
+        0.39801315743195637
+      ]
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/02-ideal-experimental"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "experimental",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.169301183130301e-09,
+      "max_force_vector_delta_ev_angstrom": 1.2727922061349827e-09,
+      "total_energy_delta_ev": 1.3883527572033927e-07,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/03-ideal-module"
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/01-ideal-pr_cpu"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_cpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 2.1316282072803006e-13,
+      "max_force_vector_delta_ev_angstrom": 2.2360679775046928e-10,
+      "total_energy_delta_ev": 1.3642420526593924e-11,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "same_node",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "paired_identical_assets",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "input_equal_except_device_exx",
+      "passed": true,
+      "path": "results/block1-2670089/00-ideal-pr_gpu"
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 1,
+      "structure": "ideal",
+      "before": "module",
+      "after": "pr_gpu",
+      "comparison": "cross_build",
+      "energy_delta_ev_atom": 4.263256414560601e-14,
+      "max_force_vector_delta_ev_angstrom": 3.162277660166608e-10,
+      "total_energy_delta_ev": 2.7284841053187847e-12,
+      "energy_limit_ev_atom": 1e-06,
+      "force_limit_ev_angstrom": 1e-05,
+      "energy_passed": true,
+      "force_passed": true
+    },
+    {
+      "check": "numerical_comparison",
+      "passed": true,
+      "block": 1,
+      "structure": "ideal",
+      "before": "pr_cpu",
+      "after": "pr_gpu",
+      "comparison": "same_PR_binary",
+      "energy_delta_ev_atom": 1.7053025658242404e-13,
+      "max_force_vector_delta_ev_angstrom": 1.4142135623746988e-10,
+      "total_energy_delta_ev": 1.0913936421275139e-11,
+      "energy_limit_ev_atom": 1e-08,
+      "force_limit_ev_angstrom": 1e-06,
+      "energy_passed": true,
+      "force_passed": true
+    }
+  ],
+  "failed_checks": [],
+  "timer_labels": {
+    "exx_electronic_s": "Exx_LRI::cal_exx_elec",
+    "exx_force_s": "Exx_LRI::cal_exx_force",
+    "exx_ions_s": "Exx_LRI::cal_exx_ions",
+    "scf_s": "ESolver_KS::scf_loop",
+    "force_s": "ESolver_KS_LCAO::cal_force",
+    "solver_s": "HSolverLCAO::solve",
+    "libxc_s": "XC_Functional_Libxc::v_xc_libxc",
+    "effective_potential_s": "Potential::cal_veff"
+  },
+  "timing_note": "Only wall = electronic EXX + EXX force + remainder is additive; all other timers are nested diagnostics. All timing records are retained even if a numerical check fails."
+}

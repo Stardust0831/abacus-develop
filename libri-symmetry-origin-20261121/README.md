@@ -1,0 +1,5 @@
+LibRI PR #16 was merged correctly. Later Wrapper changes at `4ed89410` reintroduced incorrect GPU output filtering; the released implementation still fails after migrating the test fixture to the Wrapper API. An isolated loop/generator repair passes the standalone real/complex regression. The exact source boundary is supported by diffs and controlled experiments, not an unmodified historical binary bisect.
+
+See [origin report](ORIGIN_REPORT.md), [patch](proposed-loop-contract-fix.patch), [fixture migration](fixture-wrapper.patch), [test inputs/sources](test-bundle.tar.gz), [raw results](remote-results.tar.gz), and [test summary](test-summary.json). Relative source paths in the detailed evidence refer to the extracted test bundle. Source/API records and raw logs are also provided here.
+
+ABACUS application validation of this proposed repair has not been performed. The temporary ABACUS GPU EXX spatial-symmetry restriction remains in place. No upstream LibRI change was published by this investigation.
