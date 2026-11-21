@@ -1,0 +1,23 @@
+{
+  "final-cpu": {
+    "tests": 47,
+    "passed": 47,
+    "skipped": [],
+    "failures": []
+  },
+  "final-gpu": {
+    "tests": 49,
+    "passed": 49,
+    "skipped": [],
+    "failures": []
+  },
+  "final-gpu-no-visible": {
+    "tests": 3,
+    "passed": 1,
+    "skipped": [
+      "InputTest.DeviceExxGpuScfSymmetry",
+      "InputTest.DeviceExxGpuMdEffectiveSymmetry"
+    ],
+    "failures": []
+  }
+}

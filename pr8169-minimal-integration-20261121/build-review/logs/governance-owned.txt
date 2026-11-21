@@ -1,0 +1,3 @@
+Owned working-tree diff against HEAD; 4 changed files
+Agent governance check: no findings.
+

@@ -1,0 +1,37 @@
+{
+  "source/source_io/test_serial/read_input_test.cpp": {
+    "before": "bc7a2c3f254cabe9c0e91ca8d1e6016513e3a12f109411ad04ecc6f7db3949c6",
+    "final": "57b0051830fe80b13e8afd42e9c95e863a5779b12bc05a1cdb949e947e3f9077",
+    "local": "57b0051830fe80b13e8afd42e9c95e863a5779b12bc05a1cdb949e947e3f9077"
+  },
+  "source/source_io/unittests/CMakeLists.txt": {
+    "before": "a0dee5b0efcf1798c0c64386c6de3845c3c9f93f00f680f692a5976f57d64204",
+    "final": "44b513a2113cb9c7bc367553aa01eeb3a44aea509105c81c65864c69afbba53b",
+    "local": "44b513a2113cb9c7bc367553aa01eeb3a44aea509105c81c65864c69afbba53b"
+  },
+  "source/source_io/unittests/test_read_inp_exx_dftu.cpp": {
+    "before": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb",
+    "final": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb",
+    "local": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb"
+  },
+  "source/source_io/module_parameter/read_input.cpp": {
+    "before": "df9867d25063463e87f2e4868a4b3a0ce25620fddbc5125d9428cbb700d72ec7",
+    "final": "df9867d25063463e87f2e4868a4b3a0ce25620fddbc5125d9428cbb700d72ec7",
+    "local": "df9867d25063463e87f2e4868a4b3a0ce25620fddbc5125d9428cbb700d72ec7"
+  },
+  "source/source_io/module_parameter/read_inp_sys.cpp": {
+    "before": "4c89c7f25935c0f85f06215c14b7cfd55cf305bbb32d8f9d9b59d3c8fc9bd8d8",
+    "final": "4c89c7f25935c0f85f06215c14b7cfd55cf305bbb32d8f9d9b59d3c8fc9bd8d8",
+    "local": "4c89c7f25935c0f85f06215c14b7cfd55cf305bbb32d8f9d9b59d3c8fc9bd8d8"
+  },
+  "source/source_io/module_parameter/read_inp_exx_dftu.cpp": {
+    "before": "1ea9cd2adc073860c4bf9899977509ecfb6977d1b2355dbbd906312f4ba9fed8",
+    "final": "1ea9cd2adc073860c4bf9899977509ecfb6977d1b2355dbbd906312f4ba9fed8",
+    "local": "1ea9cd2adc073860c4bf9899977509ecfb6977d1b2355dbbd906312f4ba9fed8"
+  },
+  "source/source_base/module_device/device.cpp": {
+    "before": "caaf95510fb7f19459759b83baa9edd7aafe5da56c6cb4b88662f7dd1b122190",
+    "final": "caaf95510fb7f19459759b83baa9edd7aafe5da56c6cb4b88662f7dd1b122190",
+    "local": "caaf95510fb7f19459759b83baa9edd7aafe5da56c6cb4b88662f7dd1b122190"
+  }
+}

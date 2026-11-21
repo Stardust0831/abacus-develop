@@ -1,0 +1,31 @@
+JobId=2673188 JobName=pr8169-reader-layout
+   UserId=stardust(1478400690) GroupId=stardust(1478400690) MCS_label=N/A
+   Priority=6020 Nice=0 Account=proj-sai-hpc-software QOS=flood-gpu WCKey=*
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=0 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:00:05 TimeLimit=01:00:00 TimeMin=N/A
+   SubmitTime=2026-11-21T15:30:29 EligibleTime=2026-11-21T15:30:29
+   AccrueTime=2026-11-21T15:30:29
+   StartTime=2026-11-21T15:30:31 EndTime=2026-11-21T16:30:31 Deadline=N/A
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2026-11-21T15:30:31 Scheduler=Backfill
+   Partition=16V100 AllocNode:Sid=login-01:1564988
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=16v100n16
+   BatchHost=16v100n16
+   NumNodes=1 NumCPUs=32 NumTasks=4 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=4,mem=60G,node=1,billing=600,gres/gpu=4
+   AllocTRES=cpu=32,mem=60G,node=1,billing=600,gres/gpu=4
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*
+   MinCPUsNode=1 MinMemoryTRES=15G MinTmpDiskNode=0
+   Features=(null) DelayBoot=00:00:00
+   OverSubscribe=NO Exclusive=NO Contiguous=0 Licenses=(null) LicensesAlloc=(null) Network=(null)
+   Command=/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/validate-reader-final.sbatch
+   SubmitLine=sbatch validate-reader-final.sbatch
+   WorkDir=/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121
+   StdErr=
+   StdIn=/dev/null
+   StdOut=/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/reader-review-2673188.log
+   CpusPerTres=gpu:8
+   MemPerTres=gpu:15360
+   TresPerNode=gres/gpu:4
+

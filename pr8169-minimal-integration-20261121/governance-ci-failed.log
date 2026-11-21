@@ -1,0 +1,37 @@
+Governance checks	Run ABACUS governance checker	﻿2026-11-21T07:25:39.9412126Z ##[group]Run set +e
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9412431Z [36;1mset +e[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9412677Z [36;1mbase_sha="5664ee7818f8da6c8dfe3c16e4bf0eb84d72967e"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9413007Z [36;1mhead_sha="b36ba5d702573e2dd80d15fdef259787929e710d"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9413309Z [36;1mmerge_base="$(git merge-base "$base_sha" "$head_sha")"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9413581Z [36;1mmerge_base_status=$?[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9413803Z [36;1mif [ "$merge_base_status" -ne 0 ]; then[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9414030Z [36;1m  {[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9414212Z [36;1m    echo "## Agent Governance Check"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9414424Z [36;1m    echo[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9414656Z [36;1m    echo "Failed to compute the pull request merge base."[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9414939Z [36;1m  } > agent_governance_summary.md[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9415174Z [36;1m  exit "$merge_base_status"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9415369Z [36;1mfi[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9415599Z [36;1mpython3 tools/03_code_analysis/agent_governance_check.py \[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9415930Z [36;1m  --base "$merge_base" \[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9416134Z [36;1m  --head "$head_sha" \[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9416352Z [36;1m  --event-path "$GITHUB_EVENT_PATH" \[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9416629Z [36;1m  --format markdown | tee agent_governance_summary.md[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9416893Z [36;1mstatus=${PIPESTATUS[0]}[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9417131Z [36;1mif [ ! -s agent_governance_summary.md ]; then[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9417367Z [36;1m  {[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9417544Z [36;1m    echo "## Agent Governance Check"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9417759Z [36;1m    echo[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9417973Z [36;1m    echo "Checker failed before producing a summary."[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9418238Z [36;1m  } > agent_governance_summary.md[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9418445Z [36;1mfi[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9418609Z [36;1mexit "$status"[0m
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9466002Z shell: /usr/bin/bash -e {0}
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:39.9466241Z ##[endgroup]
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0419607Z ## Agent Governance Check
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0419785Z 
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0419951Z | Severity | Rule | Location | Reason | Suggested action | Exception |
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0420264Z | --- | --- | --- | --- | --- | --- |
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0421362Z | error | Unit test directory layout | `source/source_io/test_serial/read_input_test.cpp` | Modifies a unit test source in the legacy test directory `test_serial/`. | Move the test into a sibling `unittests/` directory (named test_<file>.cpp) and wire it into that directory's CMakeLists.txt; legacy test directories may only have files deleted or migrated out. | allowed |
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0422969Z | warning | PR metadata completeness | `pull_request.body` | missing sections: Linked Issue | Fill the PR template with issue linkage, test evidence, and a concise change summary. | allowed |
+Governance checks	Run ABACUS governance checker	2026-11-21T07:25:40.0509363Z ##[error]Process completed with exit code 1.

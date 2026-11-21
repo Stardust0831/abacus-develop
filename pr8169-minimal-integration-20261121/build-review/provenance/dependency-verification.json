@@ -1,0 +1,12 @@
+{
+  "libri_release": "v0.3.0.0",
+  "libri_commit": "a385ac9b1d04c151f26f9d14cc0c2588f96557ab",
+  "expected_headers": 118,
+  "actual_headers": 118,
+  "missing_headers": [],
+  "extra_headers": [],
+  "changed_headers": [],
+  "ddla_sha256": "f359feda186e11fff4a87ad52aa2d39ee11d8e5d3ca3b619aec2eb18b11f53af",
+  "ddla_matches_previous_7c0ca08_build": true,
+  "passed": true
+}

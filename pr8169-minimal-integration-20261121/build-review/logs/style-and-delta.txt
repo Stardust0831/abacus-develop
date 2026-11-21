@@ -1,0 +1,21 @@
+$ git diff --check -- source/source_lcao/module_ri/unittests/CMakeLists.txt tests/lcao_hse_gpu/cmake docs/advanced/install.md
+exit=0
+
+$ env PYTHONPATH=/tmp/abacus-pr8169-uv-cache/archive-v0/I4czPB9SAnmzWqpU python3 -m cmakelang.format --check -c cmake-format.yaml source/source_lcao/module_ri/unittests/CMakeLists.txt tests/lcao_hse_gpu/cmake/CMakeLists.txt
+exit=0
+
+$ git diff --numstat HEAD -- source/source_lcao/module_ri/unittests/CMakeLists.txt tests/lcao_hse_gpu/cmake docs/advanced/install.md
+7	5	docs/advanced/install.md
+1	1	source/source_lcao/module_ri/unittests/CMakeLists.txt
+0	17	tests/lcao_hse_gpu/cmake/CMakeLists.txt
+0	122	tests/lcao_hse_gpu/cmake/test_libri_gpu_accumulation.cpp
+exit=0
+
+$ git diff --stat 5664ee7818f8da6c8dfe3c16e4bf0eb84d72967e -- source/source_lcao/module_ri/unittests/CMakeLists.txt tests/lcao_hse_gpu/cmake docs/advanced/install.md
+ docs/advanced/install.md                           | 60 ++++++++++++++++++++++
+ .../source_lcao/module_ri/unittests/CMakeLists.txt |  2 +-
+ tests/lcao_hse_gpu/cmake/CMakeLists.txt            | 27 ++++++++++
+ tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp   | 27 ++++++++++
+ 4 files changed, 115 insertions(+), 1 deletion(-)
+exit=0
+

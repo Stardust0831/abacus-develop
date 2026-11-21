@@ -1,0 +1,25 @@
+Running main() from /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/googletest-a46a6012a133c7c0929fdae55b321c2fe65f3c5f/googletest/src/gtest_main.cc
+Note: Google Test filter = InputTest.DeviceExx*
+[==========] Running 3 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 3 tests from InputTest
+[ RUN      ] InputTest.DeviceExxCpuSymmetry
+[       OK ] InputTest.DeviceExxCpuSymmetry (9 ms)
+[ RUN      ] InputTest.DeviceExxGpuScfSymmetry
+/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:236: Skipped
+GPU EXX reader validation requires a visible GPU
+
+[  SKIPPED ] InputTest.DeviceExxGpuScfSymmetry (29 ms)
+[ RUN      ] InputTest.DeviceExxGpuMdEffectiveSymmetry
+/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:273: Skipped
+GPU EXX reader validation requires a visible GPU
+
+[  SKIPPED ] InputTest.DeviceExxGpuMdEffectiveSymmetry (0 ms)
+[----------] 3 tests from InputTest (38 ms total)
+
+[----------] Global test environment tear-down
+[==========] 3 tests from 1 test suite ran. (39 ms total)
+[  PASSED  ] 1 test.
+[  SKIPPED ] 2 tests, listed below:
+[  SKIPPED ] InputTest.DeviceExxGpuScfSymmetry
+[  SKIPPED ] InputTest.DeviceExxGpuMdEffectiveSymmetry

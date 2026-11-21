@@ -1,0 +1,1 @@
+tar -cf - source-before.tar.gz reader-overlay.tar.gz source-before-sha256.json source-after-sha256.json validate-reader.sbatch verify-source.py | tssh -T SAI-stardust 'mkdir /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121 && tar -xf - -C /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121'

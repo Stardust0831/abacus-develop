@@ -1,0 +1,367 @@
+{
+  "head": "d8fc6eca97f6ccf0b4448644f2f891ad7f2eb2e9",
+  "job_id": 2673063,
+  "result": "partial fix; four of eighteen individual GPU labels and their sum still fail for both real and complex tensors",
+  "tests": [
+    {
+      "case": "pr24-original-all",
+      "arguments": "-1 all all",
+      "exit_code": 1,
+      "checks": 6,
+      "passes": 0,
+      "failures": [
+        "real label=a1b1_a2b2 sector=1 mode=2: output block count differs"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-cpu",
+      "arguments": "-1 cpu all",
+      "exit_code": 0,
+      "checks": 304,
+      "passes": 38,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-0",
+      "arguments": "0 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-1",
+      "arguments": "1 gpu real",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "real label=a1b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=4.89589",
+        "real label=a1b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-real-label-2",
+      "arguments": "2 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-3",
+      "arguments": "3 gpu real",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "real label=a1b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.06813",
+        "real label=a1b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-real-label-4",
+      "arguments": "4 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-5",
+      "arguments": "5 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-6",
+      "arguments": "6 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-7",
+      "arguments": "7 gpu real",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "real label=a0b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=4.88398",
+        "real label=a0b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-real-label-8",
+      "arguments": "8 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-9",
+      "arguments": "9 gpu real",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "real label=a0b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.05577",
+        "real label=a0b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-real-label-10",
+      "arguments": "10 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-11",
+      "arguments": "11 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-12",
+      "arguments": "12 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-13",
+      "arguments": "13 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-14",
+      "arguments": "14 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-15",
+      "arguments": "15 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-16",
+      "arguments": "16 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-17",
+      "arguments": "17 gpu real",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-real-label-18",
+      "arguments": "18 gpu real",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "real label=all sector=1 mode=2 atoms=1,0 cell=1 element=0 error=19.9038",
+        "real label=all sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-complex-label-0",
+      "arguments": "0 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-1",
+      "arguments": "1 gpu complex",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "complex label=a1b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.16888",
+        "complex label=a1b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-complex-label-2",
+      "arguments": "2 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-3",
+      "arguments": "3 gpu complex",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "complex label=a1b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.35631",
+        "complex label=a1b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-complex-label-4",
+      "arguments": "4 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-5",
+      "arguments": "5 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-6",
+      "arguments": "6 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-7",
+      "arguments": "7 gpu complex",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "complex label=a0b2_a2b1 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.16407",
+        "complex label=a0b2_a2b1 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-complex-label-8",
+      "arguments": "8 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-9",
+      "arguments": "9 gpu complex",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "complex label=a0b2_a2b0 sector=1 mode=2 atoms=1,0 cell=1 element=0 error=5.3513",
+        "complex label=a0b2_a2b0 sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-wrapper-complex-label-10",
+      "arguments": "10 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-11",
+      "arguments": "11 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-12",
+      "arguments": "12 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-13",
+      "arguments": "13 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-14",
+      "arguments": "14 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-15",
+      "arguments": "15 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-16",
+      "arguments": "16 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-17",
+      "arguments": "17 gpu complex",
+      "exit_code": 0,
+      "checks": 4,
+      "passes": 1,
+      "failures": []
+    },
+    {
+      "case": "pr24-wrapper-complex-label-18",
+      "arguments": "18 gpu complex",
+      "exit_code": 1,
+      "checks": 2,
+      "passes": 0,
+      "failures": [
+        "complex label=all sector=1 mode=2 atoms=1,0 cell=1 element=0 error=21.0402",
+        "complex label=all sector=1 mode=2: contraction differs from masked CPU reference"
+      ]
+    },
+    {
+      "case": "pr24-diagnostic-all",
+      "arguments": "-1 all all",
+      "exit_code": 0,
+      "checks": 456,
+      "passes": 38,
+      "failures": []
+    }
+  ]
+}

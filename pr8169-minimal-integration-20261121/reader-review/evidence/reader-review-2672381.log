@@ -1,0 +1,1 @@
+ERROR: SLURM_NTASKS=1 is not divisible by total GPUs=4.

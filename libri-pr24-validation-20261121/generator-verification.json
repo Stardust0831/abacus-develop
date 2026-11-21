@@ -1,0 +1,16 @@
+[
+  {
+    "variant": "source-pr24",
+    "command": "python3 cal_loop3_GPU.py",
+    "exit_code": 0,
+    "identical_to_tested_header": true,
+    "sha256": "96cbd8373b58e9813122d6c2a93dcf64b61ac069e0974c471762009297a13263"
+  },
+  {
+    "variant": "source-diagnostic",
+    "command": "python3 cal_loop3_GPU.py",
+    "exit_code": 0,
+    "identical_to_tested_header": true,
+    "sha256": "d783f6b78178c86816d66a5f63a5e40b20c08b3919967e26b81e5d70ddff08f0"
+  }
+]

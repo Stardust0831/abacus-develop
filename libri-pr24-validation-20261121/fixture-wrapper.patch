@@ -1,0 +1,21 @@
+--- a/unittests/gpu_symmetry/test_lri_gpu_symmetry.cpp
++++ b/unittests/gpu_symmetry/test_lri_gpu_symmetry.cpp
+@@ -10,8 +10,8 @@
+ #include <string>
+ #include <vector>
+ 
+-#include <RI/physics/symmetry/Filter_Atom_Symmetry.h>
+ #include <RI/ri/LRI.h>
++#include <RI/physics/symmetry/Filter_Atom_Symmetry_Wrapper.h>
+ 
+ namespace
+ {
+@@ -169,7 +169,7 @@
+                     if (keep)
+                         expected[left.first][right.first] = right.second.copy();
+                 }
+-            lri.filter_atom = std::make_shared<RI::Filter_Atom_Symmetry<int, Cell, T>>(period, sector);
++            lri.filter_atom = std::make_shared<RI::Filter_Atom_Symmetry_Wrapper<int, Cell, T>>(period, sector, lri.cal_mode);
+             for (const auto mode : modes)
+             {
+                 lri.cal_mode = mode;

@@ -1,0 +1,9 @@
+The latest upstream governance check rejected changes to the legacy `test_serial/` source directory. The existing reader test source is therefore moved byte-for-byte from `source/source_io/test_serial/read_input_test.cpp` to `source/source_io/unittests/test_read_input_serial.cpp`. Its existing target and serial compile definitions are retained, and the new location is registered with `target_sources` in `unittests/CMakeLists.txt`. Only two CMake lines are changed/added; no test assertions, references or tolerances change.
+
+The test target is still created in the legacy CMake directory, preserving the existing support-data working directory and device-source compile definitions. Production sources and all other targets are unchanged. Source/Makefile.Objects and pyabacus contain no reference to the moved unit-test source.
+
+The prior CI failure is retained in the parent directory's `governance-ci-failed.log`. The current upstream checker was downloaded with its Git blob provenance recorded here; it is used for validation, not added to the ABACUS PR. CMake formatting and staged governance pass (the staged-only check emits a nonblocking documentation reminder).
+
+Fresh CPU/GPU serial target validation uses Slurm job 2673188 on 16V100, with the complete combined source snapshot at b36ba5d70 plus `reader-layout.patch`. Exact source hashes, configure/build/test commands and raw logs are included. The source move itself is byte-for-byte equal to b36ba5d70. No new full application/HSE acceptance is implied by this targeted test.
+
+Final result: job **2673188 COMPLETED**, CPU **47/47**, GPU **49/49**, zero normal-run skips, hidden-GPU **1 pass / 2 skips**. Every recorded configure/build/test/source-hash step returned 0. The final full-PR current-upstream governance check reports **no findings**.

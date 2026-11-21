@@ -1,0 +1,23 @@
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found MPI_CXX: /opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2/lib/libmpi.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1") found components: CXX
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX
+-- Found BLAS: /opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so
+-- Found LAPACK: /opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so
+-- Found LibRI: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/LibRI-0.3.0.0
+-- Found LibComm: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/hse06-gpu-libs-20261120/imported-deps/LibComm-master
+-- Configuring done (0.9s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    DDLA_ROOT
+
+
+-- Build files have been written to: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu

@@ -1,0 +1,23 @@
+Change Dir: '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+
+Run Build Command(s): /opt/devtools/cmake/3.31.6/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile -j4
+/opt/devtools/cmake/3.31.6/bin/cmake -S/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/abacus/tests/lcao_hse_gpu/cmake -B/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu --check-build-system CMakeFiles/Makefile.cmake 0
+/opt/devtools/cmake/3.31.6/bin/cmake -E cmake_progress_start /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/CMakeFiles /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu//CMakeFiles/progress.marks
+/usr/bin/gmake  -f CMakeFiles/Makefile2 all
+gmake[1]: Entering directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+/usr/bin/gmake  -f CMakeFiles/libri_consumer.dir/build.make CMakeFiles/libri_consumer.dir/depend
+gmake[2]: Entering directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+cd /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu && /opt/devtools/cmake/3.31.6/bin/cmake -E cmake_depends "Unix Makefiles" /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/abacus/tests/lcao_hse_gpu/cmake /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/abacus/tests/lcao_hse_gpu/cmake /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/CMakeFiles/libri_consumer.dir/DependInfo.cmake "--color="
+gmake[2]: Leaving directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+/usr/bin/gmake  -f CMakeFiles/libri_consumer.dir/build.make CMakeFiles/libri_consumer.dir/build
+gmake[2]: Entering directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+[ 50%] Building CXX object CMakeFiles/libri_consumer.dir/test_libri_consumer.cpp.o
+/usr/bin/g++  -isystem /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/LibRI-0.3.0.0/include -isystem /org/org-open-sai/proj-sai-hpc-software/runtime-tests/hse06-gpu-libs-20261120/imported-deps/LibComm-master/include -isystem /opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2/include -isystem /org/org-open-sai/proj-sai-hpc-software/runtime-tests/hse06-gpu-libs-20261120/imported-deps/cereal/include -g -fopenmp -MD -MT CMakeFiles/libri_consumer.dir/test_libri_consumer.cpp.o -MF CMakeFiles/libri_consumer.dir/test_libri_consumer.cpp.o.d -o CMakeFiles/libri_consumer.dir/test_libri_consumer.cpp.o -c /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/abacus/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
+[100%] Linking CXX executable libri_consumer
+/opt/devtools/cmake/3.31.6/bin/cmake -E cmake_link_script CMakeFiles/libri_consumer.dir/link.txt --verbose=1
+/usr/bin/g++ -g -Wl,-rpath -Wl,/opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2/lib -Wl,--enable-new-dtags -Wl,--dependency-file=CMakeFiles/libri_consumer.dir/link.d CMakeFiles/libri_consumer.dir/test_libri_consumer.cpp.o -o libri_consumer  /opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2/lib/libmpi.so /usr/lib/gcc/x86_64-linux-gnu/13/libgomp.so /usr/lib/x86_64-linux-gnu/libpthread.a /opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so
+gmake[2]: Leaving directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+[100%] Built target libri_consumer
+gmake[1]: Leaving directory '/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu'
+/opt/devtools/cmake/3.31.6/bin/cmake -E cmake_progress_start /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/CMakeFiles 0
+

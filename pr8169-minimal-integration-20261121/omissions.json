@@ -1,0 +1,57 @@
+[
+  {
+    "path": "build-review/provenance/validation-inputs.tar.gz",
+    "bytes": 12584,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "build-review/provenance/abacus-head.tar.gz",
+    "bytes": 44097608,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "build-review/provenance/remote-results.tar.gz",
+    "bytes": 85129,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-review/reader-overlay.tar.gz",
+    "bytes": 6758,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-review/source-before.tar.gz",
+    "bytes": 38302981,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-review/reader-final-overlay.tar.gz",
+    "bytes": 6853,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-review/job2672722-evidence.tar.gz",
+    "bytes": 43451,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-review/job2672555-evidence.tar.gz",
+    "bytes": 80439,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-layout-review/layout-source.tar.gz",
+    "bytes": 38008218,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-layout-review/remote-results.tar.gz",
+    "bytes": 342524,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  },
+  {
+    "path": "reader-layout-review/task-scripts.tar.gz",
+    "bytes": 3173,
+    "reason": "Complete source snapshot, redundant archive copy or file larger than 10 MiB; small extracted validation evidence is included."
+  }
+]

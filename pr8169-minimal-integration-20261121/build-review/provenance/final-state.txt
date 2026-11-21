@@ -1,0 +1,7 @@
+853b1644e68866caeaa5de86b45fe1c560dc555f
+ M docs/advanced/install.md
+ M source/source_io/test_serial/read_input_test.cpp
+ M source/source_io/unittests/CMakeLists.txt
+ M source/source_lcao/module_ri/unittests/CMakeLists.txt
+ M tests/lcao_hse_gpu/cmake/CMakeLists.txt
+ D tests/lcao_hse_gpu/cmake/test_libri_gpu_accumulation.cpp

@@ -1,0 +1,410 @@
+# Advanced Installation Options
+
+This guide helps you install ABACUS with advanced features. Please make sure to read the [easy-installation guide](../quick_start/easy_install.md) before.
+
+## Build with ELPA
+
+The [ELPA](https://elpa.mpcdf.mpg.de/) library provides highly efficient and highly scalable direct eigensolvers for symmetric (hermitian) matrices. ABACUS uses ELPA in the following cases:
+
+- LCAO calculations with `ks_solver` set to `elpa` or `genelpa`, which is generally faster than `scalapack_gvx`;
+- PW calculations with `ks_solver` set to `dav_subspace` and `diag_subspace` set to `1`.
+
+To build ABACUS with ELPA support, pass `-DENABLE_ELPA=ON` to CMake.
+
+## Build with Libxc
+
+ABACUS use exchange-correlation functionals by default. However, for some functionals (such as HSE hybrid functional), Libxc is required.
+
+Dependency: [Libxc](https://tddft.org/programs/libxc/) >= 5.1.7 .
+
+> Note: Building Libxc from source with Autotools is NOT supported when building ABACUS with CMake. Please compile Libxc with CMake instead and pass its installation prefix path to `CMAKE_PREFIX_PATH` environment variable.
+
+```bash
+cmake -B build -DENABLE_LIBXC=ON
+```
+
+## Build with ML-ALGO
+
+If machine learning algorithms, including DeePKS and machine learning based kinetic energy density functional (ML-KEDF) for OFDFT, is required for DFT calculation, the following prerequisites and steps are needed:
+
+- C++ compiler, supporting **C++14** (GCC >= 5 is sufficient)
+- CMake >= 3.18
+- [LibTorch](https://pytorch.org/) with cxx11 ABI supporting CPU or GPU
+- [Libnpy](https://github.com/llohse/libnpy/)
+
+```bash
+cmake -B build -DENABLE_MLALGO=1 -DTorch_DIR=~/libtorch/share/cmake/Torch/ -Dlibnpy_INCLUDE_DIR=~/libnpy/include
+```
+
+> CMake will try to download Libnpy if it cannot be found locally.
+
+## Build with DeePMD-kit
+
+> Note: This part is only required if you want to load a trained DeeP Potential and run molecular dynamics with that. To train the DeeP Potential with DP-GEN, no extra prerequisite is needed and please refer to [this page](http://abacus.deepmodeling.com/en/latest/advanced/interface/dpgen.html) for ABACUS interface with DP-GEN.
+
+If the Deep Potential model is employed in Molecule Dynamics calculations, the following prerequisites and steps are needed:
+
+- [DeePMD-kit](https://github.com/deepmodeling/deepmd-kit)
+- [TensorFlow](https://www.tensorflow.org/) (optional)
+- [LibTorch](https://pytorch.org/) (optional)
+
+In the simplest case, the `tensorflow_cc` and `torch` libraries are in the same directory as the `deepmd_c`/`deepmd_cc` libraries, then
+```bash
+cmake -B build -DDeePMD_DIR=/dir_to_deepmd-kit
+```
+DeePMD-kit supports TensorFlow backend but its libraries are placed at another directory, then
+
+```bash
+cmake -B build -DDeePMD_DIR=/dir_to_deepmd-kit -DTensorFlow_DIR=/dir_to_tensorflow
+```
+Similarly, DeePMD-kit supports PyTorch backend but its libraries are placed at another directory, then
+```bash
+cmake -B build -DDeePMD_DIR=/dir_to_deepmd-kit -DTorch_DIR=/dir_to_pytorch
+```
+
+## Build with NEP
+This interface enables running MD simulations with the NEP model. It requires the [NEP_CPU](https://github.com/brucefan1983/NEP_CPU) library, which can be easily installed using toolchain as shown below:
+```bash
+./install_abacus_toolchain_new.sh --with-nep=install
+```
+
+To build ABACUS:
+```bash
+cmake -B build -DNEP_DIR=/path/to/nep_cpu
+```
+
+## Build with LibRI support
+
+The new EXX implementation directly depends on [LibRI](https://github.com/abacusmodeling/LibRI) to provide RI implementation, while LibRI requires two external dependencies: [LibComm](https://github.com/abacusmodeling/LibComm) for inter-process communication, and [cereal](https://github.com/USCiLab/cereal) for serialization. Set `-DENABLE_LIBRI=ON` to build with these libraries.
+
+```{note}
+`ENABLE_LIBCOMM` is deprecated because LibComm is not a standalone ABACUS feature. CMake locates it automatically as a dependency of LibRI. If you prefer using manually downloaded libraries, enable LibRI and provide their locations via `-DLIBRI_DIR=/path/to/LibRI` and `-DLIBCOMM_DIR=/path/to/LibComm`.
+```
+
+Experimental LCAO GPU contractions additionally require `ENABLE_LIBRI_GPU=ON`
+(default OFF), `USE_CUDA=ON`, LibRI v0.3.0.0 or newer, and a compatible CUDA
+build of DDLA. Like other dependent
+options, GPU RI is disabled when its LibRI/CUDA prerequisites are disabled.
+INPUT `device_exx` defaults to `cpu`, retaining CPU contractions even with
+`device gpu`. To use GPU contractions, set both `device gpu` and `device_exx gpu`.
+The latter requires GPU RI to be compiled in. After normal INPUT processing,
+GPU RI temporarily rejects an effective `symmetry 1`, regardless of
+`exx_symmetry_realspace`, pending a validated LibRI GPU symmetry fix. This GPU
+EXX check reports an error without modifying parameter values itself. Existing
+INPUT resets still apply; for example, `calculation md` sets `symmetry` to `0`
+before this check. Use `symmetry 0` (time reversal only) or `symmetry -1` (no
+symmetry), or select CPU RI when spatial symmetry is needed.
+
+The selector applies to the LCAO Kohn-Sham exchange engine. Independent LR and
+RDMFT exchange engines retain CPU contractions; LR inherits the selected backend
+only when it reuses the Kohn-Sham exchange object.
+
+All MPI ranks on a node must see the same allocated
+GPU list, with at least as many visible GPUs as local ranks. Giving each rank its
+own single-GPU `CUDA_VISIBLE_DEVICES` list fails LibRI's GPU-count check when
+multiple ranks share a node. For example, on one node allocated GPUs 0 and 1:
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1 mpirun -np 2 abacus
+```
+
+[LibRI v0.3.0.0](https://github.com/abacusmodeling/LibRI/releases/tag/v0.3.0.0)
+is the minimum GPU release. It includes the accumulation, OpenMP, atom-list
+and DDLA adapter fixes, but GPU symmetry validation still fails; the restriction
+above remains necessary. Earlier LibRI versions remain usable for CPU RI.
+
+DDLA must provide its installed `LibDDLAConfig.cmake` package and `ddla::ddla`
+target, `DDLA_HAS_GPU`, and the handle-selected `gemmVbatched` and
+`gemmVbatched2s` APIs. Use
+[DDLA commit 7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7](https://github.com/userchba/LibDDLA/commit/7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7)
+or a later compatible revision, built with CUDA support. The original DDLA
+`v0.0.6` release has an incompatible API; its version number alone does not
+establish compatibility. GPU RI requires C++17.
+GPU mode requires an explicitly supplied, compatible LibRI installation;
+the default CPU dependency download is unchanged.
+
+```bash
+cmake -B build -DENABLE_LIBRI=ON -DUSE_CUDA=ON -DENABLE_LIBRI_GPU=ON \
+  -DLIBRI_DIR=/path/to/LibRI -DDDLA_ROOT=/path/to/DDLA
+```
+
+`CMAKE_PREFIX_PATH` can also name the DDLA installation prefix, or `LibDDLA_DIR`
+can point to the directory containing `LibDDLAConfig.cmake`. The package supplies
+DDLA's include paths, backend definitions and link dependencies; separate
+`DDLA_INCLUDE_DIR` and `DDLA_LIBRARY` overrides are no longer used.
+A configure-time compile/link check
+rejects incompatible GPU APIs, but does not validate numerical correctness.
+The standalone consumer in `tests/lcao_hse_gpu/cmake` checks that `LibRI::LibRI`
+provides its compile and link dependencies with `ENABLE_LIBRI_GPU=OFF` or `ON`.
+Numerical contraction regressions belong to LibRI's upstream tests; ABACUS HSE
+comparisons validate application-level results.
+This experimental backend has additional GPU memory requirements; its temporary
+buffer limit is not a bound on total GPU memory.
+
+## Build with DFT-D4 support
+
+ABACUS can use the external [DFT-D4](https://github.com/dftd4/dftd4) library for Grimme's DFT-D4 dispersion correction. DFT-D4 support is optional and disabled by default.
+
+DFT-D4 must be built and installed with CMake, so that ABACUS can locate it through the exported `dftd4-config.cmake` package. Meson-built installations, including the Conda package of `dftd4`, are not supported unless they provide a compatible CMake package file.
+
+To build ABACUS with DFT-D4 support, pass `-DENABLE_DFTD4=ON` to CMake and provide `CMAKE_PREFIX_PATH` environment variable.
+
+In the input file, enable DFT-D4 with:
+
+```text
+vdw_method d4
+vdw_d4_xc pbe
+vdw_d4_model d4    # or d4s for the smooth D4S model
+```
+
+If `vdw_d4_xc` is set to `default`, ABACUS will infer the functional name from `dft_functional` or pseudopotential metadata and pass it to the DFT-D4 library. The `vdw_d4_model` keyword selects the dispersion model inside the DFT-D4 library; the default is `d4`, while `d4s` enables the smooth D4S model.
+
+## Build with JSON support
+
+ABACUS uses [nlohmann-json](https://github.com/nlohmann/json) for optional JSON output. To build ABACUS with JSON support, pass `-DENABLE_JSON=ON` to CMake.
+
+## Build Unit Tests
+
+To build tests for ABACUS, define `BUILD_TESTING` flag. You can also specify path to local installation of [Googletest](https://github.com/google/googletest) by setting `GTEST_DIR` flags. If not found in local, the configuration process will try to download it automatically.
+
+```bash
+cmake -B build -DBUILD_TESTING=1
+```
+
+After building, unit tests can be performed with `ctest`.
+
+To run a subset of unit test, use `ctest -R <test-match-pattern>` to perform tests with name matched by given pattern.
+
+## Build Performance Tests
+
+To build performance tests for ABACUS, define `ENABLE_GOOGLEBENCH` flag. You can also specify the path to a local installation of [Google Benchmark](https://github.com/google/benchmark.git) by setting `BENCHMARK_DIR` flags. If not found locally, the configuration process will try to download it automatically.
+
+```bash
+cmake -B build -DENABLE_GOOGLEBENCH=1
+```
+
+Google Benchmark requires Google Test to build and run the tests. When setting `ENABLE_GOOGLEBENCH` to ON, `BUILD_TESTING` is automatically enabled. After building and installing, performance tests can be executed with `ctest`.
+
+## Build with CUDA support
+
+### Extra prerequisites
+
+- [CUDA-Toolkit](https://developer.nvidia.com/cuda-toolkit)
+
+To build NVIDIA GPU support for ABACUS, define `USE_CUDA` flag. You can also specify path to local installation of CUDA Toolkit by setting `CMAKE_CUDA_COMPILER` flags.
+
+```bash
+cmake -B build -DUSE_CUDA=1 -DCMAKE_CUDA_COMPILER=${path to cuda toolkit}/bin/nvcc
+```
+
+If you are confident that your MPI supports CUDA Aware, you can add `-DUSE_CUDA_MPI=ON`. In this case, the program will directly communicate data with the CUDA hardware, rather than transferring it to the CPU first before communication. But note that if CUDA Aware is not supported, adding `-DUSE_CUDA_MPI=ON` will cause the program to throw an error.
+
+## Build math library from source
+
+```{note}
+We recommend using the latest available compiler sets instead, since they offer faster implementations of math functions.
+```
+
+This flag is disabled by default. To build math functions from source code, define `ENABLE_ABACUS_LIBM` flag. It is expected to get a better performance on legacy versions of `gcc` and `clang`.
+
+Currently supported math functions:
+ `sin`, `cos`, `sincos`, `exp`, `cexp`
+
+```bash
+cmake -B build -DENABLE_ABACUS_LIBM=1
+```
+
+## Build with PEXSI support
+
+ABACUS supports the PEXSI library for gamma only LCAO calculations. PEXSI version >=2.0.0 is required.
+
+To build ABACUS with PEXSI support, you need to compile PEXSI and its dependencies first. Please refer to the [PEXSI Installation Guide](https://pexsi.readthedocs.io/en/latest/install.html) for more details. You can also use [Spack](https://github.com/spack/spack) to install the required packages more easily. Note that PEXSI requires ParMETIS and SuperLU_DIST.
+
+After compiling PEXSI, pass `-DENABLE_PEXSI=ON` to CMake. ABACUS uses the CMake config package provided by PEXSI; if PEXSI or its dependencies are not installed in standard paths, add their installation prefixes to `CMAKE_PREFIX_PATH`.
+
+## Build ABACUS with make
+
+> Note: We suggest using CMake to configure and compile.
+
+To compile the ABACUS program using legacy `make`, users need to specify the location of the compilers, headers and libraries in `source/Makefile.vars`:
+
+```makefile
+# This is the Makefile of ABACUS API
+#======================================================================
+# Users set
+#======================================================================
+CXX = mpiicpc
+# mpiicpc:   compile intel parallel version
+# icpc:      compile intel sequential version
+# make: ELPA_DIR, ELPA_INCLUDE_DIR, CEREAL_DIR must also be set.
+# make pw: nothing need to be set except LIBXC_DIR
+# 
+# mpicxx:    compile gnu parallel version
+# g++:       compile gnu sequential version
+# make: FFTW_DIR, OPENBLAS_LIB_DIR, SCALAPACK_LIB_DIR, ELPA_DIR, ELPA_INCLUDE_DIR, CEREAL_DIR must also be set.
+# make pw: FFTW_DIR, OPENBLAS_LIB_DIR must be set.
+
+# GPU = OFF  #We do not support GPU yet
+# OFF:  do not use GPU
+# CUDA: use CUDA
+OPENMP = OFF
+# the default is not to use OPENMP to accelerate. 
+# Change OPENMP to ON to use OPENMP.
+
+#======================================================================
+
+
+
+#--------------------  FOR INTEL COMPILER  ----------------------------
+## ELPA_DIR          should contain an include folder and lib/libelpa.a
+## CEREAL_DIR        should contain an include folder.
+#----------------------------------------------------------------------
+
+ELPA_DIR      = /usr/local/include/elpa-2021.05.002
+ELPA_INCLUDE_DIR = ${ELPA_DIR}/elpa
+
+CEREAL_DIR    = /usr/local/include/cereal
+
+
+##-------------------  FOR GNU COMPILER  ------------------------------
+## FFTW_DIR          should contain lib/libfftw3.a.
+## OPENBLAS_LIB_DIR  should contain libopenblas.a. 
+## SCALAPACK_LIB_DIR should contain libscalapack.a
+## All three above will only be used when CXX=mpicxx or g++
+## ELPA_DIR          should contain an include folder and lib/libelpa.a
+## CEREAL_DIR        should contain an include folder.
+##---------------------------------------------------------------------
+
+# FFTW_DIR = /public/soft/fftw_3.3.8
+# OPENBLAS_LIB_DIR   = /public/soft/openblas/lib
+# SCALAPACK_LIB_DIR  = /public/soft/openblas/lib
+
+# ELPA_DIR      = /public/soft/elpa_21.05.002
+# ELPA_INCLUDE_DIR = ${ELPA_DIR}/include/elpa-2021.05.002
+
+# CEREAL_DIR    = /public/soft/cereal
+
+
+##-------------------  OPTIONAL LIBS  ---------------------------------
+## To use MLALGO: set ENABLE_MLALGO = ON, and set LIBTORCH_DIR and LIBNPY_DIR
+
+## To use LIBXC:  set LIBXC_DIR which contains include and lib/libxc.a (>5.1.7)
+## To use DeePMD: set DeePMD_DIR LIBTORCH_DIR and TensorFlow_DIR
+## To use LibRI:  set LIBRI_DIR and LIBCOMM_DIR
+## To use PEXSI: set PEXSI_DIR DSUPERLU_DIR and PARMETIS_DIR
+##---------------------------------------------------------------------
+
+# LIBTORCH_DIR  = /usr/local
+# LIBNPY_DIR    = /usr/local
+ENABLE_MLALGO   = OFF
+
+# LIBXC_DIR    		= /public/soft/libxc
+
+# DeePMD_DIR = ${deepmd_root}
+# TensorFlow_DIR = ${tensorflow_root}
+
+# LIBRI_DIR     = /public/software/LibRI
+# LIBCOMM_DIR   = /public/software/LibComm
+
+# PEXSI_DIR = /public/software/pexsi
+# DSUPERLU_DIR = /public/software/superlu_dist
+# PARMETIS_DIR    = /public/software/parmetis
+
+##---------------------------------------------------------------------
+# NP = 14 # It is not supported. use make -j14 or make -j to parallelly compile
+# DEBUG = OFF
+# Only for developers
+# ON:   use gnu compiler and check segmental defaults
+# OFF:  nothing
+#======================================================================
+```
+
+For example, below is a case where the Intel C++ compiler, Intel MPI and CEREAL are used, along with Intel MKL library. The file Makefile.vars can be set as
+follows:
+
+```makefile
+CXX = mpiicpc #(or CXX = icpc)
+ELPA_DIR      = /public/soft/elpa_21.05.002
+ELPA_INCLUDE_DIR = ${ELPA_DIR}/include/elpa-2021.05.002
+CEREAL_DIR    = /public/soft/cereal
+```
+
+When `CXX=mpiicpc`, a parallel version will be compiled. When `CXX=icpc`, a sequential version will be compiled.
+
+Another example is where the Gnu C++ compiler, MPICH, OPENBLAS, ScaLAPACK, ELPA and CEREAL are used:
+
+```makefile
+CXX = mpicxx/g++
+FFTW_DIR = /public/soft/fftw_3.3.8
+OPENBLAS_LIB_DIR   = /public/soft/openblas/lib
+SCALAPACK_LIB_DIR  = /public/soft/openblas/lib
+ELPA_DIR      = /public/soft/elpa_21.05.002
+ELPA_INCLUDE_DIR = ${ELPA_DIR}/include/elpa-2021.05.002
+CEREAL_DIR    = /public/soft/cereal
+```
+
+When `CXX=mpicxx`, a parallel version will be compiled. When `CXX=g++`, a sequential version will be compiled.
+
+Except modifying `Makefile.vars`, you can also directly use
+
+```bash
+make CXX=mpiicpc ELPA_DIR=/public/soft/elpa_21.05.002 \
+ELPA_INCLUDE_DIR=${ELPA_DIR}/include/elpa-2021.05.002 \
+CEREAL_DIR=/public/soft/cereal
+```
+
+ABACUS now support full version and pw version. Use `make` or `make abacus` to compile full version which supports LCAO calculations. Use `make pw` to compile pw version which only supports pw calculations. For pw version, `make pw CXX=mpiicpc`, you do not need to provide any libs. For `make pw CXX=mpicxx`, you need provide `FFTW_DIR` and `OPENBLAS_LIB_DIR`.
+
+After modifying the `Makefile.vars` file, execute `make` or `make -j12` to build the program.
+
+After the compilation finishes without error messages (except perhaps for some warnings), an executable program `ABACUS.mpi` will be created in directory `bin/`.
+
+### Add Libxc Support
+
+The program compiled using the above instructions do not link with LIBXC and use exchange-correlation functionals as written in the ABACUS program. However, for some functionals (such as HSE hybrid functional), LIBXC is required.
+
+To compile ABACUS with LIBXC, you need to define `LIBXC_DIR` in the file `Makefile.vars` or use
+
+```bash
+make LIBXC_DIR=/pulic/soft/libxc
+```
+
+directly.
+
+### Add ML-ALGO Support
+
+To compile ABACUS with machine learning algorithms, you need to set `ENABLE_MLALGO = ON`, and define `LIBTORCH_DIR` and `LIBNPY_DIR` in the file `Makefile.vars` or use
+
+```bash
+make ENABLE_MLALGO=ON LIBTORCH_DIR=/opt/libtorch/ LIBNPY_DIR=/opt/libnpy/
+```
+
+directly.
+
+
+### Add DeePMD-kit Support
+
+> Note: This part is only required if you want to load a trained DeeP Potential and run molecular dynamics with that. To train the DeeP Potential with DP-GEN, no extra prerequisite is needed and please refer to [this page](http://abacus.deepmodeling.com/en/latest/advanced/interface/dpgen.html) for ABACUS interface with DP-GEN.
+
+To compile ABACUS with DeePMD-kit, you need to define `DeePMD_DIR` and `TensorFlow_DIR` (TensorFlow Backend, optional) and/or `LIBTORCH_DIR` (PyTorch Backend, optional) in the file `Makefile.vars`.
+
+Or the `tensorflow_cc` and `torch` libraries are in the same directory as the `deepmd_c`/`deepmd_cc` libraries, then
+```bash
+make DeePMD_DIR=/dir_to_deepmd-kit
+```
+DeePMD-kit supports TensorFlow backend but its libraries are placed at another directory, then
+
+```bash
+make DeePMD_DIR=/dir_to_deepmd-kit TensorFlow_DIR=/dir_to_tensorflow
+```
+Similarly, DeePMD-kit supports PyTorch backend but its libraries are placed at another directory, then
+```bash
+make DeePMD_DIR=/dir_to_deepmd-kit Torch_DIR=/dir_to_pytorch
+```
+
+### Add LibRI Support
+To use new EXX, you need two libraries: [LibRI](https://github.com/abacusmodeling/LibRI) and [LibComm](https://github.com/abacusmodeling/LibComm) and need to define `LIBRI_DIR` and `LIBCOMM_DIR` in the file `Makefile.vars` or use
+```bash
+make LIBRI_DIR=/public/software/LibRI LIBCOMM_DIR=/public/software/LibComm
+```
+directly.

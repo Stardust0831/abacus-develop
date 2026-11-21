@@ -1,0 +1,3 @@
+ERROR __main__.py:618: Check failed: /home/stardust/orca/workspaces/sai-hpc-software/cp2k/.work/abacus-libri-minimal-integration-20261121/reader-review/base-plus-target-sources.cmake
+
+returncode=1

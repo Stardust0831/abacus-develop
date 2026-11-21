@@ -1,0 +1,4 @@
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|AllocTRES
+2673188|pr8169-reader-layout|16V100|COMPLETED|0:0|00:02:49|16v100n16|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1
+2673188.batch|batch||COMPLETED|0:0|00:02:49|16v100n16|cpu=32,gres/gpu=4,mem=60G,node=1
+2673188.extern|extern||COMPLETED|0:0|00:02:49|16v100n16|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1

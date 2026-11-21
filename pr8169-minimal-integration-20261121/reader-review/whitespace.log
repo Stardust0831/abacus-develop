@@ -1,0 +1,3 @@
+['git', 'diff', '--check', '--', 'source/source_io/test_serial/read_input_test.cpp', 'source/source_io/unittests/CMakeLists.txt']
+
+returncode=0

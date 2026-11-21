@@ -1,0 +1,15 @@
+Isolated temporary index; HEAD has parent-only build cleanup af5c02db8.
+['git', 'read-tree', 'HEAD']
+
+returncode=0
+['git', 'add', '--', 'source/source_io/test_serial/read_input_test.cpp', 'source/source_io/unittests/CMakeLists.txt']
+
+returncode=0
+['python3', 'tools/03_code_analysis/agent_governance_check.py', '--staged', '--format', 'text']
+Agent governance check findings:
+- [WARNING] Documentation sync review at pull_request.body
+  Reason: Source changes have no docs change or explicit no-docs-needed statement.
+  Suggested action: Add documentation updates for behavior/interface changes, or state why documentation is not required.
+  Exception allowed: yes
+
+returncode=0

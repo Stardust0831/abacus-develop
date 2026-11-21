@@ -1,0 +1,45 @@
+{
+  "workspace_entry": {
+    "argv": [
+      "rg",
+      "-n",
+      "ENABLE_LIBRI|BUILD_TESTING|ENABLE_MPI|add_subdirectory\\(unittests\\)",
+      "source/source_lcao/module_ri/CMakeLists.txt"
+    ],
+    "exit_code": 0,
+    "output": "1:if(ENABLE_LIBRI)\n37:  if(BUILD_TESTING)\n38:    if(ENABLE_MPI)\n39:      add_subdirectory(unittests)\n"
+  },
+  "existing_runtime_test_calls": {
+    "argv": [
+      "rg",
+      "-n",
+      "RI::(Exx|LRI)|cal_loop3|\\.cal_Hs\\(|\\.cal_force\\(",
+      "source",
+      "--glob",
+      "*test*.cpp"
+    ],
+    "exit_code": 0,
+    "output": "source/source_md/test/lj_pot_test.cpp:106:    p_esolver.cal_force(mdcell, force);\nsource/source_lcao/module_ri/unittests/test_exx_workspace.cpp:11:    using Engine = RI::Exx<int, int, 3, T>;\nsource/source_lcao/module_ri/unittests/test_exx_workspace.cpp:44:    ks.cal_Hs(gs_names);\nsource/source_lcao/module_ri/unittests/test_exx_workspace.cpp:91:    lr.cal_Hs();\nsource/source_lcao/module_ri/unittests/test_exx_workspace.cpp:92:    lr.cal_force();\n"
+  },
+  "final_feature_links": {
+    "argv": [
+      "rg",
+      "-n",
+      "LibRI::LibRI|abacus::link_libs|abacus::feature_libs|abacus_add_target_compile_requirements",
+      "source/CMakeLists.txt"
+    ],
+    "exit_code": 0,
+    "output": "103:function(abacus_add_target_compile_requirements target)\n145:add_library(abacus::feature_libs ALIAS abacus_feature_libs)\n148:add_library(abacus::link_libs ALIAS abacus_link_libs)\n150:target_link_libraries(abacus_link_libs INTERFACE abacus::feature_libs\n280:  abacus_add_target_compile_requirements(${_abacus_linalg_target})\n284:  abacus_add_target_compile_requirements(\"${MKL_LIBRARIES}\")\n297:    $<$<BOOL:${ENABLE_LIBRI}>:LibRI::LibRI>\n416:        LibRI::LibRI\n437:  abacus_add_target_compile_requirements(${_abacus_feature_target})\n849:target_link_libraries(${ABACUS_BIN_NAME} PRIVATE abacus::link_libs)\n"
+  },
+  "remaining_standalone_no_direct_mpi": {
+    "argv": [
+      "rg",
+      "-n",
+      "MPI_Init|MPI_Finalize|ENABLE_LIBRI_GPU_TESTS|test_libri_gpu_accumulation",
+      "tests/lcao_hse_gpu",
+      "docs/advanced/install.md"
+    ],
+    "exit_code": 1,
+    "output": ""
+  }
+}

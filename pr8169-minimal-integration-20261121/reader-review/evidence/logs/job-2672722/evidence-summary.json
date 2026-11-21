@@ -1,0 +1,233 @@
+{
+  "final-cpu": {
+    "MODULE_IO_read_input_serial.xml": {
+      "tests": 14,
+      "failed": 0,
+      "skipped": 0,
+      "device_exx_tests": [
+        {
+          "name": "DeviceExxCpuSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "215",
+          "status": "run",
+          "result": "completed",
+          "time": "0.008",
+          "timestamp": "2026-11-21T15:09:20.010",
+          "classname": "InputTest"
+        }
+      ]
+    },
+    "MODULE_IO_read_item_serial.xml": {
+      "tests": 33,
+      "failed": 0,
+      "skipped": 0,
+      "device_exx_tests": [
+        {
+          "name": "SelectionAndValidation",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/unittests/test_read_inp_exx_dftu.cpp",
+          "line": "19",
+          "status": "run",
+          "result": "completed",
+          "time": "0.006",
+          "timestamp": "2026-11-21T15:09:21.431",
+          "classname": "DeviceExxInput"
+        }
+      ]
+    },
+    "feature_flags": [
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_inp_sys.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_inp_exx_dftu.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_input.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/test/tool_quit_no_exit.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/module_device/device.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/module_device/output_device.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/unittests/test_read_inp_exx_dftu.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": false
+      }
+    ]
+  },
+  "final-gpu": {
+    "MODULE_IO_read_input_serial.xml": {
+      "tests": 16,
+      "failed": 0,
+      "skipped": 0,
+      "device_exx_tests": [
+        {
+          "name": "DeviceExxCpuSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "215",
+          "status": "run",
+          "result": "completed",
+          "time": "0.008",
+          "timestamp": "2026-11-21T15:10:51.590",
+          "classname": "InputTest"
+        },
+        {
+          "name": "DeviceExxGpuScfSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "232",
+          "status": "run",
+          "result": "completed",
+          "time": "0.264",
+          "timestamp": "2026-11-21T15:10:51.598",
+          "classname": "InputTest"
+        },
+        {
+          "name": "DeviceExxGpuMdEffectiveSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "269",
+          "status": "run",
+          "result": "completed",
+          "time": "0.004",
+          "timestamp": "2026-11-21T15:10:51.863",
+          "classname": "InputTest"
+        }
+      ]
+    },
+    "MODULE_IO_read_item_serial.xml": {
+      "tests": 33,
+      "failed": 0,
+      "skipped": 0,
+      "device_exx_tests": [
+        {
+          "name": "SelectionAndValidation",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/unittests/test_read_inp_exx_dftu.cpp",
+          "line": "19",
+          "status": "run",
+          "result": "completed",
+          "time": "0.067",
+          "timestamp": "2026-11-21T15:10:55.813",
+          "classname": "DeviceExxInput"
+        }
+      ]
+    },
+    "feature_flags": [
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_inp_sys.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_inp_exx_dftu.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/module_parameter/read_input.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/test/tool_quit_no_exit.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/module_device/device.cpp",
+        "cuda": true,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_base/module_device/output_device.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      },
+      {
+        "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/unittests/test_read_inp_exx_dftu.cpp",
+        "cuda": false,
+        "mpi": false,
+        "gpu_ri": true
+      }
+    ]
+  },
+  "final-gpu-no-visible": {
+    "MODULE_IO_read_input_serial.xml": {
+      "tests": 3,
+      "failed": 0,
+      "skipped": 2,
+      "device_exx_tests": [
+        {
+          "name": "DeviceExxCpuSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "215",
+          "status": "run",
+          "result": "completed",
+          "time": "0.009",
+          "timestamp": "2026-11-21T15:10:55.920",
+          "classname": "InputTest"
+        },
+        {
+          "name": "DeviceExxGpuScfSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "232",
+          "status": "run",
+          "result": "skipped",
+          "time": "0.029",
+          "timestamp": "2026-11-21T15:10:55.929",
+          "classname": "InputTest"
+        },
+        {
+          "name": "DeviceExxGpuMdEffectiveSymmetry",
+          "file": "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp",
+          "line": "269",
+          "status": "run",
+          "result": "skipped",
+          "time": "0.",
+          "timestamp": "2026-11-21T15:10:55.959",
+          "classname": "InputTest"
+        }
+      ]
+    }
+  }
+}

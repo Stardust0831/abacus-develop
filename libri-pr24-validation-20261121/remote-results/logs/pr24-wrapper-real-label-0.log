@@ -1,0 +1,5 @@
+CHECK real label=a1b1_a2b2 sector=0 mode=2
+CHECK real label=a1b1_a2b2 sector=1 mode=2
+CHECK real label=a1b1_a2b2 sector=2 mode=2
+CHECK real label=a1b1_a2b2 sector=3 mode=2
+PASS real label=a1b1_a2b2

@@ -1,0 +1,1162 @@
+{
+  "README.md": {
+    "bytes": 2783,
+    "sha256": "c2685a622f920c044d23e629b77af6a566460467eb8cf90bbaef780cbb6d03e6"
+  },
+  "build-review/BUILD_REVIEW.md": {
+    "bytes": 11569,
+    "sha256": "69399b1420b1a2ad52b3a919845eac3833df1550b33a7456314bad76446da97d"
+  },
+  "build-review/logs/dependency-hashes.log": {
+    "bytes": 25307,
+    "sha256": "c9b2330de2b5660a956ecd778abd33e5b2f411894b949b985c63b93a47c0168e"
+  },
+  "build-review/logs/evidence-audit.txt": {
+    "bytes": 1687,
+    "sha256": "64550fd6cb353fd9a9ddc0fb255145c2efe40401ab96c0da9eb5b7be4e77972c"
+  },
+  "build-review/logs/governance-owned.txt": {
+    "bytes": 92,
+    "sha256": "29b3cd29a463bfbb85b712c815c923009d56c6787a52959d7f12e835de2efa15"
+  },
+  "build-review/logs/original-unresolved-symbols.txt": {
+    "bytes": 1852,
+    "sha256": "36b4bd55c13ccc36dd673fefc26eea8068701159afa3babeeaaa4fd2526d163e"
+  },
+  "build-review/logs/style-and-delta.txt": {
+    "bytes": 1203,
+    "sha256": "55b6a4f89e7e7e5653009bc3d8c572754328b1b2464242ab3f683333cada0be2"
+  },
+  "build-review/logs/submission-rejected.txt": {
+    "bytes": 287,
+    "sha256": "0f571ea3aea2d13b9689cdad3f6afd5b0fd0dbe653a4fe32b17b2045f8d82978"
+  },
+  "build-review/logs/submission.txt": {
+    "bytes": 8,
+    "sha256": "131408239ce8640a7f86ce97654c97c05fef17c58bb17d84d1ba48c491b42876"
+  },
+  "build-review/provenance/SHA256SUMS": {
+    "bytes": 846,
+    "sha256": "f1aa9c3396f191a5f97ac43d6cf84ce205151a0ef602bcac2106ccabdda1bf6e"
+  },
+  "build-review/provenance/before/docs/advanced/install.md": {
+    "bytes": 19241,
+    "sha256": "c58267fa3eb28d7443ced652d5e6d46ea677cf94282e6d708b1ecd23e0df6803"
+  },
+  "build-review/provenance/before/source/source_lcao/module_ri/unittests/CMakeLists.txt": {
+    "bytes": 1782,
+    "sha256": "f226760366e782d0525d1a8fb0f3bea55f5af93e77835ba5206da8eb2df43641"
+  },
+  "build-review/provenance/before/tests/lcao_hse_gpu/cmake/CMakeLists.txt": {
+    "bytes": 1694,
+    "sha256": "b5ddcdf4c1b6509ba39e4e3b02010da73b75f6a92fc7eec1a4d3279755cfc468"
+  },
+  "build-review/provenance/before/tests/lcao_hse_gpu/cmake/test_libri_gpu_accumulation.cpp": {
+    "bytes": 4768,
+    "sha256": "aa4421d27b258e26063ee77ec84ac0b3da4b5832716eced6df4f14edfcf16a57"
+  },
+  "build-review/provenance/dependency-verification.json": {
+    "bytes": 371,
+    "sha256": "fd70f43b8f2350587f485ac77511a5c66e741e1293ab049b5facc462a47c7e70"
+  },
+  "build-review/provenance/evidence-audit.json": {
+    "bytes": 1687,
+    "sha256": "64550fd6cb353fd9a9ddc0fb255145c2efe40401ab96c0da9eb5b7be4e77972c"
+  },
+  "build-review/provenance/final-state.txt": {
+    "bytes": 326,
+    "sha256": "564d362480203dbc7d6727cce356e2996465bbc60a60c2bed29f87ae3d8fd2b2"
+  },
+  "build-review/provenance/local-source-hashes.txt": {
+    "bytes": 528,
+    "sha256": "af65f739eb77f267a235bfb18edc3f8d78b7ebc7fb45ffc71c805db72dd91d67"
+  },
+  "build-review/provenance/overlay/docs/advanced/install.md": {
+    "bytes": 19368,
+    "sha256": "99410475059ea06eb46e0bff7177e87f6d8ce1b73ca8640df2baec3565837acb"
+  },
+  "build-review/provenance/overlay/source/source_lcao/module_ri/unittests/CMakeLists.txt": {
+    "bytes": 1795,
+    "sha256": "99f207197ff2e1c36e38bf5b76e4267f1f27fcecdc38b7e71c25d17c8fdbe508"
+  },
+  "build-review/provenance/overlay/tests/lcao_hse_gpu/cmake/CMakeLists.txt": {
+    "bytes": 926,
+    "sha256": "4e6bf663f10e21c334f4e3aa595e6465fac205c62cbeb778b68780382564f40c"
+  },
+  "build-review/provenance/owned.patch": {
+    "bytes": 9255,
+    "sha256": "840f28b7cc85479e6d0248cb03e31ebfdd4408c205e0f3ffaab4d7584795c007"
+  },
+  "build-review/provenance/released-libri-header-hashes.json": {
+    "bytes": 13712,
+    "sha256": "b5e87eff5b7ed01d00761a3a4edb401d62718510e3ae5059442a8cb00ae8b6fb"
+  },
+  "build-review/provenance/review-4651154611.json": {
+    "bytes": 3159,
+    "sha256": "02d314de2a185d6f39c2984809cc71e625e376c4cb3726891abf710c3ce6a982"
+  },
+  "build-review/provenance/source-inspection.json": {
+    "bytes": 2174,
+    "sha256": "4ba9f185b9cdb8266e40549fd1dbc9e5238bd788beb49ca098cdc6273b02f1d0"
+  },
+  "build-review/provenance/starting-state.txt": {
+    "bytes": 65,
+    "sha256": "9dc7e1eacf3f511908f179248247770a0e4ef976f6c90666abfbe9b738b209e2"
+  },
+  "build-review/remote-results/logs/allocation.log": {
+    "bytes": 5422,
+    "sha256": "add61cd96951f11aef33e38b67b0a7e7ad0bcba77b39ca9b2c7a4fefd60bb016"
+  },
+  "build-review/remote-results/logs/binaries.sha256": {
+    "bytes": 504,
+    "sha256": "56acc733b30e0e50fcb388f4969085cc4d40d07fa6dd9b4c9883b902267a7387"
+  },
+  "build-review/remote-results/logs/commands.txt": {
+    "bytes": 7024,
+    "sha256": "3eb82dc6ca71d5d3ed63a0f65807b3d0008ac1ef36450008ffcb07b88de496e8"
+  },
+  "build-review/remote-results/logs/compiled-source.sha256": {
+    "bytes": 1119,
+    "sha256": "0c385df684a405a7710b1c378b63106719c2551f57a1f45a030c3015059d32f7"
+  },
+  "build-review/remote-results/logs/consumer-cpu-CMakeCache.txt": {
+    "bytes": 20306,
+    "sha256": "78fadaef2f53916f6778cd9bac886a58b7a036492ddcfd0b99b866c0e29c2543"
+  },
+  "build-review/remote-results/logs/consumer-cpu-CTestTestfile.cmake": {
+    "bytes": 952,
+    "sha256": "72b45bc5087aed71e15bd5d837067069ed67702d7da400d5fcd10c4efeda1685"
+  },
+  "build-review/remote-results/logs/consumer-cpu-build.log": {
+    "bytes": 4480,
+    "sha256": "b60b442c1d2b3554bd5c22549e76583ae53d6aacc2c1b99b8790c3ceae4a1694"
+  },
+  "build-review/remote-results/logs/consumer-cpu-compile_commands.json": {
+    "bytes": 1051,
+    "sha256": "571661f698907755f8fac088100ca95d55ab6fca60bd5516036d611f90ea2982"
+  },
+  "build-review/remote-results/logs/consumer-cpu-configure.log": {
+    "bytes": 1233,
+    "sha256": "b7a4c202f29ca0ca03f34d0fc0e761b3f50b8f7546a8d2d762ca7a1df93fc7fe"
+  },
+  "build-review/remote-results/logs/consumer-cpu-flags.make": {
+    "bytes": 627,
+    "sha256": "a9274bdd41c01a029a547ead99cebd04ec420d010b8dd5f25f93626f6360daf6"
+  },
+  "build-review/remote-results/logs/consumer-cpu-link.txt": {
+    "bytes": 468,
+    "sha256": "eac12ae14d2b03469900c2f8efb605af9aa1f13077e6f50c8cb4c2a6a3ada7fd"
+  },
+  "build-review/remote-results/logs/consumer-cpu-test.log": {
+    "bytes": 1303,
+    "sha256": "6ee4c008570a6b97ea4bcc91c2a5948588a6159841f3bab85a1d358a0ab05bdc"
+  },
+  "build-review/remote-results/logs/consumer-gpu-CMakeCache.txt": {
+    "bytes": 20536,
+    "sha256": "a1864e80538d3218094ff9df2206d4dcea8439917607e4b44958ca16993182af"
+  },
+  "build-review/remote-results/logs/consumer-gpu-CTestTestfile.cmake": {
+    "bytes": 952,
+    "sha256": "73be659f49012d638669152c555d89ce468ecb9b927882d93bd1d2b719d18521"
+  },
+  "build-review/remote-results/logs/consumer-gpu-build.log": {
+    "bytes": 4857,
+    "sha256": "bb7021e6a39fdd7d0d2eba7ef66687cc50973455b46b3c54ef412d631c2d7a14"
+  },
+  "build-review/remote-results/logs/consumer-gpu-compile_commands.json": {
+    "bytes": 1216,
+    "sha256": "dda504366002f57d55c68fda29489c48b8ed5cb53295ee19ce3db51bd79e11cb"
+  },
+  "build-review/remote-results/logs/consumer-gpu-configure.log": {
+    "bytes": 1269,
+    "sha256": "9025d46a3716d86b6f75f815f042cde79986e7aba80e0901782ec2f221f8fa27"
+  },
+  "build-review/remote-results/logs/consumer-gpu-flags.make": {
+    "bytes": 792,
+    "sha256": "13df3c41320966c177f67cf1aacb9140ae6a5004dead2405b9fcba5e4775c583"
+  },
+  "build-review/remote-results/logs/consumer-gpu-link.txt": {
+    "bytes": 680,
+    "sha256": "5eca67d74b1aff7bc51a69493d6cfb922fa0929b51dd3886b49ccfd49cd12923"
+  },
+  "build-review/remote-results/logs/consumer-gpu-test.log": {
+    "bytes": 1303,
+    "sha256": "e65768e8da1e13b679ef40f22264a2507822415429e6ebbbc019541c4dda43d8"
+  },
+  "build-review/remote-results/logs/cpu-CMakeCache.txt": {
+    "bytes": 35128,
+    "sha256": "99806d22c84f3e2e976df728191a9ecece748ef619fb8973e52ebc1b9c1532c2"
+  },
+  "build-review/remote-results/logs/cpu-build.log": {
+    "bytes": 219475,
+    "sha256": "6ff2fcc6cefdd0b4840a83f2d11e2767597ae3742b6d433d3c6a2fc542c39044"
+  },
+  "build-review/remote-results/logs/cpu-compile_commands.json": {
+    "bytes": 9401,
+    "sha256": "46ce5d410208b1cbc506f4910370c29bfc0fc38e48cae98201d95b7cc1bde812"
+  },
+  "build-review/remote-results/logs/cpu-configure.log": {
+    "bytes": 4741,
+    "sha256": "747047f505fdc7fd64b93cdbfc5844e3f78b02c42f0f37d7e69a980bc0565baa"
+  },
+  "build-review/remote-results/logs/cpu-flags.make": {
+    "bytes": 1809,
+    "sha256": "51b0c99699120c7c00167e1769a69df1fa1d92eb6b18ba71fd70854c78e07bb9"
+  },
+  "build-review/remote-results/logs/cpu-ldd.log": {
+    "bytes": 3042,
+    "sha256": "2bab338227625722420be9cc8fa4c928236d4aa7b319b25dc994506536d1637e"
+  },
+  "build-review/remote-results/logs/cpu-link.txt": {
+    "bytes": 8250,
+    "sha256": "4d63e9b5340665697ed737f87187c426fec39818649c23701eb694776338a8a5"
+  },
+  "build-review/remote-results/logs/cpu-test.log": {
+    "bytes": 2547,
+    "sha256": "ecba5313b36da888660e7b3c5beead5893fac985c92a7d481ac092a30be626d6"
+  },
+  "build-review/remote-results/logs/dependency-hashes.log": {
+    "bytes": 25307,
+    "sha256": "c9b2330de2b5660a956ecd778abd33e5b2f411894b949b985c63b93a47c0168e"
+  },
+  "build-review/remote-results/logs/fixed-target-source.sha256": {
+    "bytes": 127,
+    "sha256": "73d78772e6ace660a411d958b6d8f3d8714ea27ff513e100662f83037c372775"
+  },
+  "build-review/remote-results/logs/gpu-after-CMakeCache.txt": {
+    "bytes": 55606,
+    "sha256": "67b69e5f2dfe74f7093c21beef878117744d9a49a5a39a5be94cedb497a09009"
+  },
+  "build-review/remote-results/logs/gpu-after-build.log": {
+    "bytes": 89406,
+    "sha256": "14786b2d8e0e9c52b72cc63cebdf5cb0e53c84b1bc7caccef167f59c650aecc7"
+  },
+  "build-review/remote-results/logs/gpu-after-compile_commands.json": {
+    "bytes": 10309,
+    "sha256": "0ab6333708333fad7552690099ec09923d1a2bb44b3a46dcb5ab53a21e1f4851"
+  },
+  "build-review/remote-results/logs/gpu-after-configure.log": {
+    "bytes": 3327,
+    "sha256": "1bec8280ab7fffca209918ad123104f829e40d7793acb4de56c296d714e2eb05"
+  },
+  "build-review/remote-results/logs/gpu-after-flags.make": {
+    "bytes": 2548,
+    "sha256": "ad97ef8e4ad9a450a44e6aa35b89279b7b00af0f4469167f672be9ee5b35fc1e"
+  },
+  "build-review/remote-results/logs/gpu-after-ldd.log": {
+    "bytes": 3972,
+    "sha256": "4351550ff7cecc0802311f4fa9f047d875cea6c2ac7b466ed4f625400ffa610a"
+  },
+  "build-review/remote-results/logs/gpu-after-link.txt": {
+    "bytes": 10963,
+    "sha256": "e403e266eed1bd98aa185f004698f0bea2d583b0c64b6da3a0aa3b016e71459a"
+  },
+  "build-review/remote-results/logs/gpu-after-test.log": {
+    "bytes": 2547,
+    "sha256": "1113471b1347763e978d4eda03f5d7f6234d36e8be45feb2be0e00ba8243a04c"
+  },
+  "build-review/remote-results/logs/gpu-before-CMakeCache.txt": {
+    "bytes": 55518,
+    "sha256": "f440ff38440e9e01c1ca71c5167ebac700fb5b74cf3a7c93d73b171c47faca21"
+  },
+  "build-review/remote-results/logs/gpu-before-build.log": {
+    "bytes": 312455,
+    "sha256": "92f81b9b550429e7e53ddf63bf3a35890bbe5aee8879707c6168a91138ce93ec"
+  },
+  "build-review/remote-results/logs/gpu-before-compile_commands.json": {
+    "bytes": 10197,
+    "sha256": "c5e0fb455107199723c65f0cab7ec3901a715aa4394ae35ac666fe11f422c871"
+  },
+  "build-review/remote-results/logs/gpu-before-configure.log": {
+    "bytes": 5285,
+    "sha256": "a134883974db0986716132d23151329c9a642a9cbe3ae503f0d1b4a2496a651e"
+  },
+  "build-review/remote-results/logs/gpu-before-flags.make": {
+    "bytes": 2520,
+    "sha256": "dfd524c4c7b7fc85622255550307a99e9ec359d022be01f43f0e9f6ee31ae3c5"
+  },
+  "build-review/remote-results/logs/gpu-before-link.txt": {
+    "bytes": 10751,
+    "sha256": "01f6de889b33b1bbe57760706142a7b7a81c833b72c82d91363498de826c96d3"
+  },
+  "build-review/remote-results/logs/run-inputs.sha256": {
+    "bytes": 192,
+    "sha256": "bae071292198b9d89b9224f946a57dfd0fec44062676042af39accdd4784ea62"
+  },
+  "build-review/remote-results/logs/sacct-2672287.txt": {
+    "bytes": 387,
+    "sha256": "aed2054c3cede6b1cfa126358bc9963f17b46af13d42eca3bcfcdba40074fc83"
+  },
+  "build-review/remote-results/logs/status.tsv": {
+    "bytes": 1118,
+    "sha256": "08b98a6ebfedd4960487da0b62f08d98a0dd5582202a9cd21eb492a143c51a27"
+  },
+  "build-review/remote-results/logs/validation-exit.txt": {
+    "bytes": 2,
+    "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "build-review/remote-results/provenance/remote-inputs.sha256": {
+    "bytes": 421,
+    "sha256": "4e580b530477f6b8bf9250c12cf613b0ffb8e6df15cbc9d0cdae1975d8da8259"
+  },
+  "build-review/remote-results/scripts/validate-debug.sbatch": {
+    "bytes": 6183,
+    "sha256": "84a1f0654a6d13012a0341dd0407ed2424b0b658a8dbcad8384991e3ccff945a"
+  },
+  "build-review/remote-results/validate-2672287.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "build-review/scripts/audit-evidence.py": {
+    "bytes": 3786,
+    "sha256": "86783e11a8a8bf2eaf3a1600c97bcb2d849299b5aeaff4e52312376419b0b52d"
+  },
+  "build-review/scripts/check-owned.py": {
+    "bytes": 1811,
+    "sha256": "2885f2bbce8232b43dfc50815c98825615288e105c711448a41571a475251957"
+  },
+  "build-review/scripts/collect.sh": {
+    "bytes": 1616,
+    "sha256": "1d8112a40d75359e582036e9d791057b815c231024c633a9d03505459483a341"
+  },
+  "build-review/scripts/validate-debug-submission-rejected.sbatch": {
+    "bytes": 6209,
+    "sha256": "ec3e85dafb7dd5f131a07209b5baccc400c5a36dc4651a3d244608e816e26f00"
+  },
+  "build-review/scripts/validate-debug.sbatch": {
+    "bytes": 6183,
+    "sha256": "84a1f0654a6d13012a0341dd0407ed2424b0b658a8dbcad8384991e3ccff945a"
+  },
+  "combined-source-audit.json": {
+    "bytes": 3483,
+    "sha256": "2ddad1e40b22c91badbabe451f4b3ca9b3412f19464e78247e56dc26b211eb7c"
+  },
+  "final-source-audit.json": {
+    "bytes": 4893,
+    "sha256": "7824205d643cb758a835e62594246fac78b599199f56e6dc5821d3a4ac960f0f"
+  },
+  "governance-ci-failed.log": {
+    "bytes": 4782,
+    "sha256": "43a888e43b07e4f4a6f7bf56d384ebf41334a5f551009f21c2ecd8305df44734"
+  },
+  "governance-combined-current.txt": {
+    "bytes": 37,
+    "sha256": "79a89bb34382b4ca27cd0813076bfd89a967fa35dbbf1ace128a2fd77e4ddad0"
+  },
+  "governance-combined.txt": {
+    "bytes": 37,
+    "sha256": "79a89bb34382b4ca27cd0813076bfd89a967fa35dbbf1ace128a2fd77e4ddad0"
+  },
+  "lr-help-only.patch": {
+    "bytes": 1899,
+    "sha256": "69f25219bb1ebea65a025486f2d953b15cf082f9c4139a126379a913ab1df341"
+  },
+  "omissions.json": {
+    "bytes": 2515,
+    "sha256": "cea9d2342fd6a197860242af30bcd6f478c650f4dfd58a68812d3da4eefdcc59"
+  },
+  "reader-layout-review/README.md": {
+    "bytes": 1814,
+    "sha256": "a4331b8c9aa0f3c03639617c13c4bf6157e3f55af5370057ad34ff5b6d670b18"
+  },
+  "reader-layout-review/check-final-results.py": {
+    "bytes": 1447,
+    "sha256": "399c2217f6c586849b517b6633b9298a1af7c365c7b38bca4077cb078d4a924c"
+  },
+  "reader-layout-review/focused-source.sha256": {
+    "bytes": 645,
+    "sha256": "d2a14b516d7a891d197df57126556926b4479ad8ce2a60bc7f57d331c4620c01"
+  },
+  "reader-layout-review/reader-layout.patch": {
+    "bytes": 1470,
+    "sha256": "6cb5d3d090d75ec3f7f503a021ee4a8565eaeba7ac23445957d8a91e67cef255"
+  },
+  "reader-layout-review/remote-results/build/final-cpu/CMakeCache.txt": {
+    "bytes": 35079,
+    "sha256": "0e6146d6b5742d0a6b43fd1fcc39f067ab074fafaace4e3ede9176bab0e28a56"
+  },
+  "reader-layout-review/remote-results/build/final-cpu/compile_commands.json": {
+    "bytes": 9259418,
+    "sha256": "e9a5333012f7e6f37e80f8f7f2b2577684a5d689e8d99612cefff73c70a76a68"
+  },
+  "reader-layout-review/remote-results/build/final-cpu/source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/flags.make": {
+    "bytes": 1766,
+    "sha256": "c7509fdf1a6eed18eb6b591b077ff8c69f0db4013fcd4241acc08b17e5cd1a69"
+  },
+  "reader-layout-review/remote-results/build/final-gpu/CMakeCache.txt": {
+    "bytes": 55469,
+    "sha256": "2658609174f24006929fa5e28761848e2a735930069cfd0c401ef4ec75f21a12"
+  },
+  "reader-layout-review/remote-results/build/final-gpu/compile_commands.json": {
+    "bytes": 10378218,
+    "sha256": "8fe7838d79b4b4e6bd1bac3d9ddfddfb6b61b6f2e0e00d117d4630ad682c4bb7"
+  },
+  "reader-layout-review/remote-results/build/final-gpu/source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/flags.make": {
+    "bytes": 2146,
+    "sha256": "c0758465bed9157308c3555cdf2c62cf37ef702c1bb7a1350351330278f697a3"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/allocation.log": {
+    "bytes": 414,
+    "sha256": "f80e51e01e703c56fc1487579b3e2043c299beeda903a7289467ff135f8ec096"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/archive-sha256.log": {
+    "bytes": 182,
+    "sha256": "826eee9a6c44b5df09aba0cfcc3608a5881d43756aa045da3a76cc8295d770b1"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/cmake.log": {
+    "bytes": 91,
+    "sha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/commands.log": {
+    "bytes": 6638,
+    "sha256": "cfbccab4f8910d88ce96c843cc08cac9dfccf1475004af46a30454ba09109fd2"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/compiler.log": {
+    "bytes": 246,
+    "sha256": "8497f84b2b8334c413d9c6166bd39d009ba55d2ff60a8f23e66dfa5819c2b048"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/cuda.log": {
+    "bytes": 208,
+    "sha256": "77d7ef23109cd2437a8b9cf5efbc4e89996b816276077edb86143ee04f6d5269"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/ddla-sha256.log": {
+    "bytes": 172,
+    "sha256": "3da79ef0b361b308f5aac570de45328b130e94632b110bb3474ef7a28c5ebdc9"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "117a5d145f432dd1d9b77e17faeffcc7d29de7c10aa50eff6823bcc249ce091c"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-build.log": {
+    "bytes": 16566,
+    "sha256": "56fda8c87a0ee4ba917463817c9dfad1167bb599024d8354f9a78e79f96a305f"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-configure.log": {
+    "bytes": 4729,
+    "sha256": "2b75a737f8c761c86bec9371528e38ee5e7f3d7a33d67b7859afc8bb24f1cbb5"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-test.log": {
+    "bytes": 54904,
+    "sha256": "dff52a8c90a3578b9acdb7f3f8db13cb5926147a814f8466b1e3abe399676c9b"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 4897,
+    "sha256": "808f7aa7fa36905f30dfd97fad61b30c9640e195547f922ad98ade8111cab740"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-cpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11570,
+    "sha256": "8d89263f996bd685d3e913f361e7c86f9f633428fb3def0d08d9d3552e3bea81"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "88f1df63cec356da04da165afbc70e78c874fe43684f080f1318c15c1b133acd"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-build.log": {
+    "bytes": 25978,
+    "sha256": "1fbcd74d76243783739ee2aa4ac4a73d8c3806447c1b0156ad438df47923bd69"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-configure.log": {
+    "bytes": 5273,
+    "sha256": "c1e849896580c5c8bab0aa734498b33d5fb53a8318f5c06d883eeb829af29f93"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-no-visible-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 2294,
+    "sha256": "e5a0b99bc2d0a1f496dc9d187dc09670d4f439eef2d19e9b29678a25c06d69db"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-no-visible.log": {
+    "bytes": 1435,
+    "sha256": "7b4a39ab031f895fd255ea44b64ce536b9c515a3a8fc411911011c89ccd275e9"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-test.log": {
+    "bytes": 55692,
+    "sha256": "f81dc63603bb54f7edddab564a3e8a029863d0cddc56350a58981eaac9910099"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 5558,
+    "sha256": "9def2a732ae5743bc880b3f20f58356de5ca2b8945f0d25cb3159fa61fe21701"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/final-gpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11572,
+    "sha256": "5a71805584bef1c96b2802deb4db20dd3d76bb6849423072663c6214c9c54a88"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/gpus.log": {
+    "bytes": 2882,
+    "sha256": "eb0b3f4a9216d90d88bd329353bdbd69b02d49c868867e4fbe2bf93a3c1e18c4"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/modules.log": {
+    "bytes": 72,
+    "sha256": "f3fc9c7f8c1db131bda12d9d06ee8bded55c32562fba7ede6b5ddc7bda326542"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/returncodes.tsv": {
+    "bytes": 330,
+    "sha256": "5075d22d5490cd875e88fbb5d9dd08022026ee9e269cad2e4680ab44db62713d"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/slurm.log": {
+    "bytes": 1683,
+    "sha256": "2fea144d23e20096451dadeaa8fc1875207a98b2e8a1d20a3cb337d8582cf6cd"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/source-verify.log": {
+    "bytes": 335,
+    "sha256": "6e2beee5fd9a893622f847f8fce1b13b619b6f692f047b023992c1d76f31be45"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/test-counts.json": {
+    "bytes": 395,
+    "sha256": "dddb052b94bd48d490aa0a61e61ce80ff6431fa3edb461fbd91417bbb7407f1e"
+  },
+  "reader-layout-review/remote-results/logs/job-2673188/test-counts.log": {
+    "bytes": 395,
+    "sha256": "dddb052b94bd48d490aa0a61e61ce80ff6431fa3edb461fbd91417bbb7407f1e"
+  },
+  "reader-layout-review/remote-results/logs/scheduler.txt": {
+    "bytes": 368,
+    "sha256": "4f89dd7362dd2f933b6649962e2d811f0f2985fcfae5d34552ea181d7be8dac6"
+  },
+  "reader-layout-review/remote-results/reader-review-2673188.log": {
+    "bytes": 544,
+    "sha256": "34bf6471fece617314665e6fe66eeafcfb0ffdb08de772ccd7cada5180517199"
+  },
+  "reader-layout-review/upstream-governance-source.json": {
+    "bytes": 182,
+    "sha256": "0d8146f91814e7db5cf88933b0e351636ccd9d7385acdbf4fc59d862b1d0d1f5"
+  },
+  "reader-layout-review/upstream-governance.py": {
+    "bytes": 36401,
+    "sha256": "cd0d96ec4a32b38e8f8bc357a7134bbac276aefd297783524ec6cecc8c318764"
+  },
+  "reader-layout-review/validate-reader-final.sbatch": {
+    "bytes": 4361,
+    "sha256": "e38beb5dc89deb629ac158b9e02d12197a6cfba144eb8f945ff80c797be3ad5e"
+  },
+  "reader-layout-review/verify-allocation.py": {
+    "bytes": 839,
+    "sha256": "fce06ca0acf62eb408a0ebbfa4de327574b3fc967ff8bf99282f09aa300129bb"
+  },
+  "reader-review/READER_REVIEW.md": {
+    "bytes": 18728,
+    "sha256": "c5126635ddd06901052927df8f4d4b57663bc2e52cb91cf408b21aa94c5a8196"
+  },
+  "reader-review/SHA256SUMS": {
+    "bytes": 1174,
+    "sha256": "1c05eddb1c8ac4d6c1aaeb13dbe1973b5569249361f986bb06111a3860dfae0f"
+  },
+  "reader-review/base-io-CMakeLists.txt": {
+    "bytes": 10641,
+    "sha256": "ade02692b2b5062579a396bfff1387b66953a2215a1626152365af8ba14f2eb4"
+  },
+  "reader-review/base-plus-target-sources-cmake-format-corrected.log": {
+    "bytes": 197,
+    "sha256": "55e35fea35f1b7d3ee1640a5ca22a488e7adc022e0d23b014fb83286639945af"
+  },
+  "reader-review/base-plus-target-sources-formatted-corrected.cmake": {
+    "bytes": 10771,
+    "sha256": "a0dee5b0efcf1798c0c64386c6de3845c3c9f93f00f680f692a5976f57d64204"
+  },
+  "reader-review/base-plus-target-sources.cmake": {
+    "bytes": 10789,
+    "sha256": "5a2543715d9e27ba840ce6a06d178d0705142ee5cca73954d6786feaf4239fce"
+  },
+  "reader-review/before/source/source_io/test_serial/read_input_test.cpp": {
+    "bytes": 18056,
+    "sha256": "bc7a2c3f254cabe9c0e91ca8d1e6016513e3a12f109411ad04ecc6f7db3949c6"
+  },
+  "reader-review/before/source/source_io/unittests/CMakeLists.txt": {
+    "bytes": 10771,
+    "sha256": "a0dee5b0efcf1798c0c64386c6de3845c3c9f93f00f680f692a5976f57d64204"
+  },
+  "reader-review/before/source/source_io/unittests/test_read_inp_exx_dftu.cpp": {
+    "bytes": 3072,
+    "sha256": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb"
+  },
+  "reader-review/check-final-results.py": {
+    "bytes": 1447,
+    "sha256": "399c2217f6c586849b517b6633b9298a1af7c365c7b38bca4077cb078d4a924c"
+  },
+  "reader-review/clang-added-lines.log": {
+    "bytes": 331,
+    "sha256": "72859e151144ac0af895e376d673019bcde73ca3b210bc7bb77893589918911a"
+  },
+  "reader-review/clang-final-added-lines.log": {
+    "bytes": 14,
+    "sha256": "5391eae9bcd289aa4008b7a4d3f190c7bd854ac9fbe0585f7c912e1ebfc97ead"
+  },
+  "reader-review/cmake-base-format-required.patch": {
+    "bytes": 1306,
+    "sha256": "393e343f01cf113227e39c5b4f692c543152dc5c0988aeb7f66c94e8c5d83da6"
+  },
+  "reader-review/cmake-final.log": {
+    "bytes": 244,
+    "sha256": "b020e24b631c7ed6956eec0a4457230a00c03df646d1ac39a212e3f3d1402648"
+  },
+  "reader-review/collect-reader-evidence.py": {
+    "bytes": 2248,
+    "sha256": "ff2f16a46363d16df56de35f40b032e89df2379430eff5b6acb5e991547ffb1a"
+  },
+  "reader-review/current-cmake-format-corrected.log": {
+    "bytes": 14,
+    "sha256": "5391eae9bcd289aa4008b7a4d3f190c7bd854ac9fbe0585f7c912e1ebfc97ead"
+  },
+  "reader-review/current-formatted-corrected.cmake": {
+    "bytes": 10771,
+    "sha256": "a0dee5b0efcf1798c0c64386c6de3845c3c9f93f00f680f692a5976f57d64204"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-CMakeCache.txt": {
+    "bytes": 35090,
+    "sha256": "148086eb6b30732ba101d8845f1c32a355223dae2355dc6ab7c78e149f2ef7f3"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2787,
+    "sha256": "c600552092c773a07e6846d803142046a1ff282b20b39ed50632b7d441269e72"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 9521,
+    "sha256": "c4fa21eacf9324f318a67b3305077669abb4ec7352b454fc08630b4f64bf705d"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "5dc72bca01eb8e10a0dc9a3e71c11092f837013f7cc717025066a2037cd009ea"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-build.log": {
+    "bytes": 16546,
+    "sha256": "2ceba588d9be41db2bb7f316dbcc114ba83509d7f835a9d11af7d3b715bb480d"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-compile-commands.json": {
+    "bytes": 16559,
+    "sha256": "45c59a1f4b701032dc09e1196f3a4a3f65a1b344ddbb88b991a931213128e03b"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-configure.log": {
+    "bytes": 4731,
+    "sha256": "a276b7bd6c07dc0c693ddd3600b0d88d3905d3471653eb41ea3cdf7031e75358"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-test.log": {
+    "bytes": 54914,
+    "sha256": "f303ad2a02d883459ebc43de53f14fbc8aa5c59018ce71d35fe8eaae8082c39b"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 4841,
+    "sha256": "74341312e98acf3ffb9dcb38e5975c13761ac8fb566d1e6fc182777b0cecb4da"
+  },
+  "reader-review/evidence/logs/job-2672555/after-cpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11604,
+    "sha256": "d8c6ee8b48199a0ebbaee93b7f870d06701e5903c8b27fff4be0a213e17c5dc6"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-CMakeCache.txt": {
+    "bytes": 55480,
+    "sha256": "2f60a90a3df616509506a81514ab2f699a658aaefbf0f2d5a2ad671fa7fcf224"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2966,
+    "sha256": "787ea967054d69500e8f5fce05d7d7efd6ba0eb1673302209a19aa05ebbc41aa"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 11938,
+    "sha256": "9f30d7c56ce0adba38e21f8be5c1fa960140e8adbebdefde909c3af7b8cbd4c7"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "16209c1553761b968fff4acba2c1ee20c91998e17b1145b5b650790aa6ef59cf"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-build.log": {
+    "bytes": 25958,
+    "sha256": "d22c561f8bc8379b4d77fb234335e351ad777c6bd24265e3a3e4bb9b28dfeaea"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-compile-commands.json": {
+    "bytes": 18356,
+    "sha256": "720dcc94d8967e5a9be070d0f23b897231d7aedc635c456d7c79848895fe118b"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-configure.log": {
+    "bytes": 5275,
+    "sha256": "62dcc49ac3168aff85e1aa08e92ef2d46b5d29a6c589e8bef9a82bddb89fecc7"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-test.log": {
+    "bytes": 55703,
+    "sha256": "12cc2204002c59f0d4b84dd0f104cb1cd208f5e777b295cc7923ee91b5cb94ca"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 5492,
+    "sha256": "8cca6cbf95ddd9eb3f84c6b2f35e0f09410dc9ba1c06f54d1a2ea48f27a75049"
+  },
+  "reader-review/evidence/logs/job-2672555/after-gpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11604,
+    "sha256": "b054dfed14762287414539350af164b4747f196cca42f12f67131a74dadbd061"
+  },
+  "reader-review/evidence/logs/job-2672555/allocation.log": {
+    "bytes": 414,
+    "sha256": "99bbb594c8777cac11b83be8e734151506aa099a27cb2335bc35ab2be78d175b"
+  },
+  "reader-review/evidence/logs/job-2672555/archive-sha256.log": {
+    "bytes": 264,
+    "sha256": "f6b2414e86cdf36bdca83b0bc98df08114571613bfcb4887c6dea3e1d20d66ca"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-CMakeCache.txt": {
+    "bytes": 35101,
+    "sha256": "735d6ca271df1fbb7eb068052b5e967d333f59bcd1838301cea088b8d2db5d1f"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2787,
+    "sha256": "c600552092c773a07e6846d803142046a1ff282b20b39ed50632b7d441269e72"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 9521,
+    "sha256": "c4fa21eacf9324f318a67b3305077669abb4ec7352b454fc08630b4f64bf705d"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-binaries.log": {
+    "bytes": 279,
+    "sha256": "e9e07a93288302bc11574dbf9c4a5c8efbd0258305359b5d9ceb669c95f8081c"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-build.log": {
+    "bytes": 16546,
+    "sha256": "04ebd92ce303dafdc68766b7bef69942296f4d47f207100fce1cdeb6e637799d"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-compile-commands.json": {
+    "bytes": 16599,
+    "sha256": "49a63b4372d487b37988fc8e31ae77d0eeb579a6f629b5e9c834c6ff8a4d9a66"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-configure.log": {
+    "bytes": 4733,
+    "sha256": "c3c020109fe7c7a1e134ac75c1feafd1eea26230ef78392f54f4264bdfdcfcca"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-test.log": {
+    "bytes": 54819,
+    "sha256": "8358b03a4cc113c933a64a085d4453dcc9ce2f44ba9a0deda4816e679e59fbe8"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 4536,
+    "sha256": "c0a2c6f1b44b19535a52c343ef481b178171c98fb3e498de479004254a1992c4"
+  },
+  "reader-review/evidence/logs/job-2672555/before-cpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11636,
+    "sha256": "a6a5bf7536b76d9be249c9e84e1c317019a004f2ec513199f8037765d992fe32"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-CMakeCache.txt": {
+    "bytes": 55491,
+    "sha256": "b004e9b643b6db63a6c106c5292cbaa2ff17569849d86d7563e84551fd1ef5ce"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2787,
+    "sha256": "c600552092c773a07e6846d803142046a1ff282b20b39ed50632b7d441269e72"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 11938,
+    "sha256": "9f30d7c56ce0adba38e21f8be5c1fa960140e8adbebdefde909c3af7b8cbd4c7"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-binaries.log": {
+    "bytes": 279,
+    "sha256": "ce0652f55194f2a0eee2ca1b1ce7bf3dfe3f7d949e83ebcd2b31a85d1d15f381"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-build.log": {
+    "bytes": 25958,
+    "sha256": "728780a739ae5151ef049a0fc4ea41e153b70f85ec0c09a98cc5fbd153632c70"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-compile-commands.json": {
+    "bytes": 18359,
+    "sha256": "38b8ee17ca17c753bed1a61e15777b96aa205fae28a0fb5e7861b6a84a0dcb72"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-configure.log": {
+    "bytes": 5277,
+    "sha256": "1c032ce27db2a4b02262a584613d2c669e58cc9c0910699ac4a6660ecf25f341"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-test.log": {
+    "bytes": 54829,
+    "sha256": "9e21fd13fce08fb8e3bef5a99bc6713fa6cda0f8f420b1940dd50a1762fa3cdd"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 4533,
+    "sha256": "f6d96c1355b8c31e113ae69ba3f39ebc369952fd36beded580c239f47631830f"
+  },
+  "reader-review/evidence/logs/job-2672555/before-gpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11633,
+    "sha256": "8242e7e9cc1de2acfb4a9c1fa187ebb1757fea26bd594910eea0fe7f3d30110e"
+  },
+  "reader-review/evidence/logs/job-2672555/cmake.log": {
+    "bytes": 91,
+    "sha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b"
+  },
+  "reader-review/evidence/logs/job-2672555/commands.log": {
+    "bytes": 10457,
+    "sha256": "f46c485f93e82e662f589f9be9017c0ad4992dd94e13d5f9c1a73ec358d8e8c2"
+  },
+  "reader-review/evidence/logs/job-2672555/compiler.log": {
+    "bytes": 246,
+    "sha256": "8497f84b2b8334c413d9c6166bd39d009ba55d2ff60a8f23e66dfa5819c2b048"
+  },
+  "reader-review/evidence/logs/job-2672555/cuda.log": {
+    "bytes": 208,
+    "sha256": "77d7ef23109cd2437a8b9cf5efbc4e89996b816276077edb86143ee04f6d5269"
+  },
+  "reader-review/evidence/logs/job-2672555/ddla-sha256.log": {
+    "bytes": 172,
+    "sha256": "3da79ef0b361b308f5aac570de45328b130e94632b110bb3474ef7a28c5ebdc9"
+  },
+  "reader-review/evidence/logs/job-2672555/evidence-summary.json": {
+    "bytes": 13136,
+    "sha256": "5449efe6ec086d451bbd90e9acc0a3e99fd5b0bb2dec67c7249c9aa20f23bc70"
+  },
+  "reader-review/evidence/logs/job-2672555/gpus.log": {
+    "bytes": 2882,
+    "sha256": "55238acdb0660bc607ef3b481fcd6aef4983927e0865de7ba5c68c5a872dd1dd"
+  },
+  "reader-review/evidence/logs/job-2672555/modules.log": {
+    "bytes": 72,
+    "sha256": "f3fc9c7f8c1db131bda12d9d06ee8bded55c32562fba7ede6b5ddc7bda326542"
+  },
+  "reader-review/evidence/logs/job-2672555/returncodes.tsv": {
+    "bytes": 457,
+    "sha256": "2ab8256d4a0d220f37a1095524031f0e1bef5afcfa57feeea9d5b33cdd805457"
+  },
+  "reader-review/evidence/logs/job-2672555/slurm.log": {
+    "bytes": 1674,
+    "sha256": "05952d923ac21213b8714785f3385cf7edb4c5ff390323e97e4d9274871d6959"
+  },
+  "reader-review/evidence/logs/job-2672555/source-verify.log": {
+    "bytes": 63,
+    "sha256": "2b18ead1219c123d8c214a34d891a15cf7a60163a32e60685fa15f995ae112e7"
+  },
+  "reader-review/evidence/logs/job-2672722/allocation.log": {
+    "bytes": 414,
+    "sha256": "c99510012c90c04f4b1cd1b091ad3a1d2a34c61f3d7f32065657deaf44964417"
+  },
+  "reader-review/evidence/logs/job-2672722/archive-sha256.log": {
+    "bytes": 276,
+    "sha256": "fc9dba7712560a0d3681979223e145a4444e030769416fd4577b43436e0d9e2c"
+  },
+  "reader-review/evidence/logs/job-2672722/cmake.log": {
+    "bytes": 91,
+    "sha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b"
+  },
+  "reader-review/evidence/logs/job-2672722/commands.log": {
+    "bytes": 6684,
+    "sha256": "ab900943955eaccdde18ae3af2d9a9839c29057bcec2ed9eb78e1d4334711b84"
+  },
+  "reader-review/evidence/logs/job-2672722/compiler.log": {
+    "bytes": 246,
+    "sha256": "8497f84b2b8334c413d9c6166bd39d009ba55d2ff60a8f23e66dfa5819c2b048"
+  },
+  "reader-review/evidence/logs/job-2672722/cuda.log": {
+    "bytes": 208,
+    "sha256": "77d7ef23109cd2437a8b9cf5efbc4e89996b816276077edb86143ee04f6d5269"
+  },
+  "reader-review/evidence/logs/job-2672722/ddla-sha256.log": {
+    "bytes": 172,
+    "sha256": "3da79ef0b361b308f5aac570de45328b130e94632b110bb3474ef7a28c5ebdc9"
+  },
+  "reader-review/evidence/logs/job-2672722/evidence-summary.json": {
+    "bytes": 8921,
+    "sha256": "5eddc1092bdb23881b9169dfd35328ef28deafbf8737c4b14bb3ad0015c3c027"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-CMakeCache.txt": {
+    "bytes": 35090,
+    "sha256": "b16e7e42837ce515dafe6db4c5a7fc36cc79fdc612e963ae79f334dbeb8bfd50"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2787,
+    "sha256": "c600552092c773a07e6846d803142046a1ff282b20b39ed50632b7d441269e72"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 9521,
+    "sha256": "c4fa21eacf9324f318a67b3305077669abb4ec7352b454fc08630b4f64bf705d"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "cb8113f890dd97a5230c077e18cb62d9710c83d4f848018f0ad98afb73a796f5"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-build.log": {
+    "bytes": 16546,
+    "sha256": "6944d5a05604819aa22a6a4de7c177e01646e37b6134834bc51058c65251afe2"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-compile-commands.json": {
+    "bytes": 16559,
+    "sha256": "12926ccbe05b7b8049d550ac8b8f98b0cb852989a97febf6860c0bcd0960de5d"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-configure.log": {
+    "bytes": 4731,
+    "sha256": "f96af58c6206d72c377602f2e5d3cfaa05bc82267a46ea0a679eaeb546ec31a2"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-test.log": {
+    "bytes": 54914,
+    "sha256": "82fb86ee8a156441e699535f5977e46d8e360ed0a02a13cc9a2ab33e27c86f80"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 4842,
+    "sha256": "beedf16a878af12f6876a81d33a6166f0b6e46fb244aeb2627bcd2a86f1096c6"
+  },
+  "reader-review/evidence/logs/job-2672722/final-cpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11602,
+    "sha256": "9805a7f74d3d356e33284b3090e22727860100e82521782c796c764f1681c0e3"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-CMakeCache.txt": {
+    "bytes": 55480,
+    "sha256": "c2b1ac52ab2d66c2cdb8f6974e82a1159564fc284a950cc41db647be2a72395f"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-MODULE_IO_read_input_serial-link.txt": {
+    "bytes": 2966,
+    "sha256": "787ea967054d69500e8f5fce05d7d7efd6ba0eb1673302209a19aa05ebbc41aa"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-MODULE_IO_read_item_serial-link.txt": {
+    "bytes": 11938,
+    "sha256": "9f30d7c56ce0adba38e21f8be5c1fa960140e8adbebdefde909c3af7b8cbd4c7"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-binaries.log": {
+    "bytes": 277,
+    "sha256": "51ee4f113d4f176ea1697ab8b3615b70587ed891a115f5e0c1de3d0926200b62"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-build.log": {
+    "bytes": 25958,
+    "sha256": "ea50756d4b06615ae8102f030c1ba52d315999cf4b7d2343f367a64536a8080e"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-compile-commands.json": {
+    "bytes": 18356,
+    "sha256": "e7b7e115af47ec67a878a8bb33bbe745d8b9a93fc3790480d99acb11bd244e3b"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-configure.log": {
+    "bytes": 5275,
+    "sha256": "45bae43df7eab578506d809044af9cf5774b96a84326bce761dacac77d1e062e"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-no-visible-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 2266,
+    "sha256": "d66ff024cd1a55ee9d965799500ab9ced991b1b82be096ab8b98a0bff5d30b89"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-no-visible.log": {
+    "bytes": 1427,
+    "sha256": "c8b78a152a0906dbf7e4a641f1b90f454239cb1f41fd23ac1abadb5fd1910ffb"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-test.log": {
+    "bytes": 55702,
+    "sha256": "4f71138268e4942e9c7443f5c3d504f269550d04b96c47bee04135d12a9455f8"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-xml/MODULE_IO_read_input_serial.xml": {
+    "bytes": 5490,
+    "sha256": "ed0c20a273a0d64453842685b93b11a22abf06624eda03407c4ff2797b1fcf69"
+  },
+  "reader-review/evidence/logs/job-2672722/final-gpu-xml/MODULE_IO_read_item_serial.xml": {
+    "bytes": 11605,
+    "sha256": "390ee759a45b2fb34bf6a0918e0330e0df206c6e99c47f2cae20119c81fe1608"
+  },
+  "reader-review/evidence/logs/job-2672722/gpus.log": {
+    "bytes": 2882,
+    "sha256": "9edf5508c2b4ac7c4a4be03ed69156eee877783b06fa74ed6dafcc896330f22e"
+  },
+  "reader-review/evidence/logs/job-2672722/modules.log": {
+    "bytes": 72,
+    "sha256": "f3fc9c7f8c1db131bda12d9d06ee8bded55c32562fba7ede6b5ddc7bda326542"
+  },
+  "reader-review/evidence/logs/job-2672722/returncodes.tsv": {
+    "bytes": 330,
+    "sha256": "5075d22d5490cd875e88fbb5d9dd08022026ee9e269cad2e4680ab44db62713d"
+  },
+  "reader-review/evidence/logs/job-2672722/slurm.log": {
+    "bytes": 1685,
+    "sha256": "1827e44f44dd499494b587947fae6bc42b668b6a07cba014f8a8b65a4c2ab37e"
+  },
+  "reader-review/evidence/logs/job-2672722/source-verify.log": {
+    "bytes": 31,
+    "sha256": "71b18ac19bd08bd72362ec734702cc7db1afef62c0e174dbe8a6d25121bc66ff"
+  },
+  "reader-review/evidence/logs/job-2672722/test-counts.json": {
+    "bytes": 395,
+    "sha256": "dddb052b94bd48d490aa0a61e61ce80ff6431fa3edb461fbd91417bbb7407f1e"
+  },
+  "reader-review/evidence/logs/job-2672722/test-counts.log": {
+    "bytes": 395,
+    "sha256": "dddb052b94bd48d490aa0a61e61ce80ff6431fa3edb461fbd91417bbb7407f1e"
+  },
+  "reader-review/evidence/logs/sacct-final.txt": {
+    "bytes": 1002,
+    "sha256": "5dc12a47debb7297574958fd5f9d052b05958aef4d4d55c1c370f9d4d6ed67b4"
+  },
+  "reader-review/evidence/reader-review-2672381.log": {
+    "bytes": 56,
+    "sha256": "bc3eef7382d5aef13761b7f253aeee507a3f6e2fd1352043a36805eb13920d73"
+  },
+  "reader-review/evidence/reader-review-2672555.log": {
+    "bytes": 743,
+    "sha256": "5d1d282df481df3c45ec10badfc191845f6bc29a3d8b8c86548aa98d02b213b1"
+  },
+  "reader-review/evidence/reader-review-2672722.log": {
+    "bytes": 544,
+    "sha256": "34bf6471fece617314665e6fe66eeafcfb0ffdb08de772ccd7cada5180517199"
+  },
+  "reader-review/final-integrity-check.log": {
+    "bytes": 193,
+    "sha256": "e85dac958ec836ed5693b3ffdfc96f7693d7ec0729c3f63103044b923d909e32"
+  },
+  "reader-review/final-job-id.txt": {
+    "bytes": 8,
+    "sha256": "d2c2972ee8284b1738f30ff57656ccff0f676e4ac537ce8f8ed8c259745d6504"
+  },
+  "reader-review/final-overlay-upload.log": {
+    "bytes": 221,
+    "sha256": "1b66c5effb62067651bb3a99c9e913270749fd9e2a9aa0ba80110510bb579809"
+  },
+  "reader-review/final-remote-submit.log": {
+    "bytes": 72,
+    "sha256": "4bdddff0ad8c931203b595339e9c3f0ecbcdff10c45e7760128d5ab377ec02fa"
+  },
+  "reader-review/final-source-prepare.log": {
+    "bytes": 83,
+    "sha256": "c6ce7fd292d8e34b4b5c2df54b454468627351db8cbc0aa859595548bb3e87e1"
+  },
+  "reader-review/final-source-update.log": {
+    "bytes": 268,
+    "sha256": "e465b94b0a417f4da9830278191b964b39c4251686d44df855afb5375049533d"
+  },
+  "reader-review/focused-source-hashes.json": {
+    "bytes": 2133,
+    "sha256": "31bb1749a56e364095dde1e16f2fbf22b98e4d41d4ec27bee6ab05918e3a69d5"
+  },
+  "reader-review/governance-final.log": {
+    "bytes": 679,
+    "sha256": "b53628e100db91855d8a1808b322b423abc874eaeee90067a85bd9b989a41ee5"
+  },
+  "reader-review/governance.log": {
+    "bytes": 682,
+    "sha256": "95a6be05ec29461c81b765ac1a2da60f12efbd14aacb49e6169bb77b031aca3f"
+  },
+  "reader-review/head.txt": {
+    "bytes": 41,
+    "sha256": "f369490b4fa17be49a512378e18b92785df2d209154868d5662c1190a6ced49b"
+  },
+  "reader-review/initial-status.txt": {
+    "bytes": 188,
+    "sha256": "24a3a9af61035495837935a1950896181c95dfe6ac292c1a29f449863a6d9aa0"
+  },
+  "reader-review/invalid-formatter-invocation-note.txt": {
+    "bytes": 320,
+    "sha256": "c32373e486c26f0e1ffbeb8756bf1ead95beb5ad60f7d49413aed23a30684369"
+  },
+  "reader-review/invalid-invocation-base-plus-target-sources-cmake-format.log": {
+    "bytes": 14,
+    "sha256": "5391eae9bcd289aa4008b7a4d3f190c7bd854ac9fbe0585f7c912e1ebfc97ead"
+  },
+  "reader-review/invalid-invocation-base-plus-target-sources-formatted.cmake": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reader-review/invalid-invocation-current-cmake-format.log": {
+    "bytes": 14,
+    "sha256": "5391eae9bcd289aa4008b7a4d3f190c7bd854ac9fbe0585f7c912e1ebfc97ead"
+  },
+  "reader-review/invalid-invocation-current-formatted.cmake": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reader-review/job-id.txt": {
+    "bytes": 8,
+    "sha256": "f80e4f376acdbf0f4516ac7310f18a7689670e135828358655f3763b9eeb316c"
+  },
+  "reader-review/job2672381-failed-setup.txt": {
+    "bytes": 492,
+    "sha256": "85a60ffce262b61caea39ead78a9b4839d1fb3d06eec01551eb7b558f845707b"
+  },
+  "reader-review/job2672555-evidence-download.log": {
+    "bytes": 17,
+    "sha256": "b50fce2747730a13b29ba3f8884a337a4039e23cf5a4b265b01d51740f958cc8"
+  },
+  "reader-review/job2672555-evidence-summary-output.log": {
+    "bytes": 13153,
+    "sha256": "bdef1015f94fad794cb4701576844fae67d98a2effa300188bbe92fa9fba6063"
+  },
+  "reader-review/job2672722-evidence-download.log": {
+    "bytes": 17,
+    "sha256": "b50fce2747730a13b29ba3f8884a337a4039e23cf5a4b265b01d51740f958cc8"
+  },
+  "reader-review/job2672722-evidence-summary-output.log": {
+    "bytes": 8989,
+    "sha256": "11175b44655e77c4653a43255af6bbcf25742fbc8a5f268f425728976221a6f3"
+  },
+  "reader-review/reader-final.patch": {
+    "bytes": 4967,
+    "sha256": "3e1804d2c6cfc0fd50a82793103ec984bf75150d91baf4fd41b3d3451e1c4272"
+  },
+  "reader-review/reader.patch": {
+    "bytes": 4455,
+    "sha256": "f23e92fd17d9230e93fb1959768bb19ebb7d14cabe1779677079716ae6323335"
+  },
+  "reader-review/remote-script-update.log": {
+    "bytes": 25,
+    "sha256": "bcd38b887a0098f4ad308b074edef34450f659f182acd53d781ab897710afc53"
+  },
+  "reader-review/remote-submit-attempt2.log": {
+    "bytes": 72,
+    "sha256": "f330f50fc41f32d915d8f7ff11cf64795bc1a29e49b6a2861037c32ff9684ed3"
+  },
+  "reader-review/remote-submit-attempt3.log": {
+    "bytes": 72,
+    "sha256": "3cdd6d82fa83ba48a81bcfedf671318e252c36b5cb2a45df29e9c934cd710814"
+  },
+  "reader-review/remote-submit-command.txt": {
+    "bytes": 358,
+    "sha256": "4dd70bea21635e683291798405565af6f3b6849fdd86e222b1ac7e77f55ea7d7"
+  },
+  "reader-review/remote-submit.log": {
+    "bytes": 357,
+    "sha256": "aa30bdc618797f7baaaf5b131380516b331be7d236cbb3231ffb24d5026cba77"
+  },
+  "reader-review/remote-upload-command.txt": {
+    "bytes": 373,
+    "sha256": "4ee3f6d964a1ddeb4c0137cf781e4dd416290c039ed40ad797a15776d826da24"
+  },
+  "reader-review/remote-upload.log": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reader-review/replacement-job-id.txt": {
+    "bytes": 8,
+    "sha256": "3aacdef8ef676b0c15ada46c79b178c856bba71489c94193f440224a14809fe0"
+  },
+  "reader-review/replacement-upload.log": {
+    "bytes": 32,
+    "sha256": "b757532a289a53965d7911ad9c9e9f4accfe35ac9f03159060aeb15d990faf64"
+  },
+  "reader-review/review-comment.json": {
+    "bytes": 5233,
+    "sha256": "62def042849d8bbc7b2de274c259456aab6c40fa119a1b27813e00e06a89f127"
+  },
+  "reader-review/source-after-sha256.json": {
+    "bytes": 897787,
+    "sha256": "b8fd5f3e46dbabb4639533a582d7a8b6cf74e6c322f75ab49a919dd8b66e4839"
+  },
+  "reader-review/source-before-sha256.json": {
+    "bytes": 897787,
+    "sha256": "62eb4d84656b22c3d980e0527f0d460d28e65630ee98e6290ed7195095ff6c8f"
+  },
+  "reader-review/source-final-sha256.json": {
+    "bytes": 897787,
+    "sha256": "8c864ed7a27545369a682d37fd64095139afef406ae21d501d8fdb402ffaa1b4"
+  },
+  "reader-review/update-final-source.py": {
+    "bytes": 1034,
+    "sha256": "cc4bdf4959ef1b5a242e11e802391a9fae55cee9e26387570c4453e116c4ae6e"
+  },
+  "reader-review/validate-reader-failed-job2672381.sbatch": {
+    "bytes": 3728,
+    "sha256": "b7b9d1bd9bc93da20ab574c56fa7d1de8912013a1d1fb7108eef6c17d551fd4f"
+  },
+  "reader-review/validate-reader-final.sbatch": {
+    "bytes": 4385,
+    "sha256": "df44640ca3a11f760e1a4343ea81ed137e1e1841650c155cd578a5884fcad181"
+  },
+  "reader-review/validate-reader-submission-rejected.sbatch": {
+    "bytes": 3755,
+    "sha256": "a1dc23d5d01d83e138bfd876ef6d5702f066ce65b555f05c613f61f44f9c4a12"
+  },
+  "reader-review/validate-reader.sbatch": {
+    "bytes": 3828,
+    "sha256": "2af6ff1cf48c756779f64e2335febaec9e978c85781c1be1027600f91612c1ff"
+  },
+  "reader-review/verify-allocation.py": {
+    "bytes": 839,
+    "sha256": "fce06ca0acf62eb408a0ebbfa4de327574b3fc967ff8bf99282f09aa300129bb"
+  },
+  "reader-review/verify-final-source.py": {
+    "bytes": 394,
+    "sha256": "d18f65f4e0d418ab1250565d3912243a40afe6c1a29c9dfee1d40e860606b68d"
+  },
+  "reader-review/verify-source.py": {
+    "bytes": 524,
+    "sha256": "df5f17d5f63926ff3718aeaeb847cd82bbb33db8fad6760bdc95a7f21420ddb4"
+  },
+  "reader-review/whitespace.log": {
+    "bytes": 144,
+    "sha256": "7ebf2541c84269bb06cf371c3f7248e2d8467c7e051492d9c3ad62679b289900"
+  }
+}

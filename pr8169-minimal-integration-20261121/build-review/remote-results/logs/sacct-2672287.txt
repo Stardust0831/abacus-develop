@@ -1,0 +1,4 @@
+JobID|JobName|Partition|State|ExitCode|Elapsed|AllocCPUS|AllocTRES|NodeList
+2672287|pr8169-minimal-debug|16V100|COMPLETED|0:0|00:03:09|32|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1|16v100n35
+2672287.batch|batch||COMPLETED|0:0|00:03:09|32|cpu=32,gres/gpu=4,mem=60G,node=1|16v100n35
+2672287.extern|extern||COMPLETED|0:0|00:03:09|32|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1|16v100n35

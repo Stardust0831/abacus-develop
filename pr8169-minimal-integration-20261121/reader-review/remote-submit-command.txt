@@ -1,0 +1,1 @@
+tssh -T SAI-stardust 'cd /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121 && mkdir source-before source-after logs && tar -xzf source-before.tar.gz -C source-before && cp -a source-before/. source-after/ && tar -xzf reader-overlay.tar.gz -C source-after && python3 verify-source.py && sbatch validate-reader.sbatch'

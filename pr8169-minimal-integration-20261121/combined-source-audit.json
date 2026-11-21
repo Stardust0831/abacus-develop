@@ -1,0 +1,107 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "scope": "build",
+      "path": "source/source_lcao/module_ri/unittests/CMakeLists.txt",
+      "sha256": "99f207197ff2e1c36e38bf5b76e4267f1f27fcecdc38b7e71c25d17c8fdbe508",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "source/source_lcao/module_ri/unittests/test_exx_workspace.cpp",
+      "sha256": "85d3515986f667cd9bfb4d05a0464498b3ee698c599c83c89c088053bfeeb169",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "source/source_lcao/module_ri/exx_workspace.cpp",
+      "sha256": "e1216f1d76f63615aecafeb50068b6f97161f9f93a8ce2619889fc425c44f168",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "source/source_lcao/module_ri/lri_cv.cpp",
+      "sha256": "a8923f64315ad890a45158bbde27bbe0a8f95d790d800d0cf177239a5ab453c2",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "tests/lcao_hse_gpu/cmake/CMakeLists.txt",
+      "sha256": "4e6bf663f10e21c334f4e3aa595e6465fac205c62cbeb778b68780382564f40c",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp",
+      "sha256": "bd2746e593bcac6eeee1265b2f78119ef36829d6392cd371f8d86c5dac2214b6",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "docs/advanced/install.md",
+      "sha256": "99410475059ea06eb46e0bff7177e87f6d8ce1b73ca8640df2baec3565837acb",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "cmake/modules/FindLibRI.cmake",
+      "sha256": "6245825aa2ff809422611fb6716ebae7297d309263e4d638a05b8a0c5446f849",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "source/CMakeLists.txt",
+      "sha256": "9b64f7fdb4802653b9d3308d6a0b9ad64b79e710bff82af3f3d984d1728f5fa8",
+      "passed": true
+    },
+    {
+      "scope": "build",
+      "path": "cmake/Testing.cmake",
+      "sha256": "3074c9f055d2b7fc4d8a560ab655ec34ae49cc23ad10d3decb20913c597d831e",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/test_serial/read_input_test.cpp",
+      "sha256": "57b0051830fe80b13e8afd42e9c95e863a5779b12bc05a1cdb949e947e3f9077",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/unittests/CMakeLists.txt",
+      "sha256": "44b513a2113cb9c7bc367553aa01eeb3a44aea509105c81c65864c69afbba53b",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/unittests/test_read_inp_exx_dftu.cpp",
+      "sha256": "ce137026eb4bf6d644fc056eaa4a9f264feb4db540dac4cfbfedb2bc2b3e0bdb",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/module_parameter/read_input.cpp",
+      "sha256": "df9867d25063463e87f2e4868a4b3a0ce25620fddbc5125d9428cbb700d72ec7",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/module_parameter/read_inp_sys.cpp",
+      "sha256": "4c89c7f25935c0f85f06215c14b7cfd55cf305bbb32d8f9d9b59d3c8fc9bd8d8",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_io/module_parameter/read_inp_exx_dftu.cpp",
+      "sha256": "1ea9cd2adc073860c4bf9899977509ecfb6977d1b2355dbbd906312f4ba9fed8",
+      "passed": true
+    },
+    {
+      "scope": "reader",
+      "path": "source/source_base/module_device/device.cpp",
+      "sha256": "caaf95510fb7f19459759b83baa9edd7aafe5da56c6cb4b88662f7dd1b122190",
+      "passed": true
+    }
+  ]
+}

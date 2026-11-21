@@ -1,0 +1,9 @@
+JobID|State|ExitCode|Elapsed|AllocCPUS|AllocTRES|NodeList
+2672381|FAILED|1:0|00:00:04|32|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1|16v100n45
+2672381.batch|FAILED|1:0|00:00:04|32|cpu=32,gres/gpu=4,mem=60G,node=1|16v100n45
+2672381.extern|COMPLETED|0:0|00:00:04|32|billing=600,cpu=32,gres/gpu=4,mem=60G,node=1|16v100n45
+#!/bin/bash
+export GPUS_PER_SOCKET=2
+export CORES_PER_SOCKET=8
+source "$(dirname "${BASH_SOURCE[0]}")/_common.bash"
+ERROR: SLURM_NTASKS=1 is not divisible by total GPUs=4.

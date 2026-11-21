@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "job_id": "2672287",
+  "original_build_exit_code": 2,
+  "original_unresolved_symbol_count": 14,
+  "all_original_unresolved_symbols_are_ddla": true,
+  "debug_flags_verified": [
+    "gpu-before",
+    "gpu-after",
+    "cpu"
+  ],
+  "post_fix_ctest_results": {
+    "gpu-after-test": 0,
+    "cpu-test": 0,
+    "consumer-cpu-test": 0,
+    "consumer-gpu-test": 0
+  },
+  "consumer_registered_tests": {
+    "cpu": 1,
+    "gpu": 1
+  },
+  "compiled_source_matches_shared_checkout": {
+    "source/source_lcao/module_ri/unittests/CMakeLists.txt": "99f207197ff2e1c36e38bf5b76e4267f1f27fcecdc38b7e71c25d17c8fdbe508",
+    "source/source_lcao/module_ri/unittests/test_exx_workspace.cpp": "85d3515986f667cd9bfb4d05a0464498b3ee698c599c83c89c088053bfeeb169",
+    "source/source_lcao/module_ri/exx_workspace.cpp": "e1216f1d76f63615aecafeb50068b6f97161f9f93a8ce2619889fc425c44f168",
+    "source/source_lcao/module_ri/lri_cv.cpp": "a8923f64315ad890a45158bbde27bbe0a8f95d790d800d0cf177239a5ab453c2",
+    "tests/lcao_hse_gpu/cmake/CMakeLists.txt": "4e6bf663f10e21c334f4e3aa595e6465fac205c62cbeb778b68780382564f40c",
+    "tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp": "bd2746e593bcac6eeee1265b2f78119ef36829d6392cd371f8d86c5dac2214b6",
+    "docs/advanced/install.md": "99410475059ea06eb46e0bff7177e87f6d8ce1b73ca8640df2baec3565837acb",
+    "cmake/modules/FindLibRI.cmake": "6245825aa2ff809422611fb6716ebae7297d309263e4d638a05b8a0c5446f849",
+    "source/CMakeLists.txt": "9b64f7fdb4802653b9d3308d6a0b9ad64b79e710bff82af3f3d984d1728f5fa8",
+    "cmake/Testing.cmake": "3074c9f055d2b7fc4d8a560ab655ec34ae49cc23ad10d3decb20913c597d831e"
+  },
+  "input_archive_and_script_hashes_match": true
+}

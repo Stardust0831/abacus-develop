@@ -1,0 +1,3 @@
+Transcribed initial sbatch rejection (no job ID allocated):
+sbatch: error: ERROR: SAI GPU policy: CPUs follow GPU count; omit --cpus-per-task / CPUsPerTask.
+sbatch: error: Batch job submission failed: Job violates accounting/QOS policy (job submit limit, user's size and/or time limits)

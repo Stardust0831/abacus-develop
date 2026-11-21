@@ -1,0 +1,3 @@
+['/tmp/abacus-pr8169-uv-cache/archive-v0/i4NIriFic2Gd1K-h/lib/python3.11/site-packages/clang_format/data/bin/clang-format', '--dry-run', '--Werror', '--lines=214:278', '/home/stardust/orca/workspaces/sai-hpc-software/cp2k/.work/abacus-libri-pr-ready-20261121/abacus/source/source_io/test_serial/read_input_test.cpp']
+
+returncode=0

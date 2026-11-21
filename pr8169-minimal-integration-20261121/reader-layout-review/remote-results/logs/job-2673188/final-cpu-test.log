@@ -1,0 +1,1137 @@
+Internal ctest changing into directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/DartConfiguration.tcl
+Parse Config file:/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/DartConfiguration.tcl
+Parse Config file:/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/DartConfiguration.tcl
+Test project /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 382
+    Start 382: MODULE_IO_read_input_serial
+
+382: Test command: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/source/source_io/test_serial/MODULE_IO_read_input_serial
+382: Working Directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/source/source_io/test_serial
+382: Test timeout computed to be: 1500
+382: Running main() from /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/googletest-a46a6012a133c7c0929fdae55b321c2fe65f3c5f/googletest/src/gtest_main.cc
+382: [==========] Running 14 tests from 1 test suite.
+382: [----------] Global test environment set-up.
+382: [----------] 14 tests from InputTest
+382: [ RUN      ] InputTest.Selfconsistent_Read
+382: [       OK ] InputTest.Selfconsistent_Read (16 ms)
+382: [ RUN      ] InputTest.RejectAutoDevice
+382:  
+382:  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+382:                          NOTICE                           
+382:  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+382:  
+382:  Invalid parameters in ./auto_device_INPUT:
+382: Invalid INPUT parameter 'device': supplied 'auto'. Expected one String from {cpu, gpu}.
+382: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#device
+382: 
+382:  
+382:  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+382:                          NOTICE                           
+382:  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+382: [       OK ] InputTest.RejectAutoDevice (3 ms)
+382: [ RUN      ] InputTest.DeviceExxCpuSymmetry
+382: [       OK ] InputTest.DeviceExxCpuSymmetry (8 ms)
+382: [ RUN      ] InputTest.ValidateRelaxMethodScalar
+382: [       OK ] InputTest.ValidateRelaxMethodScalar (125 ms)
+382: [ RUN      ] InputTest.ValidateNoncollinearSpin
+382: [       OK ] InputTest.ValidateNoncollinearSpin (14 ms)
+382: [ RUN      ] InputTest.ValidateSdftStochasticBands
+382: [       OK ] InputTest.ValidateSdftStochasticBands (18 ms)
+382: [ RUN      ] InputTest.ValidateBandParallelization
+382: [       OK ] InputTest.ValidateBandParallelization (25 ms)
+382: [ RUN      ] InputTest.ValidateLrRequiresNscf
+382: [       OK ] InputTest.ValidateLrRequiresNscf (10 ms)
+382: [ RUN      ] InputTest.RejectComplexLrForcesBeforeSCF
+382: [       OK ] InputTest.RejectComplexLrForcesBeforeSCF (14 ms)
+382: [ RUN      ] InputTest.ValidateDeepksOutputFrequency
+382: [       OK ] InputTest.ValidateDeepksOutputFrequency (17 ms)
+382: [ RUN      ] InputTest.ValidateDiagoProc
+382: [       OK ] InputTest.ValidateDiagoProc (14 ms)
+382: [ RUN      ] InputTest.Check
+382: [       OK ] InputTest.Check (8 ms)
+382: [ RUN      ] InputTest.OutAppFlagParsing
+382: [       OK ] InputTest.OutAppFlagParsing (55 ms)
+382: [ RUN      ] InputTest.ExplicitNoccSurvivesUnresolvedElectronNumber
+382: [       OK ] InputTest.ExplicitNoccSurvivesUnresolvedElectronNumber (3 ms)
+382: [----------] 14 tests from InputTest (338 ms total)
+382: 
+382: [----------] Global test environment tear-down
+382: [==========] 14 tests from 1 test suite ran. (338 ms total)
+382: [  PASSED  ] 14 tests.
+1/2 Test #382: MODULE_IO_read_input_serial ......   Passed    0.34 sec
+test 383
+    Start 383: MODULE_IO_read_item_serial
+
+383: Test command: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/source/source_io/test_serial/MODULE_IO_read_item_serial
+383: Working Directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-reader-layout-20261121/build/final-cpu/source/source_io/test_serial
+383: Test timeout computed to be: 1500
+383: Running main() from /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/googletest-a46a6012a133c7c0929fdae55b321c2fe65f3c5f/googletest/src/gtest_main.cc
+383: [==========] Running 33 tests from 3 test suites.
+383: [----------] Global test environment set-up.
+383: [----------] 23 tests from InputTest
+383: [ RUN      ] InputTest.PwOnsiteRequiresDoublePrecision
+383: [       OK ] InputTest.PwOnsiteRequiresDoublePrecision (28 ms)
+383: [ RUN      ] InputTest.InvalidExplicitDomainDoesNotReachReadOrResetHooks
+383: [       OK ] InputTest.InvalidExplicitDomainDoesNotReachReadOrResetHooks (2 ms)
+383: [ RUN      ] InputTest.RelaxMethod
+383: [       OK ] InputTest.RelaxMethod (2 ms)
+383: [ RUN      ] InputTest.PccSelectionAndUnsupportedCombinations
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  pcc_0d cannot be combined with imp_sol=1
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  pcc_0d requires nspin 1 or 2
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  pcc_0d requires device cpu
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  pcc_0d does not support cal_stress
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  pcc_0d requires calculation scf or fixed-cell relax
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'pcc_2d_axis': resolved value '3'. Expected one Integer from {0, 1, 2}.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#pcc-2d-axis
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  The parameter assume_isolated must be 'none', 'makov-payne', 'm-p', 'mp', 'pcc_0d' or 'pcc_2d'!
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.PccSelectionAndUnsupportedCombinations (59 ms)
+383: [ RUN      ] InputTest.RejectInvalidMemSaver
+383: [       OK ] InputTest.RejectInvalidMemSaver (46 ms)
+383: [ RUN      ] InputTest.AcceptSupportedMemSaverInputs
+383: [       OK ] InputTest.AcceptSupportedMemSaverInputs (20 ms)
+383: [ RUN      ] InputTest.Item_test
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'mem_saver': configuration 'calculation=scf, mem_saver=1'. Requires mem_saver==0.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#mem-saver
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'mem_saver': configuration 'calculation=relax, mem_saver=1'. Requires mem_saver==0.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#mem-saver
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  init_wfc accepts one or two values
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  init_wfc accepts one or two values
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  the init_wfc file format must be txt or binary
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  only init_wfc file accepts a second value
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  The parameter init_wfc must be 'atomic', 'atomic+random', 'random', 'nao', 'nao+random' or 'file'!
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.Item_test (366 ms)
+383: [ RUN      ] InputTest.OutEbandLegacyAlias
+383: [       OK ] InputTest.OutEbandLegacyAlias (5 ms)
+383: [ RUN      ] InputTest.HsOutputAliases
+383: [       OK ] InputTest.HsOutputAliases (15 ms)
+383: [ RUN      ] InputTest.HkComponentAliases
+383: [       OK ] InputTest.HkComponentAliases (17 ms)
+383: [ RUN      ] InputTest.PreserveExplicitMagneticMixing
+383: [       OK ] InputTest.PreserveExplicitMagneticMixing (22 ms)
+383: [ RUN      ] InputTest.DefaultMagneticMixing
+383: [       OK ] InputTest.DefaultMagneticMixing (11 ms)
+383: [ RUN      ] InputTest.Item_test2
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'rpa_cut_coulomb': resolved value 'invalid'. Expected one String from {hard, log_erfc}.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#rpa-cut-coulomb
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'rpa_cut_radius': resolved value 'invalid'. Expected one String from {legacy, inscribed}.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#rpa-cut-radius
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  Invalid INPUT parameter 'rpa_cut_width': resolved value '1'. Expected one finite Real satisfying value>1 and value<=1.25.
+383: See https://abacus.deepmodeling.com/en/latest/advanced/input_files/input-main.html#rpa-cut-width
+383: 
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.Item_test2 (353 ms)
+383: [ RUN      ] InputTest.Item_test_out_mat_vec
+383: [       OK ] InputTest.Item_test_out_mat_vec (3 ms)
+383: [ RUN      ] InputTest.OutStru
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: 'abc'.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: '2.5'.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: '2abc'.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: '-1abc'.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: 'xyz'.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  out_stru must be one of 0, 1, 2. For backward compatibility, true/false are also accepted. Got: ''.
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.OutStru (43 ms)
+383: [ RUN      ] InputTest.LRExternalKernelSupportsSpectraOnly
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=from_charge_file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=from_charge_file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=from_charge_file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  lr_init_xc_kernel=from_charge_file supports spectra only; excited-state forces and relaxation are not supported
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.LRExternalKernelSupportsSpectraOnly (81 ms)
+383: [ RUN      ] InputTest.LRFixedFieldRejectsForcesAndRelaxation
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  LR-TDDFT forces and relaxation with efield_flag are not supported: moving-AO correction is missing
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  LR-TDDFT forces and relaxation with efield_flag are not supported: moving-AO correction is missing
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  LR-TDDFT forces and relaxation with efield_flag are not supported: moving-AO correction is missing
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383:  
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383:  
+383:  LR-TDDFT forces and relaxation with efield_flag are not supported: moving-AO correction is missing
+383:  CHECK IN FILE : warning.log
+383:  
+383:  For detailed manual of ABACUS, please see the website
+383:  https://abacus.deepmodeling.com
+383:  For any questions, propose issues on the website
+383:  https://github.com/deepmodeling/abacus-develop/issues
+383:  ---------------------------------------------------------
+383:                          !NOTICE!                         
+383:  ---------------------------------------------------------
+383: 
+383:  TIME STATISTICS
+383: -----------------------------------------------------
+383:  CLASS_NAME    NAME    TIME/s  CALLS   AVG/s  PER/%  
+383: -----------------------------------------------------
+383:             total      0.00   0        -nan   0.00   
+383: -----------------------------------------------------
+383: 
+383:  See output information in : 
+383: [       OK ] InputTest.LRFixedFieldRejectsForcesAndRelaxation (40 ms)
+383: [ RUN      ] InputTest.PerAtomSccsCavityWidthsDisableSpatialSymmetry
+383: [       OK ] InputTest.PerAtomSccsCavityWidthsDisableSpatialSymmetry (2 ms)
+383: [ RUN      ] InputTest.OutMatComponentPrecision
+383: [       OK ] InputTest.OutMatComponentPrecision (4 ms)
+383: [ RUN      ] InputTest.OutStruCifRejectedForMd
+383: [       OK ] InputTest.OutStruCifRejectedForMd (2 ms)
+383: [ RUN      ] InputTest.DfptMixTypeDomainContract
+383: [       OK ] InputTest.DfptMixTypeDomainContract (2 ms)
+383: [ RUN      ] InputTest.DfptKerkerA2RuleBoundaries
+383: [       OK ] InputTest.DfptKerkerA2RuleBoundaries (3 ms)
+383: [ RUN      ] InputTest.DfptBroydenNdimRuleBoundaries
+383: [       OK ] InputTest.DfptBroydenNdimRuleBoundaries (2 ms)
+383: [----------] 23 tests from InputTest (1141 ms total)
+383: 
+383: [----------] 9 tests from ReadInpSccs
+383: [ RUN      ] ReadInpSccs.LegacyBooleansAndModelSelection
+383: [       OK ] ReadInpSccs.LegacyBooleansAndModelSelection (0 ms)
+383: [ RUN      ] ReadInpSccs.SupportedScopeAndNumericalValidation
+383: [       OK ] ReadInpSccs.SupportedScopeAndNumericalValidation (0 ms)
+383: [ RUN      ] ReadInpSccs.LowpassRequiresPairedValuesAndPcc
+383: [       OK ] ReadInpSccs.LowpassRequiresPairedValuesAndPcc (0 ms)
+383: [ RUN      ] ReadInpSccs.FullCavityWidthsAndModeValidation
+383: [       OK ] ReadInpSccs.FullCavityWidthsAndModeValidation (0 ms)
+383: [ RUN      ] ReadInpSccs.SolventAwareFillingUsesEnvironRanges
+383: [       OK ] ReadInpSccs.SolventAwareFillingUsesEnvironRanges (0 ms)
+383: [ RUN      ] ReadInpSccs.DelayedStartRequiresRoomBeforeScfConvergenceAndIterationLimit
+383: [       OK ] ReadInpSccs.DelayedStartRequiresRoomBeforeScfConvergenceAndIterationLimit (0 ms)
+383: [ RUN      ] ReadInpSccs.FixedCellRelaxSupportsAllBoundariesAndKeepsStressOutOfScope
+383: [       OK ] ReadInpSccs.FixedCellRelaxSupportsAllBoundariesAndKeepsStressOutOfScope (0 ms)
+383: [ RUN      ] ReadInpSccs.CoreSpreadWordsMustBeFiniteNumbers
+383: [       OK ] ReadInpSccs.CoreSpreadWordsMustBeFiniteNumbers (0 ms)
+383: [ RUN      ] ReadInpSccs.RejectsNonfiniteReals
+383: [       OK ] ReadInpSccs.RejectsNonfiniteReals (0 ms)
+383: [----------] 9 tests from ReadInpSccs (0 ms total)
+383: 
+383: [----------] 1 test from DeviceExxInput
+383: [ RUN      ] DeviceExxInput.SelectionAndValidation
+383: [       OK ] DeviceExxInput.SelectionAndValidation (7 ms)
+383: [----------] 1 test from DeviceExxInput (7 ms total)
+383: 
+383: [----------] Global test environment tear-down
+383: [==========] 33 tests from 3 test suites ran. (1148 ms total)
+383: [  PASSED  ] 33 tests.
+2/2 Test #383: MODULE_IO_read_item_serial .......   Passed    1.20 sec
+
+The following tests passed:
+	MODULE_IO_read_input_serial
+	MODULE_IO_read_item_serial
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   1.61 sec

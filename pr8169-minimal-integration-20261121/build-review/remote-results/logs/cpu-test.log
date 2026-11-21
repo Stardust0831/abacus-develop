@@ -1,0 +1,39 @@
+Internal ctest changing into directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/DartConfiguration.tcl
+Parse Config file:/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/DartConfiguration.tcl
+Parse Config file:/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/DartConfiguration.tcl
+Test project /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 461
+    Start 461: MODULE_RI_exx_workspace
+
+461: Test command: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/source/source_lcao/module_ri/unittests/MODULE_RI_exx_workspace
+461: Working Directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/abacus-cpu-debug/source/source_lcao/module_ri/unittests
+461: Test timeout computed to be: 1500
+461: Info: Local MPI proc number: 1,OpenMP thread number: 1,Total thread number: 1,Local thread limit: 128
+461: [==========] Running 2 tests from 1 test suite.
+461: [----------] Global test environment set-up.
+461: [----------] 2 tests from ExxLRWorkspace
+461: [ RUN      ] ExxLRWorkspace.RealGeometryAndElectronicIsolation
+461: [       OK ] ExxLRWorkspace.RealGeometryAndElectronicIsolation (6 ms)
+461: [ RUN      ] ExxLRWorkspace.ComplexGeometryAndElectronicIsolation
+461: [       OK ] ExxLRWorkspace.ComplexGeometryAndElectronicIsolation (4 ms)
+461: [----------] 2 tests from ExxLRWorkspace (10 ms total)
+461: 
+461: [----------] Global test environment tear-down
+461: [==========] 2 tests from 1 test suite ran. (10 ms total)
+461: [  PASSED  ] 2 tests.
+1/1 Test #461: MODULE_RI_exx_workspace ..........   Passed    1.94 sec
+
+The following tests passed:
+	MODULE_RI_exx_workspace
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   2.01 sec

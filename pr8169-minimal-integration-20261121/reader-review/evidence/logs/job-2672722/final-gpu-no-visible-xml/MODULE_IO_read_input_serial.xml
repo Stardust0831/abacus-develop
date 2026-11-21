@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" failures="0" disabled="0" errors="0" time="0.039" timestamp="2026-11-21T15:10:55.920" name="AllTests">
+  <testsuite name="InputTest" tests="3" failures="0" disabled="0" skipped="2" errors="0" time="0.038" timestamp="2026-11-21T15:10:55.920">
+    <testcase name="DeviceExxCpuSymmetry" file="/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp" line="215" status="run" result="completed" time="0.009" timestamp="2026-11-21T15:10:55.920" classname="InputTest" />
+    <testcase name="DeviceExxGpuScfSymmetry" file="/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp" line="232" status="run" result="skipped" time="0.029" timestamp="2026-11-21T15:10:55.929" classname="InputTest">
+      <skipped message="/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:236&#x0A;GPU EXX reader validation requires a visible GPU&#x0A;"><![CDATA[/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:236
+GPU EXX reader validation requires a visible GPU
+]]></skipped>
+    </testcase>
+    <testcase name="DeviceExxGpuMdEffectiveSymmetry" file="/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp" line="269" status="run" result="skipped" time="0." timestamp="2026-11-21T15:10:55.959" classname="InputTest">
+      <skipped message="/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:273&#x0A;GPU EXX reader validation requires a visible GPU&#x0A;"><![CDATA[/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/source-final/source/source_io/test_serial/read_input_test.cpp:273
+GPU EXX reader validation requires a visible GPU
+]]></skipped>
+    </testcase>
+  </testsuite>
+</testsuites>

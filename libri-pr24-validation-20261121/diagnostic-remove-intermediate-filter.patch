@@ -1,0 +1,44 @@
+--- a/include/RI/ri/LRI-cal_loop3_GPU.hpp
++++ b/include/RI/ri/LRI-cal_loop3_GPU.hpp
+@@ -2104,7 +2104,6 @@
+ 								const TAC &Aa2 = list_Aa2[ia2];
+ 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
+ 								if(D_a.empty())	continue;
+-								if(this->filter_atom->filter_for2(label,Aa01,Aa2))	continue;
+ 								for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+ 								{
+ 									const TAC &Ab01 = list_Ab01[ib01];
+@@ -2268,7 +2267,6 @@
+ 								const TAC &Aa2 = list_Aa2[ia2];
+ 								const Tensor<Tdata> &D_a = Global_Func::find(Ds_a_transpose, Aa01, Aa2);
+ 								if(D_a.empty())	continue;
+-								if(this->filter_atom->filter_for2(label,Aa01,Aa2))	continue;
+ 								for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+ 								{
+ 									const TAC &Ab01 = list_Ab01[ib01];
+@@ -2432,7 +2430,6 @@
+ 								const TAC &Aa2 = list_Aa2[ia2];
+ 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
+ 								if(D_a.empty())	continue;
+-								if(this->filter_atom->filter_for2(label,Aa01,Aa2))	continue;
+ 								for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+ 								{
+ 									const TAC &Ab01 = list_Ab01[ib01];
+@@ -2596,7 +2593,6 @@
+ 								const TAC &Aa2 = list_Aa2[ia2];
+ 								const Tensor<Tdata> &D_a = tools.get_Ds_ab(Label::ab::a, Aa01, Aa2);
+ 								if(D_a.empty())	continue;
+-								if(this->filter_atom->filter_for2(label,Aa01,Aa2))	continue;
+ 								for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+ 								{
+ 									const TAC &Ab01 = list_Ab01[ib01];
+--- a/tools/cal_loop3/cal_loop3_GPU.py
++++ b/tools/cal_loop3/cal_loop3_GPU.py
+@@ -835,7 +835,6 @@
+ 						const TAC &Aa2 = list_Aa2[ia2];
+ 						const Tensor<Tdata> &D_a = {get_D_a(a)};
+ 						if(D_a.empty())	continue;
+-						if(this->filter_atom->filter_for2(label,Aa01,Aa2))	continue;
+ 						for(std::size_t ib01=0; ib01<list_Ab01.size(); ++ib01)
+ 						{{
+ 							const TAC &Ab01 = list_Ab01[ib01];

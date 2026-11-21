@@ -1,0 +1,29 @@
+diff --git a/source/source_io/test_serial/CMakeLists.txt b/source/source_io/test_serial/CMakeLists.txt
+index 7619d73da..eb2879bba 100644
+--- a/source/source_io/test_serial/CMakeLists.txt
++++ b/source/source_io/test_serial/CMakeLists.txt
+@@ -36,7 +36,7 @@ abacus_copy_test_files(support)
+ addtest(
+   TARGET MODULE_IO_read_input_serial
+   LIBS parameter io_input_serial
+-  SOURCES read_input_test.cpp ../../source_base/test/tool_quit_no_exit.cpp
++  SOURCES ../../source_base/test/tool_quit_no_exit.cpp
+           ../../source_base/module_device/device.cpp
+           ../../source_base/module_device/output_device.cpp)
+ 
+diff --git a/source/source_io/unittests/CMakeLists.txt b/source/source_io/unittests/CMakeLists.txt
+index 27e329561..b0dd816ed 100644
+--- a/source/source_io/unittests/CMakeLists.txt
++++ b/source/source_io/unittests/CMakeLists.txt
+@@ -4,6 +4,7 @@ abacus_disable_feature_definitions(__ROCM)
+ abacus_disable_feature_definitions(__EXX)
+ 
+ # Keep the existing serial INPUT target and its compile definitions.
++target_sources(MODULE_IO_read_input_serial PRIVATE test_read_input_serial.cpp)
+ target_sources(MODULE_IO_read_item_serial PRIVATE test_read_inp_exx_dftu.cpp)
+ 
+ if(ENABLE_LIBRI_GPU)
+diff --git a/source/source_io/test_serial/read_input_test.cpp b/source/source_io/unittests/test_read_input_serial.cpp
+similarity index 100%
+rename from source/source_io/test_serial/read_input_test.cpp
+rename to source/source_io/unittests/test_read_input_serial.cpp

@@ -1,0 +1,15 @@
+{
+  "SLURM_JOB_ID": "2672722",
+  "SLURM_JOB_PARTITION": "16V100",
+  "SLURM_NTASKS": "4",
+  "SLURM_NNODES": "1",
+  "SLURM_GPUS_ON_NODE": "4",
+  "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+  "MAP_OPT": "ppr:4:node:pe=4",
+  "RANKS_PER_GPU": "1",
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "allowed_logical_cpus": 32
+}
+Allocation and mapping verified before configuration/build/tests.

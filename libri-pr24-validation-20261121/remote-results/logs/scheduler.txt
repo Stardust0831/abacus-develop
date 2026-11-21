@@ -1,0 +1,4 @@
+JobID|JobName|Partition|State|ExitCode|Elapsed|NodeList|AllocTRES
+2673063|libri-pr24|16V100|COMPLETED|0:0|00:02:22|16v100n09|billing=150,cpu=8,gres/gpu=1,mem=15G,node=1
+2673063.batch|batch||COMPLETED|0:0|00:02:22|16v100n09|cpu=8,gres/gpu=1,mem=15G,node=1
+2673063.extern|extern||COMPLETED|0:0|00:02:22|16v100n09|billing=150,cpu=8,gres/gpu=1,mem=15G,node=1

@@ -1,0 +1,175 @@
+[  0%] Building CXX object source/source_io/module_parameter/CMakeFiles/parameter.dir/parameter.cpp.o
+[  0%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_sys.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_estruc.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_relax.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_input_item_md.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_ofdft.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_input_item_sdft.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_tddft.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_bse.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_dfpt.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_deepks.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_model.cpp.o
+[  0%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_sccs.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/sccs_inp_check.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_postproc.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_exx_dftu.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_other.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_inp_out.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_input.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/read_set_globalv.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/availability.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/availability_validator.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/module_parameter/input_domain.cpp.o
+[ 50%] Building CXX object source/source_io/test_serial/CMakeFiles/io_input_serial.dir/__/__/source_cell/stru_frame_io.cpp.o
+[ 50%] Built target parameter
+[ 50%] Built target io_input_serial
+[ 50%] Linking CXX static library ../../../lib/libgtest.a
+[ 50%] Built target gtest
+[100%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+[100%] Building CXX object _deps/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+[100%] Linking CXX static library ../../../lib/libgtest_main.a
+[100%] Built target gtest_main
+[100%] Linking CXX static library ../../../lib/libgmock.a
+[100%] Built target gmock
+[100%] Building CXX object _deps/googletest-build/googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o
+[100%] Linking CXX static library ../../../lib/libgmock_main.a
+[100%] Built target gmock_main
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/read_input_test.cpp.o
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/__/__/source_base/test/tool_quit_no_exit.cpp.o
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/__/__/source_base/module_device/output_device.cpp.o
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_input_serial.dir/__/__/source_base/module_device/device.cpp.o
+[100%] Linking CXX executable MODULE_IO_read_input_serial
+[100%] Built target MODULE_IO_read_input_serial
+[  0%] Built target parameter
+[  0%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/base/core/cpu_allocator.cpp.o
+[  0%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/base/core/refcount.cpp.o
+[  0%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/ops/einsum_op.cpp.o
+[  0%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/projector_gradient_op.cpp.o
+[  0%] Built target gtest
+[  0%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/nonlocal_op.cpp.o
+[  0%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/ops/linalg_op.cpp.o
+[  0%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/core/tensor.cpp.o
+[  0%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/veff_op.cpp.o
+[  0%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/ekinetic_op.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/core/tensor_shape.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/core/tensor_buffer.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/core/tensor_map.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_stodft/kernels/hpsi_norm_op.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/meta_op.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_basis/module_pw/kernels/pw_op.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_hsolver/kernels/hegvd_op.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/core/tensor_types.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/kernels/blas.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/kernels/lapack.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_hsolver/kernels/bpcg_kernel_op.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/kernels/linalg.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_hsolver/module_linalg/kernels/linear_op.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_estate/kernels/elecstate_op.cpp.o
+[ 20%] Building CXX object source/source_base/module_container/CMakeFiles/container.dir/ATen/kernels/memory_impl.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_base/module_device/device.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_base/module_device/device_helpers.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_base/module_device/output_device.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_base/module_device/memory_op.cpp.o
+[ 20%] Building CXX object source/CMakeFiles/device.dir/source_base/kernels/math_kernel_op.cpp.o
+[ 40%] Built target gmock
+[ 40%] Built target gtest_main
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_base/kernels/math_kernel_op_vec.cpp.o
+[ 60%] Built target io_input_serial
+[ 60%] Built target gmock_main
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/stress_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/force_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/onsite_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/vnl_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_cell/kernels/wf_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_base/kernels/math_ylm_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_hamilt/module_xc/kernels/xc_functional_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/cal_density_real_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/mul_potential_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/vec_mul_cx_op.cpp.o
+[ 60%] Building CXX object source/CMakeFiles/device.dir/source_pw/module_pwdft/kernels/exx_cal_energy_op.cpp.o
+[ 60%] Built target device
+[ 60%] Linking CXX static library libcontainer.a
+[ 60%] Built target container
+[ 60%] Building CXX object source/source_base/CMakeFiles/base.dir/assoc_laguerre.cpp.o
+[ 60%] Building CXX object source/source_base/CMakeFiles/base.dir/module_external/blas_connector_base.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/module_external/blas_connector_matrix.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/clebsch_gordan_coeff.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/complexarray.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/complexmatrix.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/module_external/blas_connector_vector.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/element_basis_index.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/inverse_matrix.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/gather_math_lib_info.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/global_file.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/global_function.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/glob_fn_ddotreal.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/global_variable.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/intarray.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_integral.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_lebedev_laikov.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_polyint.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_sphbes.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_erf_complex.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_ylmreal.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_bspline.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/math_chebyshev.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/mathzone_add1.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/matrix3.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/memory_recorder.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/matrix.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/mymath.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/opt_cg.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/opt_dcsrch.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/opt_tn.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/output.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/para_gemm.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/realarray.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/sph_bessel_rec_d1.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/sph_bessel_rec_d2.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/timer.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/tool_check.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/tool_quit.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/tool_title.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/ylm.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_common.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_cell.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_global.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_comm.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_reduce.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_device.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/parallel_grid.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/sph_bessel_tf.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/cubic_spline.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/block_cyclic_distribution.cpp.o
+[ 80%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/filename.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/binstream.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/sparse_matrix.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/file_reader.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/csr_reader.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/read_exit_file.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_out/orb_io.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_mixing/mixing_data.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_mixing/mixing.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_mixing/pulay_mixing.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_mixing/plain_mixing.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_mixing/broyden_mixing.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_band_output.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_collection.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_kmesh_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_pw_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_diag_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_rgrid_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_bgroup_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_matrix_world.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_mpi_func.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_setup.cpp.o
+[100%] Building CXX object source/source_base/CMakeFiles/base.dir/module_parallel/para_bridge.cpp.o
+[100%] Built target base
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_item_serial.dir/read_input_item_test.cpp.o
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_item_serial.dir/test_read_inp_sccs.cpp.o
+[100%] Building CXX object source/source_io/test_serial/CMakeFiles/MODULE_IO_read_item_serial.dir/__/unittests/test_read_inp_exx_dftu.cpp.o
+[100%] Linking CXX executable MODULE_IO_read_item_serial
+[100%] Built target MODULE_IO_read_item_serial

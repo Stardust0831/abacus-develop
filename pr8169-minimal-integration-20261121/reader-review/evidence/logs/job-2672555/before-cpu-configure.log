@@ -1,0 +1,96 @@
+CMake Warning at CMakeLists.txt:15 (message):
+  The build system now uses cmake_dependent_option extensively.
+
+  Many advanced options are now conditionally enabled based on their
+  dependencies; when dependency conditions are not met, the corresponding
+  options will beautomatically turned OFF and hidden in cmake-gui/ccmake.
+
+  Please review your configuration if you previously set these options
+  manually.
+
+
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Git: /usr/bin/git (found version "2.43.0")
+-- Found git: attempting to get commit info...
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+CMake Warning at CMakeLists.txt:205 (message):
+  Failed to get git commit info
+
+
+-- Found MPI_CXX: /opt/devtools/openmpi/openmpi-5.0.10-nvhpc263-gnu-cuda12-avx2/lib/libmpi.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1") found components: CXX
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5")
+-- Found BLAS: /opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so
+-- Found LAPACK: /opt/devtools/saiblas/2603-gnu-avx2/lib/libopenblas.so
+-- Found ScaLAPACK: /opt/devtools/saiblas/2603-gnu-avx2/lib/libscalapack.so
+-- Found FFTW3: /opt/devtools/fftw/fftw-3.3.10/lib/libfftw3.so
+-- Looking for a CUDA compiler
+-- Looking for a CUDA compiler - /opt/devtools/nvidia/cuda-12.9.1/bin/nvcc
+-- CUDA components detected, but USE_CUDA is set to OFF. NOT building CUDA version of ABACUS.
+-- Found LibRI: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/LibRI-0.3.0.0
+-- Found LibComm: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/hse06-gpu-libs-20261120/imported-deps/LibComm-master
+-- Could NOT find GTest (missing: GTest_DIR)
+-- The C compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Setting up build information...
+ ===================================================================
+                       ABACUS Build Summary                         
+ ===================================================================
+ Build Type        : Release
+ Platform          : CPU
+ Compiler          : GNU 13.3.0
+ -------------------------------------------------------------------
+ MPI Support       : OpenMPI (MPI standard: 3.1)
+ CUDA-Aware MPI    : no (CUDA not enabled)
+ OpenMP Support    : yes (v4.5)
+ -------------------------------------------------------------------
+ LCAO Enabled      : True
+ Two-center FFT    : Enabled
+ -------------------------------------------------------------------
+ Math Libraries    : BLAS           = Generic BLAS
+                     FFTW           = yes (v3.3.10)
+                     ELPA           = no
+ Accelerators      : CUDA           = no
+                     HIP/ROCm       = no
+ Machine Learning  : MLALGO         = Disabled
+                     Torch          = no
+                     DeePMD         = no
+                     NEP            = no
+ Features          : Libxc          = yes (v7.0.0)
+                     LibRI          = yes (path: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-pr8169-ready-20261121/deps/LibRI-0.3.0.0)
+                     LibRI GPU      = OFF
+                     DFT-D4         = no
+                     JSON           = no
+                     PEXSI          = no
+                     CNPY           = no
+ -------------------------------------------------------------------
+ Build Testing     : ON
+ GoogleBench       : Disabled
+ ===================================================================
+-- Build info header configured: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/build/before-cpu/source/source_io/build_info.h
+-- Building tests
+-- Configuring done (4.3s)
+-- Generating done (26.4s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    DDLA_ROOT
+
+
+-- Build files have been written to: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-reader-20261121/build/before-cpu

@@ -1,0 +1,4 @@
+ M docs/advanced/install.md
+ M source/source_lcao/module_ri/unittests/CMakeLists.txt
+ M tests/lcao_hse_gpu/cmake/CMakeLists.txt
+ D tests/lcao_hse_gpu/cmake/test_libri_gpu_accumulation.cpp

@@ -1,0 +1,21 @@
+Internal ctest changing into directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/DartConfiguration.tcl
+Test project /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: libri_consumer
+
+1: Test command: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu/libri_consumer
+1: Working Directory: /org/org-open-sai/proj-sai-hpc-software/runtime-tests/abacus-libri-minimal-build-20261121/build/consumer-cpu
+1: Test timeout computed to be: 10000000
+1/1 Test #1: libri_consumer ...................   Passed    0.07 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.07 sec
