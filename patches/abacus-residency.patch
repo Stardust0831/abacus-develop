@@ -1,0 +1,48 @@
+--- a/source/source_lcao/module_ri/exx_lri.hpp
++++ b/source/source_lcao/module_ri/exx_lri.hpp
+@@ -72,6 +72,22 @@
+         throw std::invalid_argument("SAI_RI_DEVICE must be cpu or gpu");
+     }
+     this->exx_lri.lri.cal_mode = backend == "gpu" ? RI::LRI_Cal_Mode::GPU : RI::LRI_Cal_Mode::CPU;
++    const char* requested_residency = std::getenv("SAI_RI_RESIDENT");
++    const std::string residency = requested_residency == nullptr ? "0" : requested_residency;
++    if (residency != "0" && residency != "1")
++    {
++        throw std::invalid_argument("SAI_RI_RESIDENT must be 0 or 1");
++    }
++    RI::GPU_Resident_Options resident_options;
++    resident_options.enabled = residency == "1";
++    resident_options.data_names = {"Cs_", "Vs_"};
++    resident_options.budget_gib = 0.0;
++    this->exx_lri.lri.set_gpu_resident_options(resident_options);
++    if (std::getenv("SAI_GPU_TRACE") != nullptr)
++    {
++        std::clog << "LIBRI_CV_RESIDENCY enabled=" << resident_options.enabled
++                  << " budget_gib=auto names=Cs_,Vs_" << '\n';
++    }
+     if (std::getenv("SAI_GPU_TRACE") != nullptr)
+     {
+         std::clog << "LIBRI_CONTRACTION_BACKEND " << backend << '\n';
+@@ -197,6 +213,22 @@
+         throw std::invalid_argument("SAI_RI_DEVICE must be cpu or gpu");
+     }
+     this->exx_lri.lri.cal_mode = backend == "gpu" ? RI::LRI_Cal_Mode::GPU : RI::LRI_Cal_Mode::CPU;
++    const char* requested_residency = std::getenv("SAI_RI_RESIDENT");
++    const std::string residency = requested_residency == nullptr ? "0" : requested_residency;
++    if (residency != "0" && residency != "1")
++    {
++        throw std::invalid_argument("SAI_RI_RESIDENT must be 0 or 1");
++    }
++    RI::GPU_Resident_Options resident_options;
++    resident_options.enabled = residency == "1";
++    resident_options.data_names = {"Cs_", "Vs_"};
++    resident_options.budget_gib = 0.0;
++    this->exx_lri.lri.set_gpu_resident_options(resident_options);
++    if (std::getenv("SAI_GPU_TRACE") != nullptr)
++    {
++        std::clog << "LIBRI_CV_RESIDENCY enabled=" << resident_options.enabled
++                  << " budget_gib=auto names=Cs_,Vs_" << '\n';
++    }
+     if (std::getenv("SAI_GPU_TRACE") != nullptr)
+     {
+         std::clog << "LIBRI_CONTRACTION_BACKEND " << backend << '\n';

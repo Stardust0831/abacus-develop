@@ -1,0 +1,62 @@
+{
+  "validation-si64-g4-2654795": {
+    "JobId": "2654795",
+    "Partition": "16V100",
+    "NodeList": "16v100n17",
+    "NumNodes": "1",
+    "NumCPUs": "32",
+    "NumTasks": "4",
+    "AllocTRES": "cpu=32,mem=60G,node=1,billing=600,gres/gpu=4",
+    "TresPerNode": "gres/gpu:4"
+  },
+  "bench-si216-g16-2659346": {
+    "JobId": "2659346",
+    "Partition": "16V100",
+    "NodeList": "16v100n48",
+    "NumNodes": "1",
+    "NumCPUs": "128",
+    "NumTasks": "16",
+    "AllocTRES": "cpu=128,mem=240G,node=1,billing=2400,gres/gpu=16",
+    "TresPerNode": "gres/gpu:16"
+  },
+  "bench-si216-g4-2659345": {
+    "JobId": "2659345",
+    "Partition": "16V100",
+    "NodeList": "16v100n47",
+    "NumNodes": "1",
+    "NumCPUs": "32",
+    "NumTasks": "4",
+    "AllocTRES": "cpu=32,mem=60G,node=1,billing=600,gres/gpu=4",
+    "TresPerNode": "gres/gpu:4"
+  },
+  "bench-si64-g1-2659343": {
+    "JobId": "2659343",
+    "Partition": "16V100",
+    "NodeList": "16v100n34",
+    "NumNodes": "1",
+    "NumCPUs": "8",
+    "NumTasks": "1",
+    "AllocTRES": "cpu=8,mem=15G,node=1,billing=150,gres/gpu=1",
+    "TresPerNode": "gres/gpu:1"
+  },
+  "bench-si64-g4-2659344": {
+    "JobId": "2659344",
+    "Partition": "16V100",
+    "NodeList": "16v100n47",
+    "NumNodes": "1",
+    "NumCPUs": "32",
+    "NumTasks": "4",
+    "AllocTRES": "cpu=32,mem=60G,node=1,billing=600,gres/gpu=4",
+    "TresPerNode": "gres/gpu:4"
+  },
+  "validate-si64-g4-2659069": {
+    "JobId": "2659069",
+    "Partition": "16V100",
+    "NodeList": "16v100n34",
+    "NumNodes": "1",
+    "NumCPUs": "32",
+    "NumTasks": "4",
+    "AllocTRES": "cpu=32,mem=60G,node=1,billing=600,gres/gpu=4",
+    "TresPerNode": "gres/gpu:4"
+  }
+}

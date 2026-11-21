@@ -1,0 +1,79 @@
+[
+  {
+    "file": "archives/libri-pr17-hse06-testcases.zip",
+    "bytes": 3730966,
+    "sha256": "9fb43ed4c2a7ae68e7db5dcf4a8017afe86ba8941e2b4a1da7208f2da898ffe6",
+    "raw_files": 1089,
+    "purpose": "Curated 56-run comparison, runnable cases and timer analysis"
+  },
+  {
+    "file": "archives/raw-hse06-si-20261120.zip",
+    "bytes": 4452967,
+    "sha256": "44a0d86cad78c2d4b7cc73acb0ae540904bbafc7bff710bfb7b8a8b4188180e6",
+    "raw_files": 933,
+    "purpose": "Original inputs, outputs, build logs and campaign metadata"
+  },
+  {
+    "file": "archives/raw-hse06-gpu-libs-20261120.zip",
+    "bytes": 2613261,
+    "sha256": "a73d2c5b6343987f75bdd6aa242a075541340fc8eeaa28bf8a41534ced75d62d",
+    "raw_files": 421,
+    "purpose": "Original inputs, outputs, build logs and campaign metadata"
+  },
+  {
+    "file": "archives/raw-hse06-libri-pr17-20261121.zip",
+    "bytes": 4946068,
+    "sha256": "d2852670a0ec6425e2d522800a47dcf8fc90908e1a5a2aa57e5c2e8884773891",
+    "raw_files": 1023,
+    "purpose": "Original inputs, outputs, build logs and campaign metadata"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part01.zip",
+    "bytes": 19941806,
+    "sha256": "f1a34189a4c56f062141f3d7370dea9e3a6276334c26a3bfd06500d1f9173539",
+    "raw_files": 6,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part02.zip",
+    "bytes": 13984586,
+    "sha256": "4abfc29c183a2b0b418a052cb6e0d95facdf9dbdf850bc5e348ec1d8b3bed1bf",
+    "raw_files": 8,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part03.zip",
+    "bytes": 18444034,
+    "sha256": "e6ddae28e3ebfd760bf6e4b47599253a58fa84373e79b0a01f774244a0c31794",
+    "raw_files": 4,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part04.zip",
+    "bytes": 21879891,
+    "sha256": "3060f3df573674f9c46cc1b0810c5dc464708d15f67fd3c960213217032992dd",
+    "raw_files": 8,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part05.zip",
+    "bytes": 20307868,
+    "sha256": "8951370d4b1a1fd628516835c17727678d733f50ea7948d155a33d0e1983c43f",
+    "raw_files": 4,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part06.zip",
+    "bytes": 23449516,
+    "sha256": "6f2edd1e3894a0f8418baf916568330c09ebe4d01405a0c7ec83779609cd53b2",
+    "raw_files": 8,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  },
+  {
+    "file": "archives/cp2k-small-restarts-part07.zip",
+    "bytes": 2461327,
+    "sha256": "04d81061549297a3942372d4801a47f6bf4bf7003fa0353b835a5fd70fba4ed0",
+    "raw_files": 3,
+    "purpose": "CP2K wavefunction/restart outputs, each original file at most 10 MiB"
+  }
+]

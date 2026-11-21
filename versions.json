@@ -1,0 +1,90 @@
+{
+  "pr_url": "https://github.com/abacusmodeling/LibRI/pull/17",
+  "abacus_sha": "4e9f1636b7ca27d1dc634711915c18087654b911",
+  "libri_baseline_sha": "0e8afc3931ee4cdf564699811ca220215570dd6b",
+  "libri_pr_sha": "5025261859f0c8b53d84eb1e2476aaec3f7bf202",
+  "baseline_binary_sha256": "c4d2155489301a4d7a5bdd25e8da41d967a8b285b024bcfe9990c3825279a023",
+  "pr_binary_sha256": "3864770111d241b8a044187381908265e877ed430ca5132008274d529d252dd5",
+  "dependencies": {
+    "ddla": {
+      "repo": "https://github.com/userchba/LibDDLA",
+      "branch": "main",
+      "sha": "7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7",
+      "binary_sha256": "f359feda186e11fff4a87ad52aa2d39ee11d8e5d3ca3b619aec2eb18b11f53af"
+    },
+    "libxc": {
+      "repo": "https://gitlab.com/libxc/libxc",
+      "branch": "devel",
+      "sha": "3c7794c5047d5f19c088b856b24879ac7174ddfe",
+      "binary_sha256": "37413ff198ba02195b5645b0841cd257853cf4544c044be16a08cf234f60987b"
+    }
+  },
+  "compiler": "GCC 13.3",
+  "cuda": "12.9",
+  "cuda_architecture": 70,
+  "cxx_standard": 17,
+  "mpi": "OpenMPI 5.0.10",
+  "hardware": {
+    "gpu": "V100-SXM2-16GB",
+    "cpu": "AMD 5995WX"
+  },
+  "assets": {
+    "collection": "APNS PPORBs v1 efficiency",
+    "archive_url": "https://store.aissquare.com/datasets/dc875646-a526-41f1-a180-d54b218fc80a/ABACUS-APNS-PPORBs-v1.zip",
+    "archive_md5_recorded": "96cc456911712a81c1db85ba6e8239ce",
+    "files_sha256": {
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    }
+  },
+  "cases_sha256": {
+    "si216-g16": {
+      "INPUT": "9e917ec41c6a67c940da3d0e46df8dc26196e08d45e68b2e494125caec4fa12c",
+      "STRU": "18fbfab0ed3b4e9c77e7d58ef246c3f6e84982b1994c84dfd5c0a6cf70bc9702",
+      "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    },
+    "si216-g4": {
+      "INPUT": "9e917ec41c6a67c940da3d0e46df8dc26196e08d45e68b2e494125caec4fa12c",
+      "STRU": "18fbfab0ed3b4e9c77e7d58ef246c3f6e84982b1994c84dfd5c0a6cf70bc9702",
+      "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    },
+    "si64-g1": {
+      "INPUT": "9332f2eb7106d9e2b44810e0d00cebc9e899c179ed1b117ad4078367a30c43e4",
+      "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+      "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    },
+    "si64-g4": {
+      "INPUT": "4cbf28ac653f95ee731cd44f0d71b08b619b678bc6879e036b547974377f36a7",
+      "STRU": "7f18e09574c8bd8aaef4345d1e49b196d696de8cab0f3c863cb287a9812d31d5",
+      "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    },
+    "si64-displaced-g4": {
+      "INPUT": "4cbf28ac653f95ee731cd44f0d71b08b619b678bc6879e036b547974377f36a7",
+      "STRU": "c91e5b65d932b647e36ac72118f1eb51a515107cc4ef0b7c153de4c54c58a4ba",
+      "KPT": "91042b39ee493cb5c1bee648adc865a2e5935a29278eb405dc009f994db55ece",
+      "Si.upf": "f7e77a752acc9d9a66409715ed5454752aa1ce6dad7d924cab3246fd30a3daec",
+      "Si_gga_7au_100Ry_2s2p1d.orb": "20ecb1f5b75f80065a5f47157d0024974cf6df1f035336ed192de2cb42521249"
+    }
+  },
+  "numerical_limits": {
+    "energy_ev_atom": 1e-06,
+    "max_force_delta_ev_A": 1e-05
+  },
+  "symmetry_scope": {
+    "symmetry": -1,
+    "exx_symmetry_realspace": 0,
+    "gamma_only": 1,
+    "effective_input_records_verified": 27,
+    "audit": "evidence/checks/symmetry-audit.json",
+    "symmetry_enabled_application_performance_measured": false
+  },
+  "observed_source_date": "2026-11-20/21"
+}

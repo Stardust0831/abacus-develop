@@ -1,0 +1,444 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -631,6 +631,8 @@
+ if(ENABLE_LIBRI)
+   set_if_higher(CMAKE_CXX_STANDARD 14)
+   find_package(LibRI REQUIRED)
++  find_package(LibDDLA 0.0.6 REQUIRED CONFIG)
++  set_if_higher(CMAKE_CXX_STANDARD 17)
+   find_package(LibComm REQUIRED)
+   find_package(cereal REQUIRED CONFIG)
+ endif()
+--- a/source/CMakeLists.txt
++++ b/source/CMakeLists.txt
+@@ -30,6 +30,7 @@
+ include(CompilerConfiguration)
+ 
+ set(_abacus_feature_definitions
++    __GPU_RI __DDLA_RI DDLA_USE_CUDA
+     __FFTW3
+     $<$<BOOL:${ENABLE_JSON}>:__JSON>
+     $<$<BOOL:${USE_CUDA_ON_DCU}>:__CUDA_ON_DCU>
+@@ -289,6 +290,7 @@
+ # ------------------------------------------------------------------------------
+ 
+ set(_abacus_feature_libs
++    ddla::ddla
+     $<$<BOOL:${ENABLE_JSON}>:nlohmann_json::nlohmann_json>
+     $<$<BOOL:${ENABLE_ELPA}>:ELPA::ELPA>
+     $<$<BOOL:${ENABLE_PEXSI}>:PEXSI::PEXSI>
+@@ -421,6 +423,7 @@
+         cereal::cereal
+         ELPA::ELPA
+         Libxc::xc
++        ddla::ddla
+         dftd4::dftd4
+         DeePMD::deepmd_c
+         DeePMD::deepmd_cc
+--- a/source/source_hamilt/module_xc/CMakeLists.txt
++++ b/source/source_hamilt/module_xc/CMakeLists.txt
+@@ -20,6 +20,7 @@
+   libxc_setup.cpp
+   libxc_tools.cpp
+   libxc_pot.cpp
++  libxc_gpu.cpp
+   libxc_lda_wrap.cpp
+   libxc_gga_wrap.cpp
+   libxc_mgga_wrap.cpp
+--- a/source/source_hamilt/module_xc/libxc_abacus.h
++++ b/source/source_hamilt/module_xc/libxc_abacus.h
+@@ -69,6 +69,13 @@
+         const double hybrid_alpha,
+         const double hse_omega);
+ 
++    extern std::vector<xc_func_type> init_func(
++        const std::vector<int>& func_id,
++        int xc_polarized,
++        double hybrid_alpha,
++        double hse_omega,
++        int execution_flags);
++
+     /**
+      * @brief Per-component external parameters that init_func would apply.
+      *
+--- a/source/source_hamilt/module_xc/libxc_setup.cpp
++++ b/source/source_hamilt/module_xc/libxc_setup.cpp
+@@ -14,6 +14,7 @@
+ #include <regex>
+ #include <map>
+ #include <algorithm>
++#include <stdexcept>
+ 
+ bool not_supported_xc_with_laplacian(const std::string& xc_func_in)
+ {
+@@ -288,11 +289,25 @@
+                                const double hybrid_alpha,
+                                const double hse_omega)
+ {
++    return init_func(func_id, xc_polarized, hybrid_alpha, hse_omega, XC_FLAGS_ON_HOST);
++}
++
++std::vector<xc_func_type>
++XC_Functional_Libxc::init_func(const std::vector<int>& func_id,
++                              int xc_polarized,
++                              double hybrid_alpha,
++                              double hse_omega,
++                              int execution_flags)
++{
+     std::vector<xc_func_type> funcs;
+     for (int id : func_id)
+     {
+         funcs.push_back({}); // create placeholder
+-        xc_func_init(&funcs.back(), id, xc_polarized); // instantiate the XC term
++        const int status = xc_func_init_flags(&funcs.back(), id, xc_polarized, execution_flags);
++        if (status != 0)
++        {
++            throw std::runtime_error("LibXC functional initialization failed: " + std::to_string(id));
++        }
+ 
+         // Search for external parameters. User-supplied parameters take precedence
+         // over ABACUS built-in overrides.
+--- a/source/source_hamilt/module_xc/libxc_pot.cpp
++++ b/source/source_hamilt/module_xc/libxc_pot.cpp
+@@ -2,6 +2,8 @@
+ 
+ #include "xc_functional.h"
+ #include "libxc_abacus.h"
++#include "libxc_gpu.h"
++#include <memory>
+ #include "source_estate/module_charge/charge.h"
+ #include "source_base/parallel_reduce.h"
+ #include "source_base/timer.h"
+@@ -213,11 +215,11 @@
+     // https://www.tddft.org/programs/libxc/manual/libxc-5.1.x/
+     //----------------------------------------------------------
+ 
++    const bool gpu_grid = XC_Functional_Libxc::use_gpu_grid();
++    const int execution_flags = gpu_grid ? XC_FLAGS_ON_DEVICE : XC_FLAGS_ON_HOST;
++    const int polarization = nspin == 1 ? XC_UNPOLARIZED : XC_POLARIZED;
+     std::vector<xc_func_type> funcs = XC_Functional_Libxc::init_func(
+-        /* func_id = */ func_id,
+-        /* xc_polarized = */ (1 == nspin) ? XC_UNPOLARIZED : XC_POLARIZED,
+-        /* hybrid_alpha = */ hybrid_alpha,
+-        /* hse_omega = */ hse_omega);
++        func_id, polarization, hybrid_alpha, hse_omega, execution_flags);
+ 
+     const bool is_gga = [&funcs]() {
+         for (xc_func_type& func: funcs)
+@@ -274,6 +276,12 @@
+         sigma = XC_Functional_Libxc::convert_sigma(gdr);
+     }
+ 
++    std::unique_ptr<XC_Functional_Libxc::GpuGrid> device_grid;
++    if (gpu_grid)
++    {
++        device_grid.reset(new XC_Functional_Libxc::GpuGrid(nspin, nrxx, rho, sigma));
++    }
++
+     double etxc = 0.0;
+     double vtxc = 0.0;
+     ModuleBase::matrix v(use_lca ? 4 : nspin, nrxx);
+@@ -314,7 +322,11 @@
+         std::vector<double> vsigma(nrxx * ((1 == nspin) ? 1 : 3));
+ 
+         ModuleBase::timer::start("Libxc", "xc_lda/gga_exc_vxc");
+-        switch (func.info->family)
++        if (gpu_grid)
++        {
++            device_grid->evaluate(func, exc, vrho, vsigma);
++        }
++        else switch (func.info->family)
+         {
+         case XC_FAMILY_LDA: {
+             constexpr int nr_batch_size = 1024;
+--- a/source/source_lcao/module_ri/exx_lri.hpp
++++ b/source/source_lcao/module_ri/exx_lri.hpp
+@@ -27,6 +27,8 @@
+ #include <RI/global/Map_Operator-3.h>
+ 
+ #include <fstream>
++#include <cstdlib>
++#include <iostream>
+ #include <stdexcept>
+ #include <string>
+ 
+@@ -62,6 +64,19 @@
+     ModuleBase::TITLE("Exx_LRI","init");
+     ModuleBase::timer::start("Exx_LRI", "init");
+ 
++#ifdef __GPU_RI
++    const char* requested_backend = std::getenv("SAI_RI_DEVICE");
++    const std::string backend = requested_backend == nullptr ? "gpu" : requested_backend;
++    if (backend != "gpu" && backend != "cpu")
++    {
++        throw std::invalid_argument("SAI_RI_DEVICE must be cpu or gpu");
++    }
++    this->exx_lri.lri.cal_mode = backend == "gpu" ? RI::LRI_Cal_Mode::GPU : RI::LRI_Cal_Mode::CPU;
++    if (std::getenv("SAI_GPU_TRACE") != nullptr)
++    {
++        std::clog << "LIBRI_CONTRACTION_BACKEND " << backend << '\n';
++    }
++#endif
+     this->mpi_comm = mpi_comm_in;
+     this->p_kv = &kv_in;
+     this->orb_cutoff_ = orb.cutoffs();
+@@ -174,6 +189,19 @@
+     ModuleBase::TITLE("Exx_LRI", "init_spencer");
+     ModuleBase::timer::start("Exx_LRI", "init_spencer");
+ 
++#ifdef __GPU_RI
++    const char* requested_backend = std::getenv("SAI_RI_DEVICE");
++    const std::string backend = requested_backend == nullptr ? "gpu" : requested_backend;
++    if (backend != "gpu" && backend != "cpu")
++    {
++        throw std::invalid_argument("SAI_RI_DEVICE must be cpu or gpu");
++    }
++    this->exx_lri.lri.cal_mode = backend == "gpu" ? RI::LRI_Cal_Mode::GPU : RI::LRI_Cal_Mode::CPU;
++    if (std::getenv("SAI_GPU_TRACE") != nullptr)
++    {
++        std::clog << "LIBRI_CONTRACTION_BACKEND " << backend << '\n';
++    }
++#endif
+     this->mpi_comm = mpi_comm_in;
+     this->p_kv = &kv_in;
+     this->orb_cutoff_ = orb.cutoffs();
+--- /dev/null
++++ b/source/source_hamilt/module_xc/libxc_gpu.h
+@@ -0,0 +1,36 @@
++#ifndef ABACUS_LIBXC_GPU_H
++#define ABACUS_LIBXC_GPU_H
++
++#include <xc.h>
++#include <vector>
++
++namespace XC_Functional_Libxc
++{
++bool use_gpu_grid();
++
++// Experimental adapter: host density preparation and assembly are unchanged.
++// Own one contiguous device buffer for a complete local density grid.
++class GpuGrid
++{
++public:
++    GpuGrid(int nspin, int points, const std::vector<double>& rho,
++            const std::vector<double>& sigma);
++    ~GpuGrid();
++    GpuGrid(const GpuGrid&) = delete;
++    GpuGrid& operator=(const GpuGrid&) = delete;
++    void evaluate(const xc_func_type& func, std::vector<double>& exc,
++                  std::vector<double>& vrho, std::vector<double>& vsigma);
++
++private:
++    int points_ = 0;
++    int spin_ = 0;
++    int sigma_components_ = 0;
++    double* buffer_ = nullptr;
++    double* rho_ = nullptr;
++    double* sigma_ = nullptr;
++    double* exc_ = nullptr;
++    double* vrho_ = nullptr;
++    double* vsigma_ = nullptr;
++};
++}
++#endif
+--- /dev/null
++++ b/source/source_hamilt/module_xc/libxc_gpu.cpp
+@@ -0,0 +1,114 @@
++#include "libxc_gpu.h"
++#include <cuda_runtime_api.h>
++#include <cstdlib>
++#include <iostream>
++#include <stdexcept>
++#include <string>
++
++namespace
++{
++void check_cuda(cudaError_t status)
++{
++    if (status != cudaSuccess)
++    {
++        const std::string message = cudaGetErrorString(status);
++        throw std::runtime_error("LibXC GPU adapter: " + message);
++    }
++}
++}
++
++namespace XC_Functional_Libxc
++{
++bool use_gpu_grid()
++{
++    const char* value = std::getenv("SAI_LIBXC_DEVICE");
++    if (value == nullptr || std::string(value) == "gpu") { return true; }
++    if (std::string(value) == "cpu") { return false; }
++    throw std::invalid_argument("SAI_LIBXC_DEVICE must be cpu or gpu");
++}
++
++GpuGrid::GpuGrid(int nspin, int points, const std::vector<double>& rho,
++                 const std::vector<double>& sigma)
++    : points_(points), spin_(nspin)
++{
++    if (points < 0 || (nspin != 1 && nspin != 2))
++    {
++        throw std::invalid_argument("Invalid LibXC GPU grid dimensions");
++    }
++    sigma_components_ = nspin == 1 ? 1 : 3;
++    const std::size_t rho_count = static_cast<std::size_t>(points) * spin_;
++    const std::size_t sigma_count = static_cast<std::size_t>(points) * sigma_components_;
++    if (rho.size() != rho_count || (!sigma.empty() && sigma.size() != sigma_count))
++    {
++        throw std::invalid_argument("LibXC GPU density/sigma size mismatch");
++    }
++    if (points == 0) { return; }
++    const std::size_t bytes = (2 * rho_count + 2 * sigma_count + points) * sizeof(double);
++    check_cuda(cudaMalloc(reinterpret_cast<void**>(&buffer_), bytes));
++    rho_ = buffer_;
++    sigma_ = rho_ + rho_count;
++    exc_ = sigma_ + sigma_count;
++    vrho_ = exc_ + points;
++    vsigma_ = vrho_ + rho_count;
++    try
++    {
++        check_cuda(cudaMemcpy(rho_, rho.data(), rho_count * sizeof(double), cudaMemcpyHostToDevice));
++        if (!sigma.empty())
++        {
++            check_cuda(cudaMemcpy(sigma_, sigma.data(), sigma_count * sizeof(double), cudaMemcpyHostToDevice));
++        }
++    }
++    catch (...)
++    {
++        cudaFree(buffer_);
++        buffer_ = nullptr;
++        throw;
++    }
++}
++
++GpuGrid::~GpuGrid()
++{
++    if (buffer_ != nullptr) { cudaFree(buffer_); }
++}
++
++void GpuGrid::evaluate(const xc_func_type& func, std::vector<double>& exc,
++                       std::vector<double>& vrho, std::vector<double>& vsigma)
++{
++    const std::size_t rho_count = static_cast<std::size_t>(points_) * spin_;
++    const std::size_t sigma_count = static_cast<std::size_t>(points_) * sigma_components_;
++    if (exc.size() != static_cast<std::size_t>(points_) || vrho.size() != rho_count
++        || vsigma.size() != sigma_count || func.nspin != spin_
++        || (func.info->flags & XC_FLAGS_ON_DEVICE) == 0)
++    {
++        throw std::invalid_argument("LibXC GPU output/functional mismatch");
++    }
++    if (points_ == 0) { return; }
++    const int family = func.info->family;
++    if (family == XC_FAMILY_LDA)
++    {
++        xc_lda_exc_vxc(&func, points_, rho_, exc_, vrho_);
++    }
++    else if (family == XC_FAMILY_GGA || family == XC_FAMILY_HYB_GGA)
++    {
++        xc_gga_exc_vxc(&func, points_, rho_, sigma_, exc_, vrho_, vsigma_);
++    }
++    else
++    {
++        throw std::invalid_argument("LibXC GPU adapter supports LDA and GGA families");
++    }
++    check_cuda(cudaGetLastError());
++    check_cuda(cudaMemcpy(exc.data(), exc_, points_ * sizeof(double), cudaMemcpyDeviceToHost));
++    check_cuda(cudaMemcpy(vrho.data(), vrho_, rho_count * sizeof(double), cudaMemcpyDeviceToHost));
++    if (family != XC_FAMILY_LDA)
++    {
++        check_cuda(cudaMemcpy(vsigma.data(), vsigma_, sigma_count * sizeof(double), cudaMemcpyDeviceToHost));
++    }
++    if (std::getenv("SAI_GPU_TRACE") != nullptr)
++    {
++        int device = 0;
++        check_cuda(cudaGetDevice(&device));
++        std::clog << "LIBXC_GPU_EVAL device=" << device << " functional=" << func.info->number
++                  << " points=" << points_ << '\n';
++    }
++}
++}
+--- /dev/null
++++ b/source/source_hamilt/module_xc/unittests/test_libxc_gpu.cpp
+@@ -0,0 +1,81 @@
++#include "../libxc_gpu.h"
++#include <xc_funcs.h>
++#include <algorithm>
++#include <cmath>
++#include <iostream>
++#include <stdexcept>
++#include <vector>
++
++int main()
++{
++    double worst = 0.0;
++    int checks = 0;
++    for (int spin : {1, 2})
++    {
++        for (int count : {17, 1025, 8193})
++        {
++            const int nsigma = spin == 1 ? 1 : 3;
++            std::vector<double> rho(count * spin);
++            std::vector<double> sigma(count * nsigma);
++            for (int i = 0; i < count; ++i)
++            {
++                for (int s = 0; s < spin; ++s)
++                {
++                    rho[i * spin + s] = 0.01 + 0.001 * ((i + 3 * s) % 400);
++                }
++                for (int s = 0; s < nsigma; ++s)
++                {
++                    sigma[i * nsigma + s] = 0.002 + 0.00001 * (i % 300);
++                }
++                if (spin == 2) { sigma[i * nsigma + 1] *= 0.3; }
++            }
++            XC_Functional_Libxc::GpuGrid grid(spin, count, rho, sigma);
++            for (int id : {XC_LDA_X, XC_GGA_X_PBE, XC_GGA_C_PBE, XC_HYB_GGA_XC_HSE06})
++            {
++                xc_func_type host;
++                xc_func_type device;
++                if (xc_func_init_flags(&host, id, spin, XC_FLAGS_ON_HOST) != 0
++                    || xc_func_init_flags(&device, id, spin, XC_FLAGS_ON_DEVICE) != 0)
++                {
++                    throw std::runtime_error("Could not initialize LibXC test functional");
++                }
++                std::vector<double> exc(count);
++                std::vector<double> vrho(count * spin);
++                std::vector<double> vsigma(count * nsigma);
++                std::vector<double> expected_exc(count);
++                std::vector<double> expected_vrho(count * spin);
++                std::vector<double> expected_vsigma(count * nsigma);
++                if (host.info->family == XC_FAMILY_LDA)
++                {
++                    xc_lda_exc_vxc(&host, count, rho.data(), expected_exc.data(), expected_vrho.data());
++                }
++                else
++                {
++                    xc_gga_exc_vxc(&host, count, rho.data(), sigma.data(), expected_exc.data(),
++                                   expected_vrho.data(), expected_vsigma.data());
++                }
++                grid.evaluate(device, exc, vrho, vsigma);
++                const auto compare = [&worst](const std::vector<double>& actual,
++                                               const std::vector<double>& expected)
++                {
++                    for (std::size_t i = 0; i < actual.size(); ++i)
++                    {
++                        const double scaled_error = std::abs(actual[i] - expected[i]) / (1.0 + std::abs(expected[i]));
++                        if (!std::isfinite(actual[i]) || scaled_error > 5e-10)
++                        {
++                            throw std::runtime_error("LibXC GPU result disagrees with CPU reference");
++                        }
++                        worst = std::max(worst, scaled_error);
++                    }
++                };
++                compare(exc, expected_exc);
++                compare(vrho, expected_vrho);
++                compare(vsigma, expected_vsigma);
++                xc_func_end(&host);
++                xc_func_end(&device);
++                ++checks;
++            }
++        }
++    }
++    std::cout << "PASS " << checks << " spin/grid/functional configurations; max scaled error " << worst << '\n';
++}

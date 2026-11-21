@@ -1,0 +1,3 @@
+fixed_libxc,libri_cpu_s,libri_gpu_s,speedup,time_reduction_percent,starts_per_configuration,backend_tracing
+cpu,135.69,88.2,1.5384353741496597,34.99889453902277,1,True
+gpu,129.87,82.9,1.566586248492159,36.16693616693617,1,True

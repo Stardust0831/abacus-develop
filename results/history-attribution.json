@@ -1,0 +1,122 @@
+[
+  {
+    "case": "si64-g1",
+    "comparison": "module -> gpu-first",
+    "scope": "historical build comparison",
+    "wall_saved_s": 767.635,
+    "exchange_integrals_saved_s": 338.39,
+    "exchange_forces_saved_s": 374.015,
+    "remaining_wall_saved_s": 55.23,
+    "exchange_share_of_wall_saving_percent": 92.8051743341562
+  },
+  {
+    "case": "si64-g1",
+    "comparison": "baseline -> pr-default",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 11.754999999999995,
+    "exchange_integrals_saved_s": 5.940000000000001,
+    "exchange_forces_saved_s": 6.3799999999999955,
+    "remaining_wall_saved_s": -0.5649999999999977,
+    "exchange_share_of_wall_saving_percent": 104.80646533390049
+  },
+  {
+    "case": "si64-g1",
+    "comparison": "baseline -> pr-resident",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 20.434999999999988,
+    "exchange_integrals_saved_s": 10.684999999999999,
+    "exchange_forces_saved_s": 10.744999999999997,
+    "remaining_wall_saved_s": -0.9949999999999974,
+    "exchange_share_of_wall_saving_percent": 104.86909713726453
+  },
+  {
+    "case": "si64-g4",
+    "comparison": "module -> gpu-first",
+    "scope": "historical build comparison",
+    "wall_saved_s": 159.68,
+    "exchange_integrals_saved_s": 71.95500000000001,
+    "exchange_forces_saved_s": 77.92,
+    "remaining_wall_saved_s": 9.805000000000007,
+    "exchange_share_of_wall_saving_percent": 93.85959418837675
+  },
+  {
+    "case": "si64-g4",
+    "comparison": "baseline -> pr-default",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 13.530000000000001,
+    "exchange_integrals_saved_s": 6.27,
+    "exchange_forces_saved_s": 5.135000000000002,
+    "remaining_wall_saved_s": 2.1250000000000036,
+    "exchange_share_of_wall_saving_percent": 84.2941611234294
+  },
+  {
+    "case": "si64-g4",
+    "comparison": "baseline -> pr-resident",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 18.810000000000002,
+    "exchange_integrals_saved_s": 8.11,
+    "exchange_forces_saved_s": 10.48,
+    "remaining_wall_saved_s": 0.21999999999999886,
+    "exchange_share_of_wall_saving_percent": 98.83040935672513
+  },
+  {
+    "case": "si216-g4",
+    "comparison": "module -> gpu-first",
+    "scope": "historical build comparison",
+    "wall_saved_s": 1470.59,
+    "exchange_integrals_saved_s": 679.0699999999999,
+    "exchange_forces_saved_s": 761.3800000000001,
+    "remaining_wall_saved_s": 30.140000000000043,
+    "exchange_share_of_wall_saving_percent": 97.95048245942105
+  },
+  {
+    "case": "si216-g4",
+    "comparison": "baseline -> pr-default",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 72.48500000000001,
+    "exchange_integrals_saved_s": 31.47500000000001,
+    "exchange_forces_saved_s": 39.42999999999999,
+    "remaining_wall_saved_s": 1.5799999999999983,
+    "exchange_share_of_wall_saving_percent": 97.82023867006966
+  },
+  {
+    "case": "si216-g4",
+    "comparison": "baseline -> pr-resident",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 110.445,
+    "exchange_integrals_saved_s": 48.08000000000001,
+    "exchange_forces_saved_s": 59.31499999999998,
+    "remaining_wall_saved_s": 3.0500000000000114,
+    "exchange_share_of_wall_saving_percent": 97.23844447462538
+  },
+  {
+    "case": "si216-g16",
+    "comparison": "module -> gpu-first",
+    "scope": "historical build comparison",
+    "wall_saved_s": 308.67499999999995,
+    "exchange_integrals_saved_s": 145.04,
+    "exchange_forces_saved_s": 153.54,
+    "remaining_wall_saved_s": 10.095000000000013,
+    "exchange_share_of_wall_saving_percent": 96.72956993601686
+  },
+  {
+    "case": "si216-g16",
+    "comparison": "baseline -> pr-default",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 9.389999999999986,
+    "exchange_integrals_saved_s": 2.009999999999991,
+    "exchange_forces_saved_s": 6.8799999999999955,
+    "remaining_wall_saved_s": 0.5000000000000284,
+    "exchange_share_of_wall_saving_percent": 94.6751863684771
+  },
+  {
+    "case": "si216-g16",
+    "comparison": "baseline -> pr-resident",
+    "scope": "paired PR comparison",
+    "wall_saved_s": 31.599999999999994,
+    "exchange_integrals_saved_s": 14.909999999999997,
+    "exchange_forces_saved_s": 22.155,
+    "remaining_wall_saved_s": -5.464999999999989,
+    "exchange_share_of_wall_saving_percent": 117.29430379746837
+  }
+]

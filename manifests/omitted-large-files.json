@@ -1,0 +1,332 @@
+[
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/abacus-pilot-2651905/abacus-si216-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/abacus-pilot-2651905/abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/abacus-pilot-2651905/abacus-si64-cusolvermp-loop1/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g1-2652177/01-abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g1-2652177/02-abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g16-2652179/01-abacus-si216-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g16-2652179/02-abacus-si216-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g4-2652178/01-abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g4-2652178/02-abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g4-2652178/05-abacus-si216-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/benchmark-g4-repeat-2652959/00-abacus-si216-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/four-staged-2651966/02-abacus-si64-cusolvermp-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/precision-check-2652081/02-abacus-si64-displaced-normal/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/precision-check-2652081/03-abacus-si64-displaced-tight/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 60079856,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-si-20261120",
+    "path": "results/single-staged-2651965/01-abacus-si64-cusolver-loop0/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g1-2655071/00-abacus-si64-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g1-remaining-2655265/00-abacus-si64-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g16-2655073/00-abacus-si216-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g16-remaining-2655267/00-abacus-si216-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g4-2655072/00-abacus-si64-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g4-remaining-2655266/00-abacus-si64-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g4-remaining-2655266/01-abacus-si216-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/benchmark-g4-remaining-2655266/02-abacus-si216-cusolvermp-loop0-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/control-module-si64-g4-2654920/00-abacus-si64-displaced-normal-ricpu-xccpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/validation-si64-g4-2654795/00-abacus-si64-displaced-normal-ricpu-xccpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/validation-si64-g4-2654795/01-abacus-si64-displaced-normal-rigpu-xccpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/validation-si64-g4-2654795/02-abacus-si64-displaced-normal-ricpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-gpu-libs-20261120",
+    "path": "results/validation-si64-g4-2654795/03-abacus-si64-displaced-normal-rigpu-xcgpu/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/00-abacus-si216-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/01-abacus-si216-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/02-abacus-si216-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/03-abacus-si216-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/04-abacus-si216-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g16-2659346/05-abacus-si216-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/00-abacus-si216-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/01-abacus-si216-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/02-abacus-si216-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/03-abacus-si216-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/04-abacus-si216-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si216-g4-2659345/05-abacus-si216-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 110398096,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/00-abacus-si64-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/01-abacus-si64-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/02-abacus-si64-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/03-abacus-si64-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/04-abacus-si64-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g1-2659343/05-abacus-si64-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/00-abacus-si64-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/01-abacus-si64-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/02-abacus-si64-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/03-abacus-si64-cusolvermp-loop0-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/04-abacus-si64-cusolvermp-loop0-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/bench-si64-g4-2659344/05-abacus-si64-cusolvermp-loop0-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/validate-si64-g4-2659069/00-abacus-si64-displaced-normal-baseline/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/validate-si64-g4-2659069/01-abacus-si64-displaced-normal-pr-default/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  },
+  {
+    "campaign": "hse06-libri-pr17-20261121",
+    "path": "results/validate-si64-g4-2659069/02-abacus-si64-displaced-normal-pr-resident/OUT.si/si-CHARGE-DENSITY.restart",
+    "bytes": 32712152,
+    "reason": "Exceeds 10 MiB per-file limit"
+  }
+]

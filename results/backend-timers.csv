@@ -1,0 +1,9 @@
+fixed_libxc,timer,libri_cpu_s,libri_gpu_s,seconds_saved
+cpu,External wall,135.69,88.2,47.489999999999995
+cpu,Electronic EXX,59.53,29.04,30.490000000000002
+cpu,EXX forces,39.18,20.75,18.43
+cpu,Remaining wall (derived),36.98,38.410000000000004,-1.4300000000000068
+gpu,External wall,129.87,82.9,46.97
+gpu,Electronic EXX,58.44,28.74,29.7
+gpu,EXX forces,39.0,21.33,17.67
+gpu,Remaining wall (derived),32.43000000000001,32.83000000000001,-0.4000000000000057

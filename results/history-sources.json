@@ -1,0 +1,11 @@
+{
+  "cp2k_sha": "356586e108ea6f7afb60a0a1ac3c2ad98805eeb6",
+  "cp2k_timer_source": "https://github.com/cp2k/cp2k/blob/356586e108ea6f7afb60a0a1ac3c2ad98805eeb6/src/hfx_admm_utils.F#L1141",
+  "scope": "hfx_ks_matrix calls both integrate_four_center and derivatives_four_center; never add the parent to either child.",
+  "original_modules": {
+    "cp2k": "cp2k/master-beta-20261117-356586e108ea-rf678a701a42f-b0ffec6895ef1",
+    "abacus": "abacus/develop-beta-20261116-4e9f1636b7ca-rf678a701a42f-b5b5f95b9e21c"
+  },
+  "selected_runs": 25,
+  "selection": "16 accepted original final timings + 8 first GPU-library timings + 1 displaced original-module control; exploratory CP2K loose-force timings excluded."
+}

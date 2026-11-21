@@ -1,0 +1,19 @@
+{
+  "remote_files_in_scope": 2400,
+  "remote_files_at_most_10MiB": 2345,
+  "remote_small_files_packaged_and_hash_verified": 2345,
+  "additional_local_campaign_files": 73,
+  "total_raw_files": 2418,
+  "omitted_large_files": 55,
+  "omitted_large_bytes": 3457940888,
+  "small_restart_files": 41,
+  "parsed_campaign_records": {
+    "hse06-si-20261120": 49,
+    "hse06-gpu-libs-20261120": 13,
+    "hse06-libri-pr17-20261121": 27
+  },
+  "accepted_curated_calculations": 56,
+  "selection_limit_bytes": 10485760,
+  "raw_archives_include_exploratory_and_unsuccessful_records": true,
+  "includes_new_calculations": false
+}
