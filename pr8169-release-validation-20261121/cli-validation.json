@@ -1,0 +1,32 @@
+[
+  {
+    "case": "gpu_realspace_on",
+    "exit_code": 1,
+    "passed": true
+  },
+  {
+    "case": "gpu_default_realspace",
+    "exit_code": 1,
+    "passed": true
+  },
+  {
+    "case": "gpu_default_symmetry",
+    "exit_code": 1,
+    "passed": true
+  },
+  {
+    "case": "gpu_kpoint_symmetry",
+    "exit_code": 0,
+    "passed": true
+  },
+  {
+    "case": "cpu_realspace_on",
+    "exit_code": 0,
+    "passed": true
+  },
+  {
+    "case": "gpu_time_reversal",
+    "exit_code": 0,
+    "passed": true
+  }
+]

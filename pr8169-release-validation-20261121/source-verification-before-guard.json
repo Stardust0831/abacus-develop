@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "abacus_head": "c1d3b81e97f7fcd4d4fafd0d65416fa227151a81",
+  "abacus_changed_files": {
+    "cmake/modules/FindLibRI.cmake": "6245825aa2ff809422611fb6716ebae7297d309263e4d638a05b8a0c5446f849",
+    "docs/advanced/install.md": "2518b52c20a85035f9ad357a303a3fdcb6c3b2c16ac9d2ad75e989b6bd5dcd19",
+    "source/source_io/test_serial/read_input_item_test.cpp": "fda3753e3c80cdb9e13ad9bff8d326b26aa738a10e2338469b0fe8550bb767bb",
+    "source/source_io/unittests/CMakeLists.txt": "a0dee5b0efcf1798c0c64386c6de3845c3c9f93f00f680f692a5976f57d64204",
+    "source/source_io/unittests/test_read_inp_exx_dftu.cpp": "dd3c30533a1877ca63dac7e6896ad6ae05257a800b47bebed3f0b0cfe9bbd5b7"
+  },
+  "libri_release_headers": 118,
+  "libri_headers_unmodified": true
+}
