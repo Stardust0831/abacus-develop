@@ -1,0 +1,13 @@
+workload,device,repeat,xc_grid_s,xc_potential_s,wall_s,inner_scf_iterations,outer_loops
+single-point,cpu,1,46.421224,62.355187,101.194107,123,7
+single-point,cpu,2,44.175179,59.355652,98.193006,118,7
+single-point,cpu,3,45.617775,60.992957,99.650859,121,7
+single-point,gpu,1,5.712553,21.384598,60.114541,120,7
+single-point,gpu,2,5.647563,21.611751,61.052341,120,7
+single-point,gpu,3,6.308035,22.890821,64.764288,130,8
+forces-and-stress,cpu,1,47.136974,64.380014,144.016787,124,7
+forces-and-stress,cpu,2,46.117446,62.750238,141.779055,121,7
+forces-and-stress,cpu,3,45.717733,62.429889,141.652497,121,7
+forces-and-stress,gpu,1,6.414170,23.245206,101.747491,122,7
+forces-and-stress,gpu,2,6.408889,23.923638,102.896950,125,7
+forces-and-stress,gpu,3,6.225807,23.131210,102.261482,121,7
