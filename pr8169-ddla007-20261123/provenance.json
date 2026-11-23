@@ -1,0 +1,19 @@
+{
+  "abacus_base": "fa1c75dcce0df12fe37267aed5ed2deef3fcaef0",
+  "libri_release": "589f6f8c6df3916575a1ba41e840de919d40d345",
+  "ddla_release": "0a65e570d3d3bc70e4d53a7e992b2de60abc884c",
+  "ddla_tag": "v0.0.7",
+  "ddla_archive_sha256": "8991797705b0854dfcd83f6e2b3b1d68fad1a8f704b6ed2a4450eef2234353c6",
+  "review_url": "https://github.com/deepmodeling/abacus-develop/pull/8169#issuecomment-7096657680",
+  "abacus_patch": "ddla007-integration.patch",
+  "source_manifest_files": 8594,
+  "jobs": {
+    "dependency": 2745169,
+    "application": 2745261,
+    "runtime": 2745922
+  },
+  "abacus_patch_sha256": "5a9cbd3589304770fb7e3bb3c789166ed9238f40073d6f4de37b2e5e0f04c0e0",
+  "abacus_source_commit": "e47e26947e6620fee11a44de3fdb520b49fae76e",
+  "abacus_source_tree": "973f4968dab6d473d5b185adb35c34bb8424e1fb",
+  "build_source_note": "Built from the recorded base plus patch before commit creation; the committed tree contains exactly the validated four-file diff."
+}

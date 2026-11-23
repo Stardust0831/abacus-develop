@@ -1,0 +1,322 @@
+{
+  "passed": true,
+  "raw_runs_parsed": 20,
+  "comparisons_recomputed": 18,
+  "unchanged_references_thresholds_kpoints_and_expected_structures": [
+    "hse_gamma/cpu",
+    "hse_spin2/cpu",
+    "si2_real0_filter0/cpu",
+    "si2_real0_filter1/cpu",
+    "si2_real1_filter0/cpu",
+    "si2_real1_filter1/cpu",
+    "si2_displaced_real0_filter0/cpu",
+    "si2_displaced_real0_filter1/cpu",
+    "si2_displaced_real1_filter0/cpu",
+    "si2_displaced_real1_filter1/cpu",
+    "hse_gamma/gpu",
+    "hse_spin2/gpu",
+    "si2_real0_filter0/gpu",
+    "si2_real0_filter1/gpu",
+    "si2_real1_filter0/gpu",
+    "si2_real1_filter1/gpu",
+    "si2_displaced_real0_filter0/gpu",
+    "si2_displaced_real0_filter1/gpu",
+    "si2_displaced_real1_filter0/gpu",
+    "si2_displaced_real1_filter1/gpu"
+  ],
+  "raw_decimal_maxima": {
+    "CPU/GPU RI": {
+      "energy_ev": "1.7053E-12",
+      "force_ev_angstrom": "2E-10",
+      "stress_kbar": "1E-10"
+    },
+    "real-space symmetry off/on": {
+      "energy_ev": "3.979E-13",
+      "force_ev_angstrom": "0E-10",
+      "stress_kbar": "0E-10"
+    }
+  },
+  "symmetry": {
+    "si2_real0_filter0/cpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real0_filter1/cpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real1_filter0/cpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real1_filter1/cpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_displaced_real0_filter0/cpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real0_filter1/cpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real1_filter0/cpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real1_filter1/cpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_real0_filter0/gpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real0_filter1/gpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real1_filter0/gpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_real1_filter1/gpu": {
+      "space_group_operations": 48,
+      "irreducible_kpoints": 3,
+      "irreducible_pair_cell_entries": 12
+    },
+    "si2_displaced_real0_filter0/gpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real0_filter1/gpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real1_filter0/gpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    },
+    "si2_displaced_real1_filter1/gpu": {
+      "space_group_operations": 4,
+      "irreducible_kpoints": 6,
+      "irreducible_pair_cell_entries": 22
+    }
+  },
+  "comparisons": [
+    {
+      "kind": "CPU/GPU RI",
+      "a": "hse_gamma/cpu",
+      "b": "hse_gamma/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.7053E-12",
+        "force_ev_angstrom": "2E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "hse_spin2/cpu",
+      "b": "hse_spin2/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "6.822E-13",
+        "force_ev_angstrom": "2E-10",
+        "stress_kbar": "1E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real0_filter0/cpu",
+      "b": "si2_real0_filter0/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "8.53E-14",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real0_filter1/cpu",
+      "b": "si2_real0_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "0E-16",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real1_filter0/cpu",
+      "b": "si2_real1_filter0/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "5.68E-14",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real1_filter1/cpu",
+      "b": "si2_real1_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.705E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real0_filter0/cpu",
+      "b": "si2_displaced_real0_filter0/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.705E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real0_filter1/cpu",
+      "b": "si2_displaced_real0_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "5.68E-14",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real1_filter0/cpu",
+      "b": "si2_displaced_real1_filter0/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.421E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real1_filter1/cpu",
+      "b": "si2_displaced_real1_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "2.558E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real0_filter0/cpu",
+      "b": "si2_real0_filter1/cpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.990E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real0_filter0/gpu",
+      "b": "si2_real0_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.137E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real1_filter0/cpu",
+      "b": "si2_real1_filter1/cpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "2.84E-14",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real1_filter0/gpu",
+      "b": "si2_real1_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.989E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real0_filter0/cpu",
+      "b": "si2_displaced_real0_filter1/cpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "1.137E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real0_filter0/gpu",
+      "b": "si2_displaced_real0_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "2.274E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real1_filter0/cpu",
+      "b": "si2_displaced_real1_filter1/cpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "3.979E-13",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real1_filter0/gpu",
+      "b": "si2_displaced_real1_filter1/gpu",
+      "passed": true,
+      "max_deltas": {
+        "energy_ev": "0E-16",
+        "force_ev_angstrom": "0E-10",
+        "stress_kbar": "0E-10"
+      }
+    }
+  ],
+  "precision_note": "Differences use printed raw values; forces and stresses are printed to 10 decimal places."
+}

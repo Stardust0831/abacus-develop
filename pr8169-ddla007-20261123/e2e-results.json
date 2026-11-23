@@ -1,0 +1,1124 @@
+{
+  "libri_head": "589f6f8c6df3916575a1ba41e840de919d40d345",
+  "abacus_base": "fa1c75dcce0df12fe37267aed5ed2deef3fcaef0",
+  "abacus_test_patch": "ddla007-integration.patch",
+  "ddla_head": "0a65e570d3d3bc70e4d53a7e992b2de60abc884c",
+  "limits": {
+    "energy_ev": 1e-07,
+    "force_ev_angstrom": 1e-06,
+    "stress_kbar": 1e-05
+  },
+  "binary_sha256": "3a0a2f6a6f9aeccd85371a12c7777b32ddde773509b378daa0626c2f3117f258",
+  "runs": {
+    "hse_gamma/cpu": {
+      "completed": true,
+      "energy_ev": -428.99431394168107,
+      "forces_ev_angstrom": [
+        6.8713801209,
+        0.6261628324,
+        0.0,
+        -1.9517161381,
+        7.9885359522,
+        0.0,
+        -4.9196639828,
+        -8.6146987846,
+        0.0
+      ],
+      "stress_kbar": [
+        -32.7888700507,
+        6.9594240298,
+        -0.0,
+        6.8181549229,
+        -42.8149639648,
+        -0.0,
+        -0.0,
+        -0.0,
+        -167.4031212394
+      ],
+      "effective_settings": {
+        "symmetry": "0",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 1"
+      ],
+      "input_sha256": "46e19188b1729e84998052520a2c848fbd19d7905e407d0e8c5b84e73e141fc7",
+      "structure_sha256": "addafc70bd83cf23037748c36707446eab98339c613cdc4a26f2d5652e77c2b4"
+    },
+    "hse_spin2/cpu": {
+      "completed": true,
+      "energy_ev": -448.71465013111333,
+      "forces_ev_angstrom": [
+        6.4073247352,
+        2.3367871635,
+        0.0,
+        0.5098605521,
+        7.5671228131,
+        0.0,
+        -6.9171852873,
+        -9.9039099766,
+        0.0
+      ],
+      "stress_kbar": [
+        -127.4355378327,
+        22.4874025891,
+        0.0,
+        22.1603779382,
+        -166.6087857599,
+        -0.0,
+        0.0,
+        -0.0,
+        -486.8576372497
+      ],
+      "effective_settings": {
+        "symmetry": "0",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "2",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 1"
+      ],
+      "input_sha256": "7eb2f37ed7e8d5a344870d822ac0191a42d6b567a113e47a89e0bae6628cace5",
+      "structure_sha256": "b05926d46bde4ecc76708ac9f9576fbc7cd9fcb4af632dd1945d3761afcfbead"
+    },
+    "si2_real0_filter0/cpu": {
+      "completed": true,
+      "energy_ev": -189.4406755170874,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        -0.0,
+        0.0,
+        0.0,
+        -714.5981063126,
+        -0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "74fc0e2a53fb18bcff82fe281ca521d3d5a28d80ca802d93d9a2b12b3c71d7a9",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real0_filter1/cpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708721,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        -0.0,
+        -0.0,
+        -0.0,
+        -714.5981063126,
+        0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "1fa33ce3571758f64a43ea2a438e53f0133341b9278bb05a2236c15bcdfda7a6",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real1_filter0/cpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708733,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        -0.0,
+        -0.0,
+        0.0,
+        -714.5981063126,
+        0.0,
+        -0.0,
+        0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "70cead06b32d0bfd3726be8d261b1748c83bff15cd619e1c22773fea98016e4d",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real1_filter1/cpu": {
+      "completed": true,
+      "energy_ev": -189.4406755170873,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        0.0,
+        0.0,
+        -0.0,
+        -714.5981063126,
+        -0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "a89d526122780c18618929e345c93ae4d58c0a977f3fbe5ceb5b6d4991b38069",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_displaced_real0_filter0/cpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.2729796909261495,
+      "energy_ev": -189.38607715970957,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "7510223f8a14f3c23f87676c65062688b2b041ac3cefd17a51701686359b1e4a",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real0_filter1/cpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.072936655022204,
+      "energy_ev": -189.38607715970969,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "f71483c7e21de0d82672489b10a8ea1a717810391ea4fb22c15a3a958f74099a",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real1_filter0/cpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.072743942961097,
+      "energy_ev": -189.38607715970997,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "f22c3f5d8d8b5aa5621604cc20f7ddd43a2fed877522ad6413a8d12e315ef0df",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real1_filter1/cpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.473522142972797,
+      "energy_ev": -189.38607715970957,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "cpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "ca1fe1f6ff497bde0a549c5ac02cf9934ca9f148ab92ead50c7d4c6ed821b41f",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "hse_gamma/gpu": {
+      "completed": true,
+      "energy_ev": -428.99431394167937,
+      "forces_ev_angstrom": [
+        6.871380121,
+        0.6261628324,
+        0.0,
+        -1.951716138,
+        7.9885359523,
+        0.0,
+        -4.919663983,
+        -8.6146987847,
+        0.0
+      ],
+      "stress_kbar": [
+        -32.7888700507,
+        6.9594240298,
+        0.0,
+        6.8181549229,
+        -42.8149639648,
+        0.0,
+        0.0,
+        0.0,
+        -167.4031212394
+      ],
+      "effective_settings": {
+        "symmetry": "0",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 1"
+      ],
+      "input_sha256": "848c2e5bc105482f1a6d22a0b7c82c20533ed00b55649100eb5c048bcbdadb4e",
+      "structure_sha256": "addafc70bd83cf23037748c36707446eab98339c613cdc4a26f2d5652e77c2b4"
+    },
+    "hse_spin2/gpu": {
+      "completed": true,
+      "energy_ev": -448.714650131114,
+      "forces_ev_angstrom": [
+        6.4073247353,
+        2.3367871634,
+        0.0,
+        0.5098605522,
+        7.5671228133,
+        0.0,
+        -6.9171852874,
+        -9.9039099767,
+        0.0
+      ],
+      "stress_kbar": [
+        -127.4355378327,
+        22.4874025891,
+        0.0,
+        22.1603779382,
+        -166.60878576,
+        -0.0,
+        0.0,
+        -0.0,
+        -486.8576372497
+      ],
+      "effective_settings": {
+        "symmetry": "0",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "2",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 1"
+      ],
+      "input_sha256": "cf3d70affac9bf679e12214a69c09ec0fbcf0fa886744632904c07283587baf5",
+      "structure_sha256": "b05926d46bde4ecc76708ac9f9576fbc7cd9fcb4af632dd1945d3761afcfbead"
+    },
+    "si2_real0_filter0/gpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708733,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        -0.0,
+        -0.0,
+        0.0,
+        -714.5981063126,
+        0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "bb51c675098e69165596f2036def68581c7813be53e64bd9adffe4edec285aa4",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real0_filter1/gpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708721,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        -0.0,
+        0.0,
+        -0.0,
+        -714.5981063126,
+        0.0,
+        0.0,
+        0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "d3a5339c19a927a587a6d09de6db08cad333c04c7df94df86282753aa416a7ef",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real1_filter0/gpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708727,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        0.0,
+        0.0,
+        0.0,
+        -714.5981063126,
+        -0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "983422bd942c6c42c80fd77ee1d5ef115c8e318dc159b600df425512dbafd7b9",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_real1_filter1/gpu": {
+      "completed": true,
+      "energy_ev": -189.44067551708747,
+      "forces_ev_angstrom": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "stress_kbar": [
+        -714.5981063126,
+        0.0,
+        0.0,
+        -0.0,
+        -714.5981063126,
+        -0.0,
+        0.0,
+        -0.0,
+        -714.5981063126
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 12",
+        "SPACE GROUP OPERATIONS = 48",
+        "POINT GROUP = D_3d",
+        "POINT GROUP IN SPACE GROUP = O_h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 3"
+      ],
+      "input_sha256": "a04bf072b9b700cb5ebb1da7a46b08e4013cef3bc6d8dba42e258fb1a700409c",
+      "structure_sha256": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6"
+    },
+    "si2_displaced_real0_filter0/gpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.523215308086947,
+      "energy_ev": -189.3860771597094,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "d0793a8da160ca121ea12cf7a46ef5d3d752610811adc0387ee026181277dcd4",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real0_filter1/gpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 5.024724394781515,
+      "energy_ev": -189.38607715970963,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "0",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "e2b0f34dc5d901cc6a83a07afe7ad7afafc62e92e1a6c720fecd398c1bf944a4",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real1_filter0/gpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.473577334079891,
+      "energy_ev": -189.38607715970983,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "0"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "95e566859c699502c875529ae59dd48c605052ddc7c0790d47d9b9df2d5f7384",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    },
+    "si2_displaced_real1_filter1/gpu": {
+      "completed": true,
+      "exit_code": 0,
+      "elapsed_s": 4.673709470080212,
+      "energy_ev": -189.38607715970983,
+      "forces_ev_angstrom": [
+        0.0056520064,
+        -2.9498564343,
+        -2.9498564343,
+        -0.0056520064,
+        2.9498564343,
+        2.9498564343
+      ],
+      "stress_kbar": [
+        -689.2702571982,
+        -75.020464753,
+        -75.020464753,
+        -75.2686549694,
+        -718.2587619179,
+        -11.1537369095,
+        -75.2686549694,
+        -11.1537369095,
+        -718.2587619179
+      ],
+      "effective_settings": {
+        "symmetry": "1",
+        "device": "gpu",
+        "ks_solver": "cusolver",
+        "nspin": "1",
+        "device_exx": "gpu",
+        "exx_real_number": "1",
+        "exx_symmetry_realspace": "1"
+      },
+      "symmetry_lines": [
+        "| is a primitive cell. Finally we give the point group operation for |",
+        "| this unitcell. We use the point group operations to perform        |",
+        "PURE POINT GROUP OPERATIONS = 2",
+        "SPACE GROUP OPERATIONS = 4",
+        "POINT GROUP = C_1h",
+        "POINT GROUP IN SPACE GROUP = C_2h",
+        "| The reduced k-points are set according to symmetry operations.     |",
+        "Number of irreducible k-points = 6"
+      ],
+      "input_sha256": "30851b72d146b52a58ddf82ed7595bc2ff6eab622510696a83f07f710a6d8a04",
+      "structure_sha256": "ce2c12560ac43ee1db9cb7045616607741396d7be030cc8cf04e255f831713a1"
+    }
+  },
+  "reference_checks": [
+    {
+      "backend": "cpu",
+      "exit_code": 0,
+      "command": [
+        "bash",
+        "../integrate/Autotest.sh",
+        "-a",
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-ddla007-20261123/build/abacus/abacus_std_gpu",
+        "-n",
+        "1",
+        "-o",
+        "1",
+        "-f",
+        "CASES.task.txt"
+      ],
+      "reference_hashes": {
+        "hse_gamma": "92c27b0988debac1a0e0ba0f80ba70b6666b121e6654c101b3a9c6bfb0300019",
+        "hse_spin2": "62a3b09e64aa8e5faab9965348b51e7a89dac6a5ee968de1f33f5247035cd935",
+        "si2_real0_filter0": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real0_filter1": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real1_filter0": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real1_filter1": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d"
+      }
+    },
+    {
+      "backend": "gpu",
+      "exit_code": 0,
+      "command": [
+        "bash",
+        "../integrate/Autotest.sh",
+        "-a",
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-ddla007-20261123/build/abacus/abacus_std_gpu",
+        "-n",
+        "1",
+        "-o",
+        "1",
+        "-f",
+        "CASES.task.txt"
+      ],
+      "reference_hashes": {
+        "hse_gamma": "92c27b0988debac1a0e0ba0f80ba70b6666b121e6654c101b3a9c6bfb0300019",
+        "hse_spin2": "62a3b09e64aa8e5faab9965348b51e7a89dac6a5ee968de1f33f5247035cd935",
+        "si2_real0_filter0": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real0_filter1": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real1_filter0": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d",
+        "si2_real1_filter1": "5602411d6c2d64ba41b3b9a3c3fc26464832865ec3f594e4da896cef1e7dce2d"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "kind": "CPU/GPU RI",
+      "a": "hse_gamma/cpu",
+      "b": "hse_gamma/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.7053025658242404e-12,
+      "max_force_delta_ev_angstrom": 2.000000165480742e-10,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "hse_spin2/cpu",
+      "b": "hse_spin2/gpu",
+      "passed": true,
+      "energy_delta_ev": 6.821210263296962e-13,
+      "max_force_delta_ev_angstrom": 2.000000165480742e-10,
+      "max_stress_delta_kbar": 9.99875737761613e-11
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real0_filter0/cpu",
+      "b": "si2_real0_filter0/gpu",
+      "passed": true,
+      "energy_delta_ev": 8.526512829121202e-14,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real0_filter1/cpu",
+      "b": "si2_real0_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 0.0,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real1_filter0/cpu",
+      "b": "si2_real1_filter0/gpu",
+      "passed": true,
+      "energy_delta_ev": 5.684341886080802e-14,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_real1_filter1/cpu",
+      "b": "si2_real1_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.7053025658242404e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real0_filter0/cpu",
+      "b": "si2_displaced_real0_filter0/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.7053025658242404e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real0_filter1/cpu",
+      "b": "si2_displaced_real0_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 5.684341886080802e-14,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real1_filter0/cpu",
+      "b": "si2_displaced_real1_filter0/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.4210854715202004e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "CPU/GPU RI",
+      "a": "si2_displaced_real1_filter1/cpu",
+      "b": "si2_displaced_real1_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 2.5579538487363607e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real0_filter0/cpu",
+      "b": "si2_real0_filter1/cpu",
+      "passed": true,
+      "energy_delta_ev": 1.9895196601282805e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real0_filter0/gpu",
+      "b": "si2_real0_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.1368683772161603e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real1_filter0/cpu",
+      "b": "si2_real1_filter1/cpu",
+      "passed": true,
+      "energy_delta_ev": 2.842170943040401e-14,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_real1_filter0/gpu",
+      "b": "si2_real1_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 1.9895196601282805e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real0_filter0/cpu",
+      "b": "si2_displaced_real0_filter1/cpu",
+      "passed": true,
+      "energy_delta_ev": 1.1368683772161603e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real0_filter0/gpu",
+      "b": "si2_displaced_real0_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 2.2737367544323206e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real1_filter0/cpu",
+      "b": "si2_displaced_real1_filter1/cpu",
+      "passed": true,
+      "energy_delta_ev": 3.979039320256561e-13,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    },
+    {
+      "kind": "real-space symmetry off/on",
+      "a": "si2_displaced_real1_filter0/gpu",
+      "b": "si2_displaced_real1_filter1/gpu",
+      "passed": true,
+      "energy_delta_ev": 0.0,
+      "max_force_delta_ev_angstrom": 0.0,
+      "max_stress_delta_kbar": 0.0
+    }
+  ],
+  "nonzero_force_max_components": {
+    "si2_displaced_real0_filter0/cpu": 2.9498564343,
+    "si2_displaced_real0_filter1/cpu": 2.9498564343,
+    "si2_displaced_real1_filter0/cpu": 2.9498564343,
+    "si2_displaced_real1_filter1/cpu": 2.9498564343,
+    "si2_displaced_real0_filter0/gpu": 2.9498564343,
+    "si2_displaced_real0_filter1/gpu": 2.9498564343,
+    "si2_displaced_real1_filter0/gpu": 2.9498564343,
+    "si2_displaced_real1_filter1/gpu": 2.9498564343
+  },
+  "nonzero_force_covered": true,
+  "passed": true
+}

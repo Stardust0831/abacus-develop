@@ -1,0 +1,182 @@
+{
+  "passed": true,
+  "libri_numerical": {
+    "checks": 456,
+    "passes": 38
+  },
+  "unit_tests": {
+    "gpu": [
+      {
+        "file": "MODULE_IO_read_input_serial.xml",
+        "tests": 16,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "disabled": 0
+      },
+      {
+        "file": "MODULE_IO_read_item_serial.xml",
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "disabled": 0
+      },
+      {
+        "file": "MODULE_RI_exx_workspace.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "disabled": 0
+      }
+    ],
+    "debug": [
+      {
+        "file": "MODULE_RI_exx_workspace.xml",
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "disabled": 0
+      }
+    ]
+  },
+  "cli_cases": 8,
+  "scf_runs": 20,
+  "cpu_gpu_and_symmetry_comparisons": 18,
+  "cross_version_comparisons": 20,
+  "all_exit_codes": {
+    "version.exit": 0,
+    "ddla-ldd.exit": 0,
+    "ddla-install.exit": 0,
+    "debug-build.exit": 0,
+    "gpu-info.exit": 0,
+    "compiler.exit": 0,
+    "source-verification.exit": 0,
+    "debug-tests.exit": 0,
+    "consumer-cpu-build.exit": 0,
+    "gpu-tests.exit": 0,
+    "debug-configure.exit": 0,
+    "build-audit.exit": 1,
+    "application-source-verification.exit": 0,
+    "ddla-consumer-test.exit": 0,
+    "libri14-build.exit": 0,
+    "gpu-build.exit": 0,
+    "ddla-configure.exit": 0,
+    "libri14-configure.exit": 0,
+    "consumer-gpu-configure.exit": 0,
+    "e2e.exit": 0,
+    "consumer-cpu-configure.exit": 0,
+    "binary-ldd.exit": 0,
+    "libri14-numerical.exit": 0,
+    "ddla-build.exit": 0,
+    "build-audit-final.exit": 0,
+    "consumer-cpu-test.exit": 0,
+    "ddla-consumer-build.exit": 0,
+    "baseline-consumer-configure.exit": 1,
+    "consumer-gpu-build.exit": 0,
+    "gpu-configure.exit": 0,
+    "ddla-consumer-configure.exit": 0,
+    "cli.exit": 0,
+    "consumer-gpu-test.exit": 0
+  },
+  "compilation_audit": {
+    "compilation": {
+      "ddla-consumer": {
+        "generated_commands": 1,
+        "without_googletest": {
+          "11": 1
+        },
+        "with_googletest": {},
+        "private_backend_macros": []
+      },
+      "consumer-cpu": {
+        "generated_commands": 1,
+        "without_googletest": {
+          "14": 1
+        },
+        "with_googletest": {},
+        "private_backend_macros": []
+      },
+      "consumer-gpu": {
+        "generated_commands": 1,
+        "without_googletest": {
+          "14": 1
+        },
+        "with_googletest": {},
+        "private_backend_macros": []
+      },
+      "libri14": {
+        "generated_commands": 1,
+        "without_googletest": {
+          "14": 1
+        },
+        "with_googletest": {},
+        "private_backend_macros": []
+      },
+      "abacus": {
+        "generated_commands": 4972,
+        "without_googletest": {
+          "14": 1163
+        },
+        "with_googletest": {
+          "17": 3809
+        },
+        "private_backend_macros": [],
+        "main_executable_link_objects": 1003,
+        "main_executable_object_standard": "14",
+        "main_executable_objects_built": 1003
+      },
+      "debug": {
+        "generated_commands": 4972,
+        "without_googletest": {
+          "14": 1163
+        },
+        "with_googletest": {
+          "17": 3809
+        },
+        "private_backend_macros": [],
+        "main_executable_link_objects": 1003,
+        "main_executable_object_standard": "14",
+        "main_executable_objects_built": 134
+      }
+    },
+    "links": {
+      "build/abacus/abacus_std_gpu": {
+        "ddla": "libddla.so.0 => /org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-ddla007-20261123/install/ddla/lib/libddla.so.0 (0x0000154beea99000)",
+        "binary_sha256": "3a0a2f6a6f9aeccd85371a12c7777b32ddde773509b378daa0626c2f3117f258"
+      },
+      "build/libri14/test_lri_gpu_symmetry": {
+        "ddla": "libddla.so.0 => /org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-ddla007-20261123/install/ddla/lib/libddla.so.0 (0x000014ae9c508000)",
+        "binary_sha256": "25b94abc4054beeed98c966bb6b465a89f27b1c0b4db9caece254df6bc4be0df"
+      },
+      "build/debug/source/source_lcao/module_ri/unittests/MODULE_RI_exx_workspace": {
+        "ddla": "libddla.so.0 => /org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-ddla007-20261123/install/ddla/lib/libddla.so.0 (0x000014eec9666000)",
+        "binary_sha256": "6d69605da954948435b37f61063f93a7dd54c4abd2fe9b5fafc0d4e483c1b5fd"
+      }
+    },
+    "ddla_sha256": "6403e500e8f13ddb5caeabbbe166018e0fe2b629f9ca92a770d4867ee8dbc187",
+    "audit_correction": "The first audit required C++14 for GoogleTest targets; GoogleTest publicly requires C++17. Original failure retained in logs/build-audit.*.",
+    "passed": true
+  },
+  "numerical_maxima": {
+    "CPU/GPU RI": {
+      "energy_ev": "1.7053E-12",
+      "force_ev_angstrom": "2E-10",
+      "stress_kbar": "1E-10"
+    },
+    "real-space symmetry off/on": {
+      "energy_ev": "3.979E-13",
+      "force_ev_angstrom": "0E-10",
+      "stress_kbar": "0E-10"
+    }
+  },
+  "cross_version_maxima": {
+    "energy_ev": "2.6148E-12",
+    "force_ev_angstrom": "1.3E-9",
+    "stress_kbar": "4E-10"
+  },
+  "expected_baseline_failure": "Existing ABACUS configuration tests DDLA_USE_CUDA, which v0.0.7 no longer exports.",
+  "initial_audit_failure": "The first audit required C++14 for GoogleTest targets; GoogleTest publicly requires C++17. Original failure retained in logs/build-audit.*."
+}

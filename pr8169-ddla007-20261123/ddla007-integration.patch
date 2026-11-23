@@ -1,0 +1,101 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5dc2ee513..86ed16f7a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -633,9 +633,6 @@ endfunction()
+ 
+ if(ENABLE_LIBRI)
+   set_if_higher(CMAKE_CXX_STANDARD 14)
+-  if(ENABLE_LIBRI_GPU)
+-    set_if_higher(CMAKE_CXX_STANDARD 17)
+-  endif()
+   find_package(LibRI REQUIRED)
+ endif()
+ 
+diff --git a/cmake/modules/FindLibRI.cmake b/cmake/modules/FindLibRI.cmake
+index 9f2290132..4b5f2ff22 100644
+--- a/cmake/modules/FindLibRI.cmake
++++ b/cmake/modules/FindLibRI.cmake
+@@ -53,9 +53,8 @@ if(LibRI_FOUND AND NOT TARGET LibRI::LibRI)
+   endforeach()
+ 
+   if(ENABLE_LIBRI_GPU)
+-    find_package(LibDDLA 0.0.6 CONFIG REQUIRED HINTS "${DDLA_ROOT}")
++    find_package(LibDDLA 0.0.7 CONFIG REQUIRED HINTS "${DDLA_ROOT}")
+     target_compile_definitions(LibRI::LibRI INTERFACE __GPU_RI __DDLA_RI)
+-    target_compile_features(LibRI::LibRI INTERFACE cxx_std_17)
+     target_link_libraries(LibRI::LibRI INTERFACE ddla::ddla)
+ 
+     include(CMakePushCheckState)
+@@ -75,9 +74,6 @@ if(LibRI_FOUND AND NOT TARGET LibRI::LibRI)
+             #if !DDLA_HAS_GPU
+             #error "LibRI GPU requires DDLA's public GPU API"
+             #endif
+-            #if !defined(DDLA_USE_CUDA) || defined(DDLA_USE_HIP)
+-            #error "LibRI GPU requires a CUDA build of DDLA"
+-            #endif
+             template <typename T> void check_gpu()
+             {
+                 RI::LRI<int, int, 3, T> lri;
+@@ -97,8 +93,7 @@ if(LibRI_FOUND AND NOT TARGET LibRI::LibRI)
+       message(
+         FATAL_ERROR
+           "LibRI/DDLA GPU compile/link check failed. Supply compatible "
+-          "LibRI v0.3.0.0 or newer and CUDA DDLA with the handle-selected batched GEMM API "
+-          "(the original DDLA v0.0.6 release is incompatible); see docs/advanced/install.md "
++          "LibRI v0.3.0.0 or newer and CUDA DDLA v0.0.7 or newer; see docs/advanced/install.md "
+           "and the CMake configure log.")
+     endif()
+   endif()
+diff --git a/docs/advanced/install.md b/docs/advanced/install.md
+index d517336ba..02432dc7c 100644
+--- a/docs/advanced/install.md
++++ b/docs/advanced/install.md
+@@ -82,8 +82,8 @@ The new EXX implementation directly depends on [LibRI](https://github.com/abacus
+ ```
+ 
+ Experimental LCAO GPU contractions additionally require `ENABLE_LIBRI_GPU=ON`
+-(default OFF), `USE_CUDA=ON`, LibRI v0.3.0.0 or newer, and a compatible CUDA
+-build of DDLA. Like other dependent
++(default OFF), `USE_CUDA=ON`, LibRI v0.3.0.0 or newer, and a CUDA
++build of DDLA v0.0.7 or newer. Like other dependent
+ options, GPU RI is disabled when its LibRI/CUDA prerequisites are disabled.
+ INPUT `device_exx` defaults to `cpu`, retaining CPU contractions even with
+ `device gpu`. To use GPU contractions, set both `device gpu` and `device_exx gpu`.
+@@ -110,13 +110,11 @@ is the minimum GPU release. Use the release tagged at
+ it includes the GPU symmetry, accumulation, OpenMP, atom-list and DDLA adapter
+ fixes. Earlier LibRI versions remain usable for CPU RI.
+ 
+-DDLA must provide its installed `LibDDLAConfig.cmake` package and `ddla::ddla`
+-target, `DDLA_HAS_GPU`, and the handle-selected `gemmVbatched` and
+-`gemmVbatched2s` APIs. Use
+-[DDLA commit 7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7](https://github.com/userchba/LibDDLA/commit/7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7)
+-or a later compatible revision, built with CUDA support. The original DDLA
+-`v0.0.6` release has an incompatible API; its version number alone does not
+-establish compatibility. GPU RI requires C++17.
++Use [DDLA v0.0.7](https://github.com/userchba/LibDDLA/releases/tag/v0.0.7)
++or a newer compatible release, built with CUDA support. ABACUS consumes its
++installed `LibDDLAConfig.cmake` package, `ddla::ddla` target and public
++`DDLA_HAS_GPU` capability. Building DDLA itself requires C++17; ABACUS with
++either CPU or GPU RI requires C++14.
+ GPU mode requires an explicitly supplied, compatible LibRI installation;
+ the default CPU dependency download is unchanged.
+ 
+diff --git a/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp b/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
+index 6ab8e5a5b..2a146bc33 100644
+--- a/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
++++ b/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
+@@ -1,11 +1,11 @@
+ #include <RI/ri/LRI.h>
+ 
+ #if defined(EXPECT_LIBRI_GPU)
+-#if !defined(__GPU_RI) || !defined(__DDLA_RI) || !defined(DDLA_USE_CUDA)
++#if !defined(__GPU_RI) || !defined(__DDLA_RI) || !DDLA_HAS_GPU
+ #error "LibRI GPU usage requirements did not reach the consumer"
+ #endif
+ #else
+-#if defined(__GPU_RI) || defined(__DDLA_RI) || defined(DDLA_USE_CUDA)
++#if defined(__GPU_RI) || defined(__DDLA_RI)
+ #error "CPU LibRI consumer unexpectedly requires a GPU backend"
+ #endif
+ #endif
