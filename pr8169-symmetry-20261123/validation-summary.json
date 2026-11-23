@@ -1,0 +1,107 @@
+{
+  "candidate_head": "fa1c75dcce0df12fe37267aed5ed2deef3fcaef0",
+  "libri_release": "589f6f8c6df3916575a1ba41e840de919d40d345",
+  "libri_numerical": {
+    "checks": 456,
+    "passes": 38
+  },
+  "libri_callback": "PASS 31104 label/sector/atom/cell combinations",
+  "unit_tests": {
+    "cpu": [
+      {
+        "file": "MODULE_IO_read_input_serial.xml",
+        "tests": 14,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "MODULE_IO_read_item_serial.xml",
+        "tests": 34,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "MODULE_RI_exx_workspace.xml",
+        "tests": 2,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "gpu": [
+      {
+        "file": "MODULE_IO_read_input_serial.xml",
+        "tests": 16,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "MODULE_IO_read_item_serial.xml",
+        "tests": 34,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "file": "MODULE_RI_exx_workspace.xml",
+        "tests": 2,
+        "failures": 0,
+        "disabled": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "cmake_consumers": {
+    "cpu": {
+      "build_type": "Debug",
+      "ctest_passed": 1
+    },
+    "gpu": {
+      "build_type": "Debug",
+      "ctest_passed": 1
+    }
+  },
+  "cli_cases": 8,
+  "scf_runs": 20,
+  "comparisons": 18,
+  "all_exit_codes": {
+    "binary-ldd.exit": "0",
+    "cli-driver.exit": "1",
+    "cli-singleton.exit": "0",
+    "compiler.exit": "0",
+    "cpu-build.exit": "0",
+    "cpu-configure.exit": "0",
+    "cpu-tests.exit": "0",
+    "ddla-sha256.exit": "0",
+    "e2e-driver.exit": "0",
+    "gpu-build.exit": "0",
+    "gpu-configure.exit": "0",
+    "gpu-info.exit": "0",
+    "gpu-tests.exit": "0",
+    "help-device-exx.exit": "0",
+    "help-realspace.exit": "0",
+    "libri-build.exit": "0",
+    "libri-callback.exit": "0",
+    "libri-configure.exit": "0",
+    "libri-numerical.exit": "0",
+    "source-verification.exit": "0",
+    "version.exit": "0"
+  },
+  "initial_cli_mpirun": {
+    "passed": false,
+    "cases": 8,
+    "exit_code": 1,
+    "reason": "Existing --check-input exit(0) skips MPI_Finalize; mpirun reports improper exit after successful INPUT checks.",
+    "recheck": "Identical INPUT/STRU/KPT files passed direct single-process invocation; original failed launcher results are preserved."
+  },
+  "passed": true
+}

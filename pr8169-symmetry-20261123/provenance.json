@@ -1,0 +1,9 @@
+{
+  "previous_pr_head": "6dd58cf762fd730d62eb61ed36e3383e660066bb",
+  "upstream_develop": "c46ae1ede78f266441255a81b20cb176b8c5f6e2",
+  "initial_merge_tree": "3ed9a3507c093b9780376f9e8afde07cbad831c7",
+  "libri_release": "589f6f8c6df3916575a1ba41e840de919d40d345",
+  "merge_commit": "e56d5c37d32dd54dcca7e2fcf55541c1db1db1df",
+  "candidate_head": "fa1c75dcce0df12fe37267aed5ed2deef3fcaef0",
+  "candidate_tree": "9e1299d3f91c1cf97fba6973ac03c7c66fc4369e"
+}

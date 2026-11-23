@@ -1,0 +1,45 @@
+{
+  "passed": false,
+  "cases": [
+    {
+      "case": "gpu_default",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_symmetry1",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_realspace0",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_realspace1",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_symmetry0",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_symmetry_minus1",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "cpu_symmetry1",
+      "exit_code": 1,
+      "passed": false
+    },
+    {
+      "case": "gpu_md_reset",
+      "exit_code": 1,
+      "passed": false
+    }
+  ]
+}

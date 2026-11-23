@@ -1,0 +1,139 @@
+diff --git a/docs/advanced/install.md b/docs/advanced/install.md
+index d7eb13cdd..d517336ba 100644
+--- a/docs/advanced/install.md
++++ b/docs/advanced/install.md
+@@ -87,13 +87,9 @@ build of DDLA. Like other dependent
+ options, GPU RI is disabled when its LibRI/CUDA prerequisites are disabled.
+ INPUT `device_exx` defaults to `cpu`, retaining CPU contractions even with
+ `device gpu`. To use GPU contractions, set both `device gpu` and `device_exx gpu`.
+-The latter requires GPU RI to be compiled in. After normal INPUT processing,
+-GPU RI temporarily rejects an effective `symmetry 1`, regardless of
+-`exx_symmetry_realspace`, pending a validated LibRI GPU symmetry fix. This GPU
+-EXX check reports an error without modifying parameter values itself. Existing
+-INPUT resets still apply; for example, `calculation md` sets `symmetry` to `0`
+-before this check. Use `symmetry 0` (time reversal only) or `symmetry -1` (no
+-symmetry), or select CPU RI when spatial symmetry is needed.
++The latter requires GPU RI to be compiled in. GPU contractions support
++`symmetry 1`, including real-space EXX reduction with
++`exx_symmetry_realspace 1`.
+ 
+ The selector applies to the LCAO Kohn-Sham exchange engine. LR and RDMFT exchange
+ engines retain CPU contractions, including when LR reuses Kohn-Sham exchange
+@@ -109,9 +105,10 @@ CUDA_VISIBLE_DEVICES=0,1 mpirun -np 2 abacus
+ ```
+ 
+ [LibRI v0.3.0.0](https://github.com/abacusmodeling/LibRI/releases/tag/v0.3.0.0)
+-is the minimum GPU release. It includes the accumulation, OpenMP, atom-list
+-and DDLA adapter fixes, but GPU symmetry validation still fails; the restriction
+-above remains necessary. Earlier LibRI versions remain usable for CPU RI.
++is the minimum GPU release. Use the release tagged at
++`589f6f8c6df3916575a1ba41e840de919d40d345` or a newer compatible release;
++it includes the GPU symmetry, accumulation, OpenMP, atom-list and DDLA adapter
++fixes. Earlier LibRI versions remain usable for CPU RI.
+ 
+ DDLA must provide its installed `LibDDLAConfig.cmake` package and `ddla::ddla`
+ target, `DDLA_HAS_GPU`, and the handle-selected `gemmVbatched` and
+diff --git a/source/source_io/module_parameter/read_inp_exx_dftu.cpp b/source/source_io/module_parameter/read_inp_exx_dftu.cpp
+index ebb7aa682..c6344fda8 100644
+--- a/source/source_io/module_parameter/read_inp_exx_dftu.cpp
++++ b/source/source_io/module_parameter/read_inp_exx_dftu.cpp
+@@ -245,9 +245,6 @@ void ReadInput::item_exx()
+         item.description = R"(Selects the LibRI tensor-contraction device for LCAO Kohn-Sham exact exchange.
+ * cpu: retain CPU contractions, including when device=gpu.
+ * gpu: use the experimental GPU backend; requires ENABLE_LIBRI_GPU=ON and device=gpu.
+-GPU contractions temporarily reject symmetry=1, regardless of
+-exx_symmetry_realspace, pending a validated LibRI GPU symmetry fix.
+-Use symmetry=0 (time reversal only) or symmetry=-1 (no symmetry).
+ LR and RDMFT exchange engines retain CPU contractions, including when LR reuses
+ Kohn-Sham exchange geometry.
+ For GPU contractions, all MPI ranks on a node must see the same allocated GPU
+@@ -269,13 +266,6 @@ masking is unsupported.)";
+                 }
+ #ifndef __GPU_RI
+                 ModuleBase::WARNING_QUIT("ReadInput", "device_exx=gpu requires a build with ENABLE_LIBRI_GPU=ON");
+-#else
+-                if (para.input.symmetry == "1")
+-                {
+-                    ModuleBase::WARNING_QUIT(
+-                        "ReadInput", "device_exx=gpu does not support symmetry=1 until LibRI GPU symmetry is fixed; "
+-                                     "use symmetry=0 or symmetry=-1, or device_exx=cpu");
+-                }
+ #endif
+             }
+         };
+@@ -658,8 +648,7 @@ Use the same scheme for consistent SCF and NSCF bands. A source configuration mi
+         item.description =
+             R"(* False: only rotate k-space density matrix D(k) from irreducible k-points to accelerate diagonalization
+ * True: rotate both D(k) and Hexx(R) to accelerate both diagonalization and EXX calculation
+-For multi-k calculations, D(k) is averaged over the unitary little group of each irreducible k point before star expansion, for either setting.
+-device_exx=gpu currently rejects symmetry=1 for either setting, pending a validated LibRI GPU symmetry fix.)";
++For multi-k calculations, D(k) is averaged over the unitary little group of each irreducible k point before star expansion, for either setting.)";
+         item.default_value = "True";
+         item.unit = "";
+         item.set_availability("symmetry==1 and (dft_functional in [hse, hf, pbe0, scan0] or (basis_type==lcao and rpa==true))");
+diff --git a/source/source_io/unittests/test_read_inp_exx_dftu.cpp b/source/source_io/unittests/test_read_inp_exx_dftu.cpp
+index a3eb79af7..a7adb26c4 100644
+--- a/source/source_io/unittests/test_read_inp_exx_dftu.cpp
++++ b/source/source_io/unittests/test_read_inp_exx_dftu.cpp
+@@ -60,19 +60,18 @@ TEST(DeviceExxInput, SelectionAndValidation)
+     input.device = "gpu";
+ 
+ #ifdef __GPU_RI
+-    expect_rejected("device_exx=gpu does not support symmetry=1");
+-    EXPECT_EQ(input.device_exx, "gpu");
+-    EXPECT_EQ(input.symmetry, "1");
+-    EXPECT_TRUE(input.exx_symmetry_realspace);
+-    input.exx_symmetry_realspace = false;
+-    expect_rejected("device_exx=gpu does not support symmetry=1");
+-    EXPECT_EQ(input.symmetry, "1");
+-    EXPECT_FALSE(input.exx_symmetry_realspace);
+-    input.exx_symmetry_realspace = true;
+-    input.symmetry = "0";
+-    it->second.check_value(it->second, param);
+-    input.symmetry = "-1";
+-    it->second.check_value(it->second, param);
++    for (const std::string symmetry : {"1", "0", "-1"})
++    {
++        for (const bool realspace : {false, true})
++        {
++            input.symmetry = symmetry;
++            input.exx_symmetry_realspace = realspace;
++            EXPECT_NO_THROW(it->second.check_value(it->second, param));
++            EXPECT_EQ(input.device_exx, "gpu");
++            EXPECT_EQ(input.symmetry, symmetry);
++            EXPECT_EQ(input.exx_symmetry_realspace, realspace);
++        }
++    }
+ #else
+     expect_rejected("device_exx=gpu requires a build with ENABLE_LIBRI_GPU=ON");
+ #endif
+diff --git a/source/source_io/unittests/test_read_input_serial.cpp b/source/source_io/unittests/test_read_input_serial.cpp
+index c224943a5..761bef006 100644
+--- a/source/source_io/unittests/test_read_input_serial.cpp
++++ b/source/source_io/unittests/test_read_input_serial.cpp
+@@ -239,20 +239,18 @@ TEST_F(InputTest, DeviceExxGpuScfSymmetry)
+     // The serial reader needs an explicit LAPACK solver; its default GPU
+     // eigensolver requires MPI, independently of the EXX device selection.
+     const std::string input = "basis_type lcao\ndft_functional hse\nks_solver lapack\ndevice gpu\ndevice_exx gpu\n";
+-    const std::string diagnostic = "\n device_exx=gpu does not support symmetry=1 until LibRI GPU symmetry is fixed; "
+-                                   "use symmetry=0 or symmetry=-1, or device_exx=cpu\n";
+-    for (const std::string symmetry : {"", "symmetry 1\nexx_symmetry_realspace 0\n"})
++    for (const std::string symmetry :
++        {"", "symmetry 1\n", "symmetry 1\nexx_symmetry_realspace 0\n", "symmetry 1\nexx_symmetry_realspace 1\n"})
+     {
+         SCOPED_TRACE(symmetry);
+         Parameter param;
+         const std::string parameters = input + symmetry;
+-        testing::internal::CaptureStdout();
+-        EXPECT_THROW(read_parameters(filename, parameters, param), std::runtime_error);
+-        const std::string output = testing::internal::GetCapturedStdout();
+-        EXPECT_THAT(output, testing::HasSubstr(diagnostic));
++        ASSERT_NO_THROW(read_parameters(filename, parameters, param));
+         EXPECT_EQ(param.inp.calculation, "scf");
+         EXPECT_EQ(param.inp.device_exx, "gpu");
+         EXPECT_EQ(param.inp.symmetry, "1");
++        const bool realspace = symmetry.find("exx_symmetry_realspace 0") == std::string::npos;
++        EXPECT_EQ(param.inp.exx_symmetry_realspace, realspace);
+     }
+     for (const std::string symmetry : {"0", "-1"})
+     {

@@ -1,0 +1,707 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fb0d9b38a..5dc2ee513 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -75,6 +75,9 @@ cmake_dependent_option(ENABLE_ELPA "Enable ELPA eigensolver" ON "ENABLE_MPI"
+                        OFF)
+ cmake_dependent_option(ENABLE_LIBRI "Enable LibRI for hybrid functional" OFF
+                        "ENABLE_LCAO;ENABLE_MPI" OFF)
++cmake_dependent_option(
++  ENABLE_LIBRI_GPU "Enable experimental LibRI CUDA contractions through DDLA"
++  OFF "ENABLE_LIBRI;USE_CUDA" OFF)
+ cmake_dependent_option(ENABLE_PEXSI "Enable PEXSI for LCAO" OFF
+                        "ENABLE_LCAO;ENABLE_MPI" OFF)
+ cmake_dependent_option(ENABLE_MLALGO "Enable the machine learning algorithms"
+@@ -630,9 +633,10 @@ endfunction()
+ 
+ if(ENABLE_LIBRI)
+   set_if_higher(CMAKE_CXX_STANDARD 14)
++  if(ENABLE_LIBRI_GPU)
++    set_if_higher(CMAKE_CXX_STANDARD 17)
++  endif()
+   find_package(LibRI REQUIRED)
+-  find_package(LibComm REQUIRED)
+-  find_package(cereal REQUIRED CONFIG)
+ endif()
+ 
+ if(ENABLE_LIBXC)
+diff --git a/cmake/CollectBuildInfoVars.cmake b/cmake/CollectBuildInfoVars.cmake
+index d74e8c024..c8f177a91 100644
+--- a/cmake/CollectBuildInfoVars.cmake
++++ b/cmake/CollectBuildInfoVars.cmake
+@@ -418,6 +418,7 @@ list(APPEND CMAKE_OPTIONS_LIST "  USE_ROCM=${USE_ROCM}")
+ list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_LCAO=${ENABLE_LCAO}")
+ list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_ELPA=${ENABLE_ELPA}")
+ list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_LIBXC=${ENABLE_LIBXC}")
++list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_LIBRI_GPU=${ENABLE_LIBRI_GPU}")
+ list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_MLALGO=${ENABLE_MLALGO}")
+ list(APPEND CMAKE_OPTIONS_LIST "  ENABLE_ASAN=${ENABLE_ASAN}")
+ list(APPEND CMAKE_OPTIONS_LIST "  BUILD_TESTING=${BUILD_TESTING}")
+@@ -479,6 +480,7 @@ message("                     DeePMD         = ${ABACUS_DEEPMD_VERSION}")
+ message("                     NEP            = ${ABACUS_NEP_VERSION}")
+ message(" Features          : Libxc          = ${ABACUS_LIBXC_VERSION}")
+ message("                     LibRI          = ${ABACUS_LIBRI_VERSION}")
++message("                     LibRI GPU      = ${ENABLE_LIBRI_GPU}")
+ message("                     DFT-D4         = ${ABACUS_DFTD4_VERSION}")
+ message("                     JSON           = ${ABACUS_JSON_VERSION}")
+ message("                     PEXSI          = ${ABACUS_PEXSI_VERSION}")
+diff --git a/cmake/modules/FindLibRI.cmake b/cmake/modules/FindLibRI.cmake
+index 32d601162..9f2290132 100644
+--- a/cmake/modules/FindLibRI.cmake
++++ b/cmake/modules/FindLibRI.cmake
+@@ -4,6 +4,7 @@
+ #
+ #  LIBRI_FOUND - True if LibRI is found.
+ #  LIBRI_DIR - Where to find LibRI files.
++#  LibRI::LibRI - Header-only target, including optional DDLA requirements.
+ 
+ find_path(
+   LIBRI_DIR include/RI/version.h
+@@ -12,6 +13,12 @@ find_path(
+   HINTS ${libri_DIR})
+ 
+ if(NOT LIBRI_DIR)
++  if(ENABLE_LIBRI_GPU)
++    message(
++      FATAL_ERROR
++        "ENABLE_LIBRI_GPU requires an explicitly supplied, compatible LIBRI_DIR; "
++        "see docs/advanced/install.md")
++  endif()
+   include(FetchContent)
+   FetchContent_Declare(
+     LibRI URL https://codeload.github.com/abacusmodeling/LibRI/tar.gz/b0eff7a)
+@@ -23,5 +30,78 @@ endif()
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(LibRI DEFAULT_MSG LIBRI_DIR)
+ 
+-# Copy the results to the output variables and target.
++if(LibRI_FOUND AND NOT TARGET LibRI::LibRI)
++  find_package(LibComm REQUIRED)
++  find_package(cereal REQUIRED CONFIG)
++
++  add_library(LibRI::LibRI INTERFACE IMPORTED)
++  set_target_properties(
++    LibRI::LibRI
++    PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
++               "${LIBRI_DIR}/include;${LIBCOMM_DIR}/include"
++               INTERFACE_COMPILE_FEATURES cxx_std_14
++               INTERFACE_LINK_LIBRARIES "MPI::MPI_CXX;cereal::cereal")
++  if(ENABLE_OPENMP)
++    target_link_libraries(LibRI::LibRI INTERFACE OpenMP::OpenMP_CXX)
++  endif()
++  # Reuse ABACUS's selected math backend. Special platforms without these
++  # targets retain their existing numerical libraries in the final link.
++  foreach(_libri_math_target IN ITEMS LAPACK::LAPACK BLAS::BLAS)
++    if(TARGET ${_libri_math_target})
++      target_link_libraries(LibRI::LibRI INTERFACE ${_libri_math_target})
++    endif()
++  endforeach()
++
++  if(ENABLE_LIBRI_GPU)
++    find_package(LibDDLA 0.0.6 CONFIG REQUIRED HINTS "${DDLA_ROOT}")
++    target_compile_definitions(LibRI::LibRI INTERFACE __GPU_RI __DDLA_RI)
++    target_compile_features(LibRI::LibRI INTERFACE cxx_std_17)
++    target_link_libraries(LibRI::LibRI INTERFACE ddla::ddla)
++
++    include(CMakePushCheckState)
++    include(CheckCXXSourceCompiles)
++    cmake_push_check_state(RESET)
++    set(CMAKE_REQUIRED_LIBRARIES LibRI::LibRI)
++    # Recheck when users update dependency sources or installation paths.
++    unset(LIBRI_GPU_API_WORKS CACHE)
++    check_cxx_source_compiles(
++      [=[
++            #include <complex>
++            #include <RI/version.h>
++            #if __LIBRI_VERSION < 30000
++            #error "LibRI GPU requires LibRI v0.3.0.0 or newer"
++            #endif
++            #include <RI/ri/LRI.h>
++            #if !DDLA_HAS_GPU
++            #error "LibRI GPU requires DDLA's public GPU API"
++            #endif
++            #if !defined(DDLA_USE_CUDA) || defined(DDLA_USE_HIP)
++            #error "LibRI GPU requires a CUDA build of DDLA"
++            #endif
++            template <typename T> void check_gpu()
++            {
++                RI::LRI<int, int, 3, T> lri;
++                lri.cal_mode = RI::LRI_Cal_Mode::GPU;
++                std::map<int, std::map<std::pair<int, std::array<int, 3>>, RI::Tensor<T>>> result;
++                lri.cal_loop3({}, result, 1.0);
++            }
++            int main()
++            {
++                check_gpu<double>();
++                check_gpu<std::complex<double>>();
++            }
++        ]=]
++      LIBRI_GPU_API_WORKS)
++    cmake_pop_check_state()
++    if(NOT LIBRI_GPU_API_WORKS)
++      message(
++        FATAL_ERROR
++          "LibRI/DDLA GPU compile/link check failed. Supply compatible "
++          "LibRI v0.3.0.0 or newer and CUDA DDLA with the handle-selected batched GEMM API "
++          "(the original DDLA v0.0.6 release is incompatible); see docs/advanced/install.md "
++          "and the CMake configure log.")
++    endif()
++  endif()
++endif()
++
+ mark_as_advanced(LIBRI_DIR)
+diff --git a/cmake/modules/FindMKL.cmake b/cmake/modules/FindMKL.cmake
+index 7026fc308..e96edacd4 100644
+--- a/cmake/modules/FindMKL.cmake
++++ b/cmake/modules/FindMKL.cmake
+@@ -266,11 +266,11 @@ if(MKL_FOUND)
+   set(_mkl_base_archives ${MKL_INTERFACE_LIB} ${MKL_THREAD} ${MKL_CORE})
+   _mkl_link_group(_mkl_base ${_mkl_base_archives})
+ 
+-  add_library(abacus_mkl INTERFACE)
+-  add_library(abacus::mkl ALIAS abacus_mkl)
+-  target_include_directories(abacus_mkl INTERFACE "${MKL_INCLUDE}"
+-                                                  "${MKL_FFTW_INCLUDE}")
+-  target_link_libraries(abacus_mkl INTERFACE ${_mkl_base} ${_mkl_runtime})
++  # Imported interfaces also propagate into dependency compile/link probes.
++  add_library(abacus::mkl INTERFACE IMPORTED GLOBAL)
++  target_include_directories(abacus::mkl INTERFACE "${MKL_INCLUDE}"
++                                                 "${MKL_FFTW_INCLUDE}")
++  target_link_libraries(abacus::mkl INTERFACE ${_mkl_base} ${_mkl_runtime})
+ 
+   if(ENABLE_MPI)
+     add_library(abacus_mkl_scalapack INTERFACE)
+diff --git a/docs/advanced/install.md b/docs/advanced/install.md
+index 86d63cfd1..d517336ba 100644
+--- a/docs/advanced/install.md
++++ b/docs/advanced/install.md
+@@ -81,6 +81,63 @@ The new EXX implementation directly depends on [LibRI](https://github.com/abacus
+ `ENABLE_LIBCOMM` is deprecated because LibComm is not a standalone ABACUS feature. CMake locates it automatically as a dependency of LibRI. If you prefer using manually downloaded libraries, enable LibRI and provide their locations via `-DLIBRI_DIR=/path/to/LibRI` and `-DLIBCOMM_DIR=/path/to/LibComm`.
+ ```
+ 
++Experimental LCAO GPU contractions additionally require `ENABLE_LIBRI_GPU=ON`
++(default OFF), `USE_CUDA=ON`, LibRI v0.3.0.0 or newer, and a compatible CUDA
++build of DDLA. Like other dependent
++options, GPU RI is disabled when its LibRI/CUDA prerequisites are disabled.
++INPUT `device_exx` defaults to `cpu`, retaining CPU contractions even with
++`device gpu`. To use GPU contractions, set both `device gpu` and `device_exx gpu`.
++The latter requires GPU RI to be compiled in. GPU contractions support
++`symmetry 1`, including real-space EXX reduction with
++`exx_symmetry_realspace 1`.
++
++The selector applies to the LCAO Kohn-Sham exchange engine. LR and RDMFT exchange
++engines retain CPU contractions, including when LR reuses Kohn-Sham exchange
++geometry.
++
++All MPI ranks on a node must see the same allocated
++GPU list, with at least as many visible GPUs as local ranks. Giving each rank its
++own single-GPU `CUDA_VISIBLE_DEVICES` list fails LibRI's GPU-count check when
++multiple ranks share a node. For example, on one node allocated GPUs 0 and 1:
++
++```bash
++CUDA_VISIBLE_DEVICES=0,1 mpirun -np 2 abacus
++```
++
++[LibRI v0.3.0.0](https://github.com/abacusmodeling/LibRI/releases/tag/v0.3.0.0)
++is the minimum GPU release. Use the release tagged at
++`589f6f8c6df3916575a1ba41e840de919d40d345` or a newer compatible release;
++it includes the GPU symmetry, accumulation, OpenMP, atom-list and DDLA adapter
++fixes. Earlier LibRI versions remain usable for CPU RI.
++
++DDLA must provide its installed `LibDDLAConfig.cmake` package and `ddla::ddla`
++target, `DDLA_HAS_GPU`, and the handle-selected `gemmVbatched` and
++`gemmVbatched2s` APIs. Use
++[DDLA commit 7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7](https://github.com/userchba/LibDDLA/commit/7c0ca08b4349a527cec2a0c0af7d1a1082bd38c7)
++or a later compatible revision, built with CUDA support. The original DDLA
++`v0.0.6` release has an incompatible API; its version number alone does not
++establish compatibility. GPU RI requires C++17.
++GPU mode requires an explicitly supplied, compatible LibRI installation;
++the default CPU dependency download is unchanged.
++
++```bash
++cmake -B build -DENABLE_LIBRI=ON -DUSE_CUDA=ON -DENABLE_LIBRI_GPU=ON \
++  -DLIBRI_DIR=/path/to/LibRI -DDDLA_ROOT=/path/to/DDLA
++```
++
++`CMAKE_PREFIX_PATH` can also name the DDLA installation prefix, or `LibDDLA_DIR`
++can point to the directory containing `LibDDLAConfig.cmake`. The package supplies
++DDLA's include paths, backend definitions and link dependencies; separate
++`DDLA_INCLUDE_DIR` and `DDLA_LIBRARY` overrides are no longer used.
++A configure-time compile/link check
++rejects incompatible GPU APIs, but does not validate numerical correctness.
++The standalone consumer in `tests/lcao_hse_gpu/cmake` checks that `LibRI::LibRI`
++provides its compile and link dependencies with `ENABLE_LIBRI_GPU=OFF` or `ON`.
++Numerical contraction regressions belong to LibRI's upstream tests; ABACUS HSE
++comparisons validate application-level results.
++This experimental backend has additional GPU memory requirements; its temporary
++buffer limit is not a bound on total GPU memory.
++
+ ## Build with DFT-D4 support
+ 
+ ABACUS can use the external [DFT-D4](https://github.com/dftd4/dftd4) library for Grimme's DFT-D4 dispersion correction. DFT-D4 support is optional and disabled by default.
+diff --git a/source/CMakeLists.txt b/source/CMakeLists.txt
+index ae735fb8d..3e3184ef7 100644
+--- a/source/CMakeLists.txt
++++ b/source/CMakeLists.txt
+@@ -294,7 +294,7 @@ set(_abacus_feature_libs
+     $<$<BOOL:${ENABLE_PEXSI}>:PEXSI::PEXSI>
+     $<$<BOOL:${ENABLE_CNPY}>:cnpy>
+     $<$<BOOL:${ENABLE_CNPY}>:ZLIB::ZLIB>
+-    $<$<BOOL:${ENABLE_LIBRI}>:cereal::cereal>
++    $<$<BOOL:${ENABLE_LIBRI}>:LibRI::LibRI>
+     $<$<BOOL:${ENABLE_LIBXC}>:Libxc::xc>
+     $<$<BOOL:${ENABLE_PLUMED}>:PLUMED::plumed>)
+ set(_abacus_feature_include_dirs)
+@@ -327,11 +327,6 @@ if(ENABLE_CNPY)
+   endif()
+ endif()
+ 
+-if(ENABLE_LIBRI)
+-  list(APPEND _abacus_feature_include_dirs ${LIBRI_DIR}/include
+-       ${LIBCOMM_DIR}/include)
+-endif()
+-
+ if(DEFINED DeePMD_DIR)
+   if(DeePMDC_FOUND)
+     list(APPEND _abacus_feature_libs DeePMD::deepmd_c)
+@@ -418,6 +413,8 @@ target_compile_options(abacus_compile_requirements
+ foreach(
+   _abacus_feature_target IN
+   ITEMS nlohmann_json::nlohmann_json
++        LibRI::LibRI
++        ddla::ddla
+         cereal::cereal
+         ELPA::ELPA
+         Libxc::xc
+diff --git a/source/source_io/module_parameter/input_parameter.h b/source/source_io/module_parameter/input_parameter.h
+index 351c79f73..d7ef239f7 100644
+--- a/source/source_io/module_parameter/input_parameter.h
++++ b/source/source_io/module_parameter/input_parameter.h
+@@ -681,6 +681,7 @@ struct Input_para
+                                                             ///< the evaluation of Fock exchange
+     double exx_mixing_beta = 1.0;                           ///< mixing_beta for outer-loop when exx_separate_loop=1
+     std::string exx_real_number = "default";                ///< exx calculated in real or complex
++    std::string device_exx = "cpu";                        ///< computing device for LCAO EXX tensor contractions
+     double exx_pca_threshold = 0.0001;                      ///< threshold to screen on-site ABFs in exx
+     double exx_c_threshold = 0.0001;                        ///< threshold to screen C matrix in exx
+     double exx_v_threshold = 0.1;                           ///< threshold to screen C matrix in exx
+diff --git a/source/source_io/module_parameter/read_inp_exx_dftu.cpp b/source/source_io/module_parameter/read_inp_exx_dftu.cpp
+index 5d08759f2..c6344fda8 100644
+--- a/source/source_io/module_parameter/read_inp_exx_dftu.cpp
++++ b/source/source_io/module_parameter/read_inp_exx_dftu.cpp
+@@ -237,6 +237,40 @@ void ReadInput::item_exx()
+         sync_stringvec(input.exx_fock_lambda, para.input.exx_fock_lambda.size(), "");
+         this->add_item(item);
+     }
++    {
++        Input_Item item("device_exx");
++        item.annotation = "computing device for LCAO EXX tensor contractions";
++        item.category = "Exact Exchange (LCAO)";
++        item.type = "String";
++        item.description = R"(Selects the LibRI tensor-contraction device for LCAO Kohn-Sham exact exchange.
++* cpu: retain CPU contractions, including when device=gpu.
++* gpu: use the experimental GPU backend; requires ENABLE_LIBRI_GPU=ON and device=gpu.
++LR and RDMFT exchange engines retain CPU contractions, including when LR reuses
++Kohn-Sham exchange geometry.
++For GPU contractions, all MPI ranks on a node must see the same allocated GPU
++list, with at least as many visible GPUs as local ranks; per-rank single-GPU
++masking is unsupported.)";
++        item.default_value = "cpu";
++        item.set_availability("basis_type==lcao");
++        read_sync_string(input.device_exx);
++        item.check_value = [](const Input_Item& item, const Parameter& para) {
++            if (para.input.device_exx != "cpu" && para.input.device_exx != "gpu")
++            {
++                ModuleBase::WARNING_QUIT("ReadInput", "device_exx must be cpu or gpu");
++            }
++            if (para.input.device_exx == "gpu")
++            {
++                if (para.input.basis_type != "lcao" || para.input.device != "gpu")
++                {
++                    ModuleBase::WARNING_QUIT("ReadInput", "device_exx=gpu requires basis_type=lcao and device=gpu");
++                }
++#ifndef __GPU_RI
++                ModuleBase::WARNING_QUIT("ReadInput", "device_exx=gpu requires a build with ENABLE_LIBRI_GPU=ON");
++#endif
++            }
++        };
++        this->add_item(item);
++    }
+     {
+         Input_Item item("exx_pca_threshold");
+         item.annotation = "threshold to screen on-site ABFs in exx";
+@@ -611,7 +645,8 @@ Use the same scheme for consistent SCF and NSCF bands. A source configuration mi
+         item.annotation = "whether to reduce real-space sector in Hexx calculation";
+         item.category = "Exact Exchange (LCAO)";
+         item.type = "Boolean";
+-        item.description = R"(* False: only rotate k-space density matrix D(k) from irreducible k-points to accelerate diagonalization
++        item.description =
++            R"(* False: only rotate k-space density matrix D(k) from irreducible k-points to accelerate diagonalization
+ * True: rotate both D(k) and Hexx(R) to accelerate both diagonalization and EXX calculation
+ For multi-k calculations, D(k) is averaged over the unitary little group of each irreducible k point before star expansion, for either setting.)";
+         item.default_value = "True";
+diff --git a/source/source_io/test_serial/CMakeLists.txt b/source/source_io/test_serial/CMakeLists.txt
+index a94bbb938..593e3729f 100644
+--- a/source/source_io/test_serial/CMakeLists.txt
++++ b/source/source_io/test_serial/CMakeLists.txt
+@@ -36,7 +36,7 @@ abacus_copy_test_files(support)
+ addtest(
+   TARGET MODULE_IO_read_input_serial
+   LIBS parameter io_input_serial
+-  SOURCES read_input_test.cpp ../../source_base/test/tool_quit_no_exit.cpp
++  SOURCES ../../source_base/test/tool_quit_no_exit.cpp
+           ../../source_base/module_device/device.cpp
+           ../../source_base/module_device/output_device.cpp)
+ 
+diff --git a/source/source_io/unittests/CMakeLists.txt b/source/source_io/unittests/CMakeLists.txt
+index 6aa4bcece..15f536b3b 100644
+--- a/source/source_io/unittests/CMakeLists.txt
++++ b/source/source_io/unittests/CMakeLists.txt
+@@ -3,6 +3,20 @@ abacus_disable_feature_definitions(__CUDA)
+ abacus_disable_feature_definitions(__ROCM)
+ abacus_disable_feature_definitions(__EXX)
+ 
++# Keep the existing serial INPUT target and its compile definitions.
++target_sources(MODULE_IO_read_input_serial PRIVATE test_read_input_serial.cpp)
++target_sources(MODULE_IO_read_item_serial PRIVATE test_read_inp_exx_dftu.cpp)
++
++if(ENABLE_LIBRI_GPU)
++  # Exercise the real device probe while keeping DeviceContext free of MPI.
++  set_property(
++    SOURCE ${PROJECT_SOURCE_DIR}/source/source_base/module_device/device.cpp
++           TARGET_DIRECTORY MODULE_IO_read_input_serial
++    APPEND
++    PROPERTY COMPILE_DEFINITIONS __CUDA)
++  target_link_libraries(MODULE_IO_read_input_serial PRIVATE CUDA::cudart)
++endif()
++
+ addtest(
+   TARGET MODULE_IO_write_bands
+   LIBS parameter base device symmetry
+@@ -34,7 +48,8 @@ if(NOT ENABLE_MPI)
+ endif()
+ 
+ add_executable(
+-  MODULE_IO_input_error_mpi test_read_input.cpp
++  MODULE_IO_input_error_mpi
++  test_read_input.cpp
+   # io_input references stru_frame_io::extract_last_frame without linking cell.
+   ../../source_cell/stru_frame_io.cpp)
+ target_link_libraries(
+@@ -84,9 +99,10 @@ abacus_copy_test_files(support INPUTs)
+ addtest(
+   TARGET MODULE_IO_input_test_para
+   LIBS parameter base device io_input
+-  SOURCES test_read_input_parallel.cpp
+-          # io_input references stru_frame_io::extract_last_frame without linking cell.
+-          ../../source_cell/stru_frame_io.cpp)
++  SOURCES
++    test_read_input_parallel.cpp
++    # io_input references stru_frame_io::extract_last_frame without linking cell.
++    ../../source_cell/stru_frame_io.cpp)
+ 
+ add_test(
+   NAME MODULE_IO_input_test_para_4
+diff --git a/source/source_io/unittests/test_read_inp_exx_dftu.cpp b/source/source_io/unittests/test_read_inp_exx_dftu.cpp
+new file mode 100644
+index 000000000..a7adb26c4
+--- /dev/null
++++ b/source/source_io/unittests/test_read_inp_exx_dftu.cpp
+@@ -0,0 +1,85 @@
++#include "source_io/module_parameter/parameter.h"
++#include "source_io/module_parameter/read_input.h"
++
++#include "gmock/gmock.h"
++#include "gtest/gtest.h"
++
++#include <algorithm>
++#include <string>
++#include <utility>
++
++// Match the existing serial INPUT target's friend helper definition.
++class TestParameters
++{
++  public:
++    static Input_para &input(Parameter &param) { return param.input; }
++    static System_para &sys(Parameter &param) { return param.sys; }
++};
++
++TEST(DeviceExxInput, SelectionAndValidation)
++{
++    ModuleIO::ReadInput readinput(0);
++    Parameter param;
++    auto input_lists = readinput.get_input_lists();
++    auto it = std::find_if(
++        input_lists.begin(), input_lists.end(),
++        [](const std::pair<std::string, ModuleIO::Input_Item> &item) { return item.first == "device_exx"; });
++    ASSERT_NE(it, input_lists.end());
++    EXPECT_EQ(param.inp.device_exx, "cpu");
++    EXPECT_EQ(it->second.default_value, "cpu");
++
++    auto &input = TestParameters::input(param);
++    input.basis_type = "lcao";
++    input.device = "gpu";
++    input.symmetry = "1";
++    input.exx_symmetry_realspace = true;
++    it->second.check_value(it->second, param);
++    it->second.get_final_value(it->second, param);
++    EXPECT_EQ(it->second.final_value.str(), "cpu");
++
++    const auto expect_rejected = [&](const std::string &message)
++    {
++        testing::internal::CaptureStdout();
++        EXPECT_EXIT(it->second.check_value(it->second, param), ::testing::ExitedWithCode(1), "");
++        const std::string output = testing::internal::GetCapturedStdout();
++        EXPECT_THAT(output, testing::HasSubstr(message));
++    };
++
++    it->second.str_values = {"ddla"};
++    it->second.read_value(it->second, param);
++    expect_rejected("device_exx must be cpu or gpu");
++
++    it->second.str_values = {"gpu"};
++    it->second.read_value(it->second, param);
++    EXPECT_EQ(param.inp.device_exx, "gpu");
++    input.basis_type = "pw";
++    expect_rejected("device_exx=gpu requires basis_type=lcao and device=gpu");
++    input.basis_type = "lcao";
++    input.device = "cpu";
++    expect_rejected("device_exx=gpu requires basis_type=lcao and device=gpu");
++    input.device = "gpu";
++
++#ifdef __GPU_RI
++    for (const std::string symmetry : {"1", "0", "-1"})
++    {
++        for (const bool realspace : {false, true})
++        {
++            input.symmetry = symmetry;
++            input.exx_symmetry_realspace = realspace;
++            EXPECT_NO_THROW(it->second.check_value(it->second, param));
++            EXPECT_EQ(input.device_exx, "gpu");
++            EXPECT_EQ(input.symmetry, symmetry);
++            EXPECT_EQ(input.exx_symmetry_realspace, realspace);
++        }
++    }
++#else
++    expect_rejected("device_exx=gpu requires a build with ENABLE_LIBRI_GPU=ON");
++#endif
++
++    it->second.str_values = {"cpu"};
++    it->second.read_value(it->second, param);
++    EXPECT_EQ(param.inp.device_exx, "cpu");
++    input.symmetry = "1";
++    input.exx_symmetry_realspace = true;
++    it->second.check_value(it->second, param);
++}
+diff --git a/source/source_io/test_serial/read_input_test.cpp b/source/source_io/unittests/test_read_input_serial.cpp
+similarity index 85%
+rename from source/source_io/test_serial/read_input_test.cpp
+rename to source/source_io/unittests/test_read_input_serial.cpp
+index 8e973fd4b..761bef006 100644
+--- a/source/source_io/test_serial/read_input_test.cpp
++++ b/source/source_io/unittests/test_read_input_serial.cpp
+@@ -1,5 +1,6 @@
+ #include "source_io/module_parameter/read_input.h"
+ 
++#include "source_base/module_device/device.h"
+ #include "source_base/tool_quit.h"
+ #include "source_io/module_parameter/parameter.h"
+ 
+@@ -211,6 +212,77 @@ TEST_F(InputTest, RejectAutoDevice)
+     EXPECT_TRUE(std::remove("./auto_device_INPUT") == 0);
+ }
+ 
++TEST_F(InputTest, DeviceExxCpuSymmetry)
++{
++    const std::string filename = testing::TempDir() + "device_exx_cpu_INPUT";
++    const std::string input = "basis_type lcao\ndft_functional hse\nks_solver lapack\ndevice_exx cpu\n";
++    for (const std::string symmetry : {"", "symmetry 1\n"})
++    {
++        SCOPED_TRACE(symmetry);
++        Parameter param;
++        const std::string parameters = input + symmetry;
++        ASSERT_NO_THROW(read_parameters(filename, parameters, param));
++        EXPECT_EQ(param.inp.device_exx, "cpu");
++        EXPECT_EQ(param.inp.symmetry, "1");
++        EXPECT_TRUE(param.inp.exx_symmetry_realspace);
++    }
++}
++
++#ifdef __GPU_RI
++TEST_F(InputTest, DeviceExxGpuScfSymmetry)
++{
++    if (!base_device::information::probe_gpu_availability())
++    {
++        GTEST_SKIP() << "GPU EXX reader validation requires a visible GPU";
++    }
++    const std::string filename = testing::TempDir() + "device_exx_gpu_scf_INPUT";
++    // The serial reader needs an explicit LAPACK solver; its default GPU
++    // eigensolver requires MPI, independently of the EXX device selection.
++    const std::string input = "basis_type lcao\ndft_functional hse\nks_solver lapack\ndevice gpu\ndevice_exx gpu\n";
++    for (const std::string symmetry :
++        {"", "symmetry 1\n", "symmetry 1\nexx_symmetry_realspace 0\n", "symmetry 1\nexx_symmetry_realspace 1\n"})
++    {
++        SCOPED_TRACE(symmetry);
++        Parameter param;
++        const std::string parameters = input + symmetry;
++        ASSERT_NO_THROW(read_parameters(filename, parameters, param));
++        EXPECT_EQ(param.inp.calculation, "scf");
++        EXPECT_EQ(param.inp.device_exx, "gpu");
++        EXPECT_EQ(param.inp.symmetry, "1");
++        const bool realspace = symmetry.find("exx_symmetry_realspace 0") == std::string::npos;
++        EXPECT_EQ(param.inp.exx_symmetry_realspace, realspace);
++    }
++    for (const std::string symmetry : {"0", "-1"})
++    {
++        SCOPED_TRACE(symmetry);
++        Parameter param;
++        const std::string parameters = input + "symmetry " + symmetry + "\n";
++        ASSERT_NO_THROW(read_parameters(filename, parameters, param));
++        EXPECT_EQ(param.inp.device_exx, "gpu");
++        EXPECT_EQ(param.inp.symmetry, symmetry);
++        EXPECT_FALSE(param.inp.exx_symmetry_realspace);
++    }
++}
++
++TEST_F(InputTest, DeviceExxGpuMdEffectiveSymmetry)
++{
++    if (!base_device::information::probe_gpu_availability())
++    {
++        GTEST_SKIP() << "GPU EXX reader validation requires a visible GPU";
++    }
++    const std::string filename = testing::TempDir() + "device_exx_gpu_md_INPUT";
++    const std::string input = "basis_type lcao\ndft_functional hse\nks_solver lapack\ndevice gpu\ndevice_exx gpu\n"
++                              "calculation md\nmd_type nve\nmd_tfirst 300\nsymmetry 1\n";
++    Parameter param;
++    ASSERT_NO_THROW(read_parameters(filename, input, param));
++    EXPECT_EQ(param.inp.calculation, "md");
++    EXPECT_EQ(param.inp.device, "gpu");
++    EXPECT_EQ(param.inp.device_exx, "gpu");
++    EXPECT_EQ(param.inp.symmetry, "0");
++    EXPECT_FALSE(param.inp.exx_symmetry_realspace);
++}
++#endif
++
+ TEST_F(InputTest, ValidateRelaxMethodScalar)
+ {
+     for (const std::string method : {"cg", "cg_trad", "bfgs", "bfgs_trad", "sd", "cg_bfgs", "lbfgs"})
+diff --git a/source/source_lcao/module_ri/exx_lri_interface.h b/source/source_lcao/module_ri/exx_lri_interface.h
+index bc81e475d..5d186777f 100644
+--- a/source/source_lcao/module_ri/exx_lri_interface.h
++++ b/source/source_lcao/module_ri/exx_lri_interface.h
+@@ -55,6 +55,16 @@ public:
+     }
+     Exx_LRI_Interface() = delete;
+ 
++    void set_gpu(const bool use_gpu)
++    {
++#ifdef __GPU_RI
++        auto& mode = this->exx_ptr->exx_lri.lri.cal_mode;
++        mode = use_gpu ? RI::LRI_Cal_Mode::GPU : RI::LRI_Cal_Mode::CPU;
++#else
++        (void)use_gpu;
++#endif
++    }
++
+     ///// read and write Hexxs using cereal
+     //void write_Hexxs_cereal(const std::string& file_name) const;
+     //void read_Hexxs_cereal(const std::string& file_name);
+diff --git a/source/source_lcao/module_ri/unittests/CMakeLists.txt b/source/source_lcao/module_ri/unittests/CMakeLists.txt
+index 68c87eed0..8afc53b13 100644
+--- a/source/source_lcao/module_ri/unittests/CMakeLists.txt
++++ b/source/source_lcao/module_ri/unittests/CMakeLists.txt
+@@ -6,7 +6,7 @@ addtest(TARGET MODULE_RI_smooth_cut_coulomb SOURCES test_smooth_cut_coulomb.cpp
+ if(ENABLE_LCAO)
+   addtest(
+     TARGET MODULE_RI_exx_workspace
+-    LIBS base parameter device ${math_libs}
++    LIBS base parameter device LibRI::LibRI ${math_libs}
+     SOURCES test_exx_workspace.cpp ../exx_workspace.cpp ../lri_cv.cpp
+             ../../../source_basis/module_ao/orb_atomic_lm.cpp)
+   # Link the compiled LRI lifecycle while keeping unrelated integral assembly out
+diff --git a/source/source_lcao/setup_exx.cpp b/source/source_lcao/setup_exx.cpp
+index 15e11bbb9..22f961b66 100644
+--- a/source/source_lcao/setup_exx.cpp
++++ b/source/source_lcao/setup_exx.cpp
+@@ -51,6 +51,15 @@ void Exx_NAO<TK>::before_runner(
+         Exx_Info& exx_info)
+ {
+ #ifdef __EXX
++    const bool use_gpu = inp.device_exx == "gpu";
++    if (this->exd)
++    {
++        this->exd->set_gpu(use_gpu);
++    }
++    if (this->exc)
++    {
++        this->exc->set_gpu(use_gpu);
++    }
+ #ifdef __CUDA
+     const bool use_gpu_tables = inp.device == "gpu";
+ #else
+diff --git a/tests/lcao_hse_gpu/cmake/CMakeLists.txt b/tests/lcao_hse_gpu/cmake/CMakeLists.txt
+new file mode 100644
+index 000000000..c78acde4a
+--- /dev/null
++++ b/tests/lcao_hse_gpu/cmake/CMakeLists.txt
+@@ -0,0 +1,27 @@
++cmake_minimum_required(VERSION 3.18)
++project(libri_consumer_check LANGUAGES CXX)
++
++# Exercise the dependency target without ABACUS's global includes or link flags.
++list(PREPEND CMAKE_MODULE_PATH
++     "${CMAKE_CURRENT_LIST_DIR}/../../../cmake/modules")
++option(ENABLE_OPENMP "Enable OpenMP" ON)
++option(ENABLE_LIBRI_GPU "Check the LibRI CUDA dependency interface" OFF)
++find_package(MPI REQUIRED COMPONENTS CXX)
++if(ENABLE_OPENMP)
++  find_package(OpenMP REQUIRED COMPONENTS CXX)
++endif()
++if(MKLROOT
++   OR MKL_ROOT
++   OR DEFINED ENV{MKLROOT})
++  find_package(MKL REQUIRED)
++else()
++  find_package(Lapack REQUIRED)
++endif()
++find_package(LibRI REQUIRED)
++
++add_executable(libri_consumer test_libri_consumer.cpp)
++target_link_libraries(libri_consumer PRIVATE LibRI::LibRI)
++target_compile_definitions(
++  libri_consumer PRIVATE $<$<BOOL:${ENABLE_LIBRI_GPU}>:EXPECT_LIBRI_GPU>)
++enable_testing()
++add_test(NAME libri_consumer COMMAND libri_consumer)
+diff --git a/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp b/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
+new file mode 100644
+index 000000000..6ab8e5a5b
+--- /dev/null
++++ b/tests/lcao_hse_gpu/cmake/test_libri_consumer.cpp
+@@ -0,0 +1,27 @@
++#include <RI/ri/LRI.h>
++
++#if defined(EXPECT_LIBRI_GPU)
++#if !defined(__GPU_RI) || !defined(__DDLA_RI) || !defined(DDLA_USE_CUDA)
++#error "LibRI GPU usage requirements did not reach the consumer"
++#endif
++#else
++#if defined(__GPU_RI) || defined(__DDLA_RI) || defined(DDLA_USE_CUDA)
++#error "CPU LibRI consumer unexpectedly requires a GPU backend"
++#endif
++#endif
++
++int main()
++{
++    RI::LRI<int, int, 3, double> lri;
++#ifdef EXPECT_LIBRI_GPU
++    if (lri.cal_mode != RI::LRI_Cal_Mode::CPU)
++    {
++        return 1;
++    }
++    lri.cal_mode = RI::LRI_Cal_Mode::GPU;
++#endif
++    // The consumer must receive the BLAS dependency through LibRI::LibRI.
++    const double data[] = {3.0, 4.0};
++    const double norm = RI::Blas_Interface::nrm2(2, data);
++    return norm == 5.0 ? 0 : 1;
++}

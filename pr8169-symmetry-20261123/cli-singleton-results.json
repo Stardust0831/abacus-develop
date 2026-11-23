@@ -1,0 +1,127 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "gpu_default",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "fa17d2361dc49a5b422634dd7e5e522bee1c80f400d8e2ea96f222b0269bdcf0",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_symmetry1",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "42297f805334fdf740fc83569f47392d0de8dc534f8a55b87db5f47c24f349af",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_realspace0",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "0dfc12fd06652d7bdbb6ab8d6a0338bf119ef70e6d211e1cf4fd93e17ef3d509",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_realspace1",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "9d238d5e06e7049e5f7bfeee08d9f5f7b336cd45eaebc39c021bbfeb33629c69",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_symmetry0",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "d70f4f9e5aec88b81e9cafe4cdff4009ad8378e50104089bb8e718a5efe3fbfd",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_symmetry_minus1",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "2d7b24d5fdfb1d45e562f8ea6aa065f6d3033a485cc39810f3b9bdda477955c0",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "cpu_symmetry1",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "60ac787f9239f6ddfba25db6f1b2615d85607a691d6738c7b97c98637510d0d0",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    },
+    {
+      "case": "gpu_md_reset",
+      "exit_code": 0,
+      "success_message": true,
+      "passed": true,
+      "input_hashes": {
+        "INPUT": "fa4df52669b8d4307366a7eba6f55019951f1439d9d3e8ce4fcbe00723097d6d",
+        "STRU": "b5266cd6a8d01c907d0c4602a9d3c1e7162361c6761e4016a4fe9d54f20389b6",
+        "KPT": "92b917107d9df11da28a465cc4900f3574956a057ddf9f7ad125e75c956ec508"
+      },
+      "command": [
+        "/org/org-open-sai/proj-sai-hpc-software/runtime-tests/libri-symmetry-origin-20261121/pr8169-maintenance-20261123/build/abacus/abacus_std_gpu",
+        "--check-input"
+      ]
+    }
+  ],
+  "mode": "single-process direct invocation",
+  "initial_mpirun_result_preserved": "cli-results.json"
+}
