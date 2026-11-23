@@ -6,7 +6,7 @@ addtest(TARGET MODULE_RI_smooth_cut_coulomb SOURCES test_smooth_cut_coulomb.cpp
 if(ENABLE_LCAO)
   addtest(
     TARGET MODULE_RI_exx_workspace
-    LIBS base parameter device ${math_libs}
+    LIBS base parameter device LibRI::LibRI ${math_libs}
     SOURCES test_exx_workspace.cpp ../exx_workspace.cpp ../lri_cv.cpp
             ../../../source_basis/module_ao/orb_atomic_lm.cpp)
   # Link the compiled LRI lifecycle while keeping unrelated integral assembly out
@@ -39,3 +39,19 @@ addtest(
 target_compile_options(MODULE_RI_invmat_ri PRIVATE -ffunction-sections
                                                    -fdata-sections)
 target_link_options(MODULE_RI_invmat_ri PRIVATE -Wl,--gc-sections)
+
+addtest(
+  TARGET MODULE_RI_hybrid_gauge_phase_test
+  LIBS parameter base device
+  SOURCES test_hybrid_gauge_phase.cpp ../hybrid_gauge_phase.cpp ../mix_dmk_2d.cpp)
+
+addtest(
+  TARGET MODULE_RI_hybrid_image_domain_test
+  LIBS parameter base device
+  SOURCES test_hybrid_image_domain.cpp ../hybrid_image_domain.cpp
+          ../hybrid_gauge_phase.cpp ../mix_dmk_2d.cpp)
+
+addtest(
+  TARGET MODULE_RI_exx_info_test
+  LIBS parameter base device
+  SOURCES test_exx_info.cpp ../../../source_hamilt/module_xc/exx_info.cpp)

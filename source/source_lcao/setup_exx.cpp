@@ -1,6 +1,7 @@
 #include "source_lcao/setup_exx.h"
 
 #ifdef __EXX
+#include "source_hamilt/module_xc/xc_functional.h"
 #include "source_lcao/module_ri/exx_lri_interface.h"
 #endif
 
@@ -50,6 +51,15 @@ void Exx_NAO<TK>::before_runner(
         Exx_Info& exx_info)
 {
 #ifdef __EXX
+    const bool use_gpu = inp.device_exx == "gpu";
+    if (this->exd)
+    {
+        this->exd->set_gpu(use_gpu);
+    }
+    if (this->exc)
+    {
+        this->exc->set_gpu(use_gpu);
+    }
 #ifdef __CUDA
     const bool use_gpu_tables = inp.device == "gpu";
 #else

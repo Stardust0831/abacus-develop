@@ -3,6 +3,20 @@ abacus_disable_feature_definitions(__CUDA)
 abacus_disable_feature_definitions(__ROCM)
 abacus_disable_feature_definitions(__EXX)
 
+# Keep the existing serial INPUT target and its compile definitions.
+target_sources(MODULE_IO_read_input_serial PRIVATE test_read_input_serial.cpp)
+target_sources(MODULE_IO_read_item_serial PRIVATE test_read_inp_exx_dftu.cpp)
+
+if(ENABLE_LIBRI_GPU)
+  # Exercise the real device probe while keeping DeviceContext free of MPI.
+  set_property(
+    SOURCE ${PROJECT_SOURCE_DIR}/source/source_base/module_device/device.cpp
+           TARGET_DIRECTORY MODULE_IO_read_input_serial
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS __CUDA)
+  target_link_libraries(MODULE_IO_read_input_serial PRIVATE CUDA::cudart)
+endif()
+
 addtest(
   TARGET MODULE_IO_write_bands
   LIBS parameter base device symmetry
@@ -13,7 +27,19 @@ addtest(
           ../../source_cell/parallel_kpoints.cpp
           ../../source_cell/reciprocal_grid.cpp)
 
+addTest(
+  TARGET MODULE_IO_parse_command_line_test
+  SOURCES test_parse_command_line.cpp ../parse_command_line.cpp
+)
+
 addtest(TARGET MODULE_IO_spin_tag SOURCES test_spin_tag.cpp)
+
+addtest(
+  TARGET MODULE_IO_libxc_r_suffix
+  SOURCES test_libxc_r_suffix.cpp
+          ../module_chgpot/libxc_r_suffix.cpp)
+
+addtest(TARGET MODULE_IO_frame_append SOURCES test_frame_append.cpp)
 
 addtest(TARGET MODULE_IO_provenance_header SOURCES test_provenance_header.cpp)
 
@@ -22,7 +48,8 @@ if(NOT ENABLE_MPI)
 endif()
 
 add_executable(
-  MODULE_IO_input_error_mpi test_read_input.cpp
+  MODULE_IO_input_error_mpi
+  test_read_input.cpp
   # io_input references stru_frame_io::extract_last_frame without linking cell.
   ../../source_cell/stru_frame_io.cpp)
 target_link_libraries(
@@ -40,6 +67,9 @@ foreach(
         duplicate_string_eof
         invalid_value
         invalid_dependency
+        out_dmk_zero_precision
+        out_hsk_zero_precision
+        out_mat_tk_zero_precision
         valid)
   add_test(
     NAME MODULE_IO_input_error_mpi_${input_case}
@@ -69,9 +99,10 @@ abacus_copy_test_files(support INPUTs)
 addtest(
   TARGET MODULE_IO_input_test_para
   LIBS parameter base device io_input
-  SOURCES test_read_input_parallel.cpp
-          # io_input references stru_frame_io::extract_last_frame without linking cell.
-          ../../source_cell/stru_frame_io.cpp)
+  SOURCES
+    test_read_input_parallel.cpp
+    # io_input references stru_frame_io::extract_last_frame without linking cell.
+    ../../source_cell/stru_frame_io.cpp)
 
 add_test(
   NAME MODULE_IO_input_test_para_4
@@ -152,7 +183,7 @@ addtest(
   TARGET MODULE_IO_parse_args
   LIBS parameter base device io_input
   SOURCES test_parse_args.cpp ../parse_args.cpp ../input_help.cpp
-          ../../source_cell/stru_frame_io.cpp)
+          ../parse_command_line.cpp ../../source_cell/stru_frame_io.cpp)
 
 addtest(
   TARGET MODULE_IO_test_read_inp_sys
@@ -278,8 +309,9 @@ add_test(
 addtest(
   TARGET MODULE_IO_write_dmk
   LIBS parameter base device cell_info symmetry
-  SOURCES ../module_dm/test/write_dmk_test.cpp
+  SOURCES test_write_dmk.cpp
           ../module_dm/write_dmk.cpp
+          ../module_hs/dense_text_body.cpp
           ../../source_cell/ucell_io.cpp
           ../../source_cell/klist.cpp
           ../../source_cell/klist_io.cpp
@@ -295,11 +327,11 @@ if(ENABLE_LCAO)
   addtest(
     TARGET MODULE_IO_write_dmr_test
     LIBS parameter base device hcontainer
-    SOURCES ../module_dm/test/test_write_dmr.cpp
+    SOURCES test_write_dmr.cpp
             ../module_dm/write_dmr.cpp
             ../../source_cell/ucell_io.cpp
             ../../source_basis/module_ao/parallel_orbitals.cpp
-            ../../source_hamilt/module_hcontainer/test/tmp_mocks.cpp)
+           )
 endif()
 
 addtest(
@@ -320,6 +352,7 @@ if(ENABLE_LIBRI)
     LIBS parameter base device
     SOURCES test_restart_exx_csr.cpp ../module_restart/restart_exx_csr.cpp
             ../module_hs/hs_sparse_io.cpp ../module_hs/lat_r_csr.cpp
+            ../../source_cell/ucell_io.cpp
             ../../source_basis/module_ao/parallel_orbitals.cpp
             tmp_mocks.cpp)
 endif()
