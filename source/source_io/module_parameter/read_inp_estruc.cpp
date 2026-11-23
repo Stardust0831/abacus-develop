@@ -293,6 +293,29 @@ The other way is only available when compiling with LIBXC, and it allows for sup
         this->add_item(item);
     }
     {
+        Input_Item item("device_xc");
+        item.domain.set_choices({"cpu", "gpu"});
+        item.domain.add_requirement("device_xc==gpu", "device==gpu");
+        item.annotation = "device for Libxc LDA/GGA potential evaluation";
+        item.category = "Electronic structure";
+        item.type = "String";
+        item.description = "Selects CPU or CUDA evaluation of the Libxc LDA/GGA potential, including the "
+                           "semilocal part of HSE. GPU evaluation requires ABACUS built with ENABLE_LIBXC_CUDA=ON "
+                           "and CUDA-enabled Libxc >= 7.1.0. Built-in functionals, meta-GGA, response kernels and "
+                           "separate force/stress evaluations retain their CPU implementation.";
+        item.default_value = "cpu";
+        read_sync_string(input.device_xc);
+#if !defined(ABACUS_LIBXC_CUDA) || !defined(__CUDA)
+        item.check_value = [](const Input_Item&, const Parameter& para) {
+            if (para.input.device_xc == "gpu")
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "device_xc gpu requires ABACUS built with -DENABLE_LIBXC_CUDA=ON.");
+            }
+        };
+#endif
+        this->add_item(item);
+    }
+    {
         Input_Item item("xc_temperature");
         item.annotation = "temperature for finite temperature functionals";
         item.category = "Electronic structure";
