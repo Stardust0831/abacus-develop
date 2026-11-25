@@ -236,6 +236,11 @@ void FS_Nonlocal_tools<FPTYPE, Device>::cal_force(const int& ik,
                                                   FPTYPE* force,
                                                   const int& nbd0)
 {
+    if (npm == 0)
+    {
+        return;
+    }
+
     const int current_spin = this->kv_->isk[ik];
     const int force_nc = 3;
     const int npol = this->ucell_->get_npol();
