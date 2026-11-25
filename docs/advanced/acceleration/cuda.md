@@ -12,7 +12,9 @@ In ABACUS, we provide the option to use GPU devices to accelerate performance. T
 
 - **Parallel strategy**: K point parallel.
 
-Unlike PW basis, only the grid integration module (module_gint) and the diagonalization of the Hamiltonian matrix (source_hsolver) have been implemented with GPU acceleration under LCAO basis.
+Under LCAO basis, GPU acceleration covers grid integration (module_gint),
+Hamiltonian diagonalization (source_hsolver), and density-matrix construction
+in the single-GPU cuSOLVER configuration described below.
 
 ## Required hardware/software
 
@@ -59,4 +61,13 @@ PW basis:
 LCAO basis:
 - Unless there is a specific reason, avoid using multiple GPUs, as it can be slower than using a single GPU. This is because the generalized eigenvalue solution of the LCAO basis set will incur additional communication overhead when calculated on multiple cards. When the memory limit of a GPU card makes it insufficient to complete the task, it is recommended to use multiple cards for calculation.
 - With `ks_solver cusolver` and CUDA 10.1 or later, real Γ-point calculations with at least 4096 basis functions use a partial eigensolve when the requested band count is at most one quarter of the basis size. The solver requests the lowest eigenpairs and can retry with the full eigensolver if the partial solve fails recoverably.
+- Real `gamma_only 1`, `nspin 1` charge updates with `ks_solver cusolver`,
+  `kpar_lcao 1`, and multiple MPI ranks sharing one visible GPU on one node
+  automatically construct the density matrix in FP64 from the device
+  eigenvectors after occupations are calculated. Both full and partial
+  eigensolves are supported. The result returns to the existing distributed
+  CPU DMR/charge-density path; host wavefunctions remain available for other
+  consumers. Other configurations use the CPU density-matrix builder, as does
+  a recoverable allocation failure. No additional INPUT or build option is
+  required. This does not change the `cusolvermp` path.
 - When using elpa on GPUs, some ELPA internal logs will be output.

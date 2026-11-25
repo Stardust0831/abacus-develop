@@ -10,9 +10,9 @@
 
 namespace
 {
-constexpr auto problem_type = CUSOLVER_EIG_TYPE_1;
-constexpr auto job = CUSOLVER_EIG_MODE_VECTOR;
-constexpr auto triangle = CUBLAS_FILL_MODE_UPPER;
+constexpr cusolverEigType_t problem_type = CUSOLVER_EIG_TYPE_1;
+constexpr cusolverEigMode_t job = CUSOLVER_EIG_MODE_VECTOR;
+constexpr cublasFillMode_t triangle = CUBLAS_FILL_MODE_UPPER;
 
 void solver_error(
     const char *mode,
@@ -118,7 +118,21 @@ struct DeviceBuffers
 
 Diag_Cusolver_gvd::Diag_Cusolver_gvd() { CHECK_CUSOLVER(cusolverDnCreate(&handle_)); }
 
-Diag_Cusolver_gvd::~Diag_Cusolver_gvd() { CHECK_CUSOLVER(cusolverDnDestroy(handle_)); }
+Diag_Cusolver_gvd::~Diag_Cusolver_gvd()
+{
+    release_eigenvectors();
+    CHECK_CUSOLVER(cusolverDnDestroy(handle_));
+}
+
+void Diag_Cusolver_gvd::release_eigenvectors()
+{
+    CHECK_CUDA(cudaFree(eigenvectors_));
+    CHECK_CUDA(cudaFree(weighted_vectors_));
+    eigenvectors_ = nullptr;
+    weighted_vectors_ = nullptr;
+    rows_ = 0;
+    bands_ = 0;
+}
 
 bool Diag_Cusolver_gvd::use_subset(const int n, const int nbands)
 {
@@ -134,6 +148,7 @@ bool Diag_Cusolver_gvd::solve_subset(
     double *w,
     double *v)
 {
+    release_eigenvectors();
     if (nbands <= 0 || nbands > n)
     {
         solver_error("Dsygvdx", n, nbands, "invalid eigenpair count", nbands);
@@ -144,7 +159,7 @@ bool Diag_Cusolver_gvd::solve_subset(
     const double unused_bound = 0.0;
     int found = 0;
     int lwork = 0;
-    auto status = cusolverDnDsygvdx_bufferSize(
+    cusolverStatus_t status = cusolverDnDsygvdx_bufferSize(
         handle_, problem_type, job, CUSOLVER_EIG_RANGE_I, triangle, n, device.h, n, device.s, n, unused_bound,
         unused_bound, first, nbands, &found, device.eigenvalues, &lwork);
     if (subset_unsupported(status) || status == CUSOLVER_STATUS_ALLOC_FAILED)
@@ -153,7 +168,7 @@ bool Diag_Cusolver_gvd::solve_subset(
     }
     check_status(status, "Dsygvdx workspace query", n, nbands);
     const std::size_t work_bytes = sizeof(double) * static_cast<std::size_t>(lwork);
-    const auto alloc_status = cudaMalloc(&device.work, work_bytes);
+    const cudaError_t alloc_status = cudaMalloc(&device.work, work_bytes);
     if (alloc_status == cudaErrorMemoryAllocation)
     {
         cudaGetLastError();
@@ -180,6 +195,12 @@ bool Diag_Cusolver_gvd::solve_subset(
         return false;
     }
     device.download(n, nbands, w, v);
+    eigenvectors_ = device.h;
+    weighted_vectors_ = device.s;
+    rows_ = n;
+    bands_ = nbands;
+    device.h = nullptr;
+    device.s = nullptr;
     return true;
 }
 #else
@@ -191,6 +212,7 @@ bool Diag_Cusolver_gvd::solve_subset(
     double *,
     double *)
 {
+    release_eigenvectors();
     return false;
 }
 #endif
@@ -203,10 +225,11 @@ void Diag_Cusolver_gvd::solve_full(
     double *w,
     double *v)
 {
+    release_eigenvectors();
     DeviceBuffers<double> device;
     device.upload(n, h, s);
     int lwork = 0;
-    auto status = cusolverDnDsygvd_bufferSize(
+    cusolverStatus_t status = cusolverDnDsygvd_bufferSize(
         handle_, problem_type, job, triangle, n, device.h, n, device.s, n, device.eigenvalues, &lwork);
     check_status(status, "Dsygvd workspace query", n, nbands);
     const std::size_t work_bytes = sizeof(double) * static_cast<std::size_t>(lwork);
@@ -218,6 +241,12 @@ void Diag_Cusolver_gvd::solve_full(
     const int info = device.read_info();
     check_info(info, "Dsygvd", n, nbands);
     device.download(n, nbands, w, v);
+    eigenvectors_ = device.h;
+    weighted_vectors_ = device.s;
+    rows_ = n;
+    bands_ = nbands;
+    device.h = nullptr;
+    device.s = nullptr;
 }
 
 void Diag_Cusolver_gvd::solve_full(
@@ -228,11 +257,12 @@ void Diag_Cusolver_gvd::solve_full(
     double *w,
     std::complex<double> *v)
 {
+    release_eigenvectors();
     static_assert(sizeof(std::complex<double>) == sizeof(cuDoubleComplex), "Unexpected complex representation");
     DeviceBuffers<cuDoubleComplex> device;
     device.upload(n, h, s);
     int lwork = 0;
-    auto status = cusolverDnZhegvd_bufferSize(
+    cusolverStatus_t status = cusolverDnZhegvd_bufferSize(
         handle_, problem_type, job, triangle, n, device.h, n, device.s, n, device.eigenvalues, &lwork);
     check_status(status, "Zhegvd workspace query", n, nbands);
     const std::size_t work_bytes = sizeof(cuDoubleComplex) * static_cast<std::size_t>(lwork);
@@ -244,4 +274,53 @@ void Diag_Cusolver_gvd::solve_full(
     const int info = device.read_info();
     check_info(info, "Zhegvd", n, nbands);
     device.download(n, nbands, w, v);
+}
+
+bool Diag_Cusolver_gvd::density_matrix(const double *weights, double *density)
+{
+    if (!eigenvectors_ || !weights || !density)
+    {
+        return false;
+    }
+
+    // Only the result and occupations need new storage. S is no longer needed
+    // after diagonalization and has enough space for the weighted eigenvectors.
+    DeviceBuffers<double> device;
+    const std::size_t matrix_bytes = sizeof(double) * static_cast<std::size_t>(rows_) * rows_;
+    const std::size_t weight_bytes = sizeof(double) * bands_;
+    cudaError_t allocation = cudaMalloc(&device.h, matrix_bytes);
+    if (allocation == cudaErrorMemoryAllocation)
+    {
+        cudaGetLastError();
+        return false;
+    }
+    CHECK_CUDA(allocation);
+    allocation = cudaMalloc(&device.eigenvalues, weight_bytes);
+    if (allocation == cudaErrorMemoryAllocation)
+    {
+        cudaGetLastError();
+        return false;
+    }
+    CHECK_CUDA(allocation);
+
+    cublasHandle_t blas = nullptr;
+    const cublasStatus_t creation = cublasCreate(&blas);
+    if (creation == CUBLAS_STATUS_ALLOC_FAILED)
+    {
+        return false;
+    }
+    CHECK_CUBLAS(creation);
+    CHECK_CUDA(cudaMemcpy(device.eigenvalues, weights, weight_bytes, cudaMemcpyHostToDevice));
+    // Multiply by f directly, including fractional or signed occupations.
+    CHECK_CUBLAS(cublasDdgmm(blas, CUBLAS_SIDE_RIGHT, rows_, bands_, eigenvectors_, rows_,
+                            device.eigenvalues, 1, weighted_vectors_, rows_));
+    const double one = 1.0;
+    const double zero = 0.0;
+    CHECK_CUBLAS(cublasDgemm(blas, CUBLAS_OP_N, CUBLAS_OP_T, rows_, rows_, bands_,
+                            &one, weighted_vectors_, rows_, eigenvectors_, rows_,
+                            &zero, device.h, rows_));
+    CHECK_CUDA(cudaMemcpy(density, device.h, matrix_bytes, cudaMemcpyDeviceToHost));
+    CHECK_CUDA(cudaDeviceSynchronize());
+    CHECK_CUBLAS(cublasDestroy(blas));
+    return true;
 }

@@ -144,6 +144,13 @@ if(ENABLE_MPI)
               ../diago_scalapack.cpp ../kernels/hegvd_op.cpp
               ../kernels/cuda/diag_cusolver.cu)
     target_compile_definitions(MODULE_HSOLVER_LCAO_cusolver PRIVATE __CUDA)
+    addtest(
+      TARGET MODULE_HSOLVER_cusolver_dm
+      LIBS parameter base device
+      SOURCES test_diag_cusolver.cpp ../kernels/cuda/diag_cusolver.cu)
+    target_compile_definitions(MODULE_HSOLVER_cusolver_dm PRIVATE __CUDA)
+    set_tests_properties(MODULE_HSOLVER_cusolver_dm PROPERTIES TIMEOUT 120
+      ENVIRONMENT "OMP_NUM_THREADS=1;MKL_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1")
   endif()
 endif()
 abacus_copy_test_files(

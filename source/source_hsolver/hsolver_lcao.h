@@ -8,6 +8,10 @@
 #include "source_estate/module_charge/charge.h" // mohan add 20251024
 #include "source_estate/module_dm/density_matrix.h" // mohan add 20251103
 
+#if defined(__MPI) && defined(__CUDA)
+#include "diago_cusolver.h"
+#endif
+
 namespace hsolver
 {
 
@@ -50,9 +54,12 @@ class HSolverLCAO
                     const int nspin); // for kpar_lcao > 1
 
     // The solving algorithm using cusolver is different from others, so a separate function is needed
+#if defined(__MPI) && defined(__CUDA)
     void parakSolve_cusolver(HSMatrix<TK>& hs,
                              psi::Psi<TK>& psi,
-                             elecstate::ElecState* pes);
+                             elecstate::ElecState* pes,
+                             DiagoCusolver<TK>* retained_solver);
+#endif
 
     const Parallel_Orbitals* ParaV = nullptr;
 
