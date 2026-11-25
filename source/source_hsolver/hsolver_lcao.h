@@ -55,6 +55,8 @@ class HSolverLCAO
 
     // The solving algorithm using cusolver is different from others, so a separate function is needed
 #if defined(__MPI) && defined(__CUDA)
+    bool can_use_cusolver_dm(int nspin, int nks, bool skip_charge) const;
+
     void parakSolve_cusolver(HSMatrix<TK>& hs,
                              psi::Psi<TK>& psi,
                              elecstate::ElecState* pes,

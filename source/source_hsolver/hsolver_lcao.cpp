@@ -4,7 +4,6 @@
 
 #ifdef __MPI
 #include "diago_scalapack.h"
-#include "source_base/module_external/blacs_connector.h"
 #include "source_base/module_external/scalapack_connector.h"
 #endif
 
@@ -21,6 +20,9 @@
 
 #ifdef __CUDA
 #include "diago_cusolver.h"
+#ifdef __MPI
+#include "dm_cusolver.h"
+#endif
 #endif
 
 #ifdef __PEXSI
@@ -36,142 +38,61 @@
 #include "source_estate/module_dm/density_matrix.h"
 #include "source_hsolver/parallel_k2d.h"
 
-#include <algorithm>
-#include <cstdio>
 #include <memory>
-#include <new>
 #include <type_traits>
 
 namespace hsolver
 {
 
 #if defined(__MPI) && defined(__CUDA)
-namespace
+template <typename TK>
+bool HSolverLCAO<TK>::can_use_cusolver_dm(const int nspin, const int nks, const bool skip_charge) const
 {
-bool single_gpu_grid(const Parallel_Blkcyclic& layout, const int world_rank)
-{
-    const base_device::DeviceContext& context = base_device::DeviceContext::instance();
-    const bool grid_root = layout.irproc() == 0 && layout.icproc() == 0;
-    int unsupported = context.get_device_count() != 1
-                      || context.get_local_rank() != world_rank
-                      || grid_root != (world_rank == 0);
-    const int grid = layout.ictxt();
-    char scope = 'A';
-    char topology = ' ';
-    Cigsum2d(grid, &scope, &topology, 1, 1, &unsupported, 1, -1, -1);
-    return unsupported == 0;
+    return std::is_same<TK, double>::value && this->method == "cusolver"
+           && this->world_nproc > 1 && this->kpar_lcao == 1
+           && nspin == 1 && nks == 1 && !skip_charge
+           && single_gpu_grid(this->ParaV->para_2d(), this->world_rank);
 }
-
-template <typename T>
-bool build_cusolver_dm(DiagoCusolver<T>*, const ModuleBase::matrix&,
-                       const Parallel_Blkcyclic&, module_dm::DensityMatrix<T, double>&)
-{
-    return false;
-}
-
-bool build_cusolver_dm(DiagoCusolver<double>* solver, const ModuleBase::matrix& weights,
-                       const Parallel_Blkcyclic& layout, module_dm::DensityMatrix<double, double>& dm)
-{
-    ModuleBase::timer::start("HSolverLCAO", "build_cusolver_dm");
-    const int n = layout.nrglb();
-    const int context = layout.ictxt();
-    const bool root = layout.irproc() == 0 && layout.icproc() == 0;
-    std::vector<double> density;
-    int success = 0;
-    if (root)
-    {
-        try
-        {
-            const std::size_t count = static_cast<std::size_t>(n) * n;
-            density.resize(count);
-            const double* occupations = &weights(0, 0);
-            double* result = density.data();
-            success = solver != nullptr && solver->dc.density_matrix(occupations, result);
-        }
-        catch (const std::bad_alloc&)
-        {
-            success = 0;
-        }
-    }
-
-    // All ranks take the same fallback; the normal host/distributed psi is
-    // still available to the CPU DM builder and other wavefunction consumers.
-    char scope = 'A';
-    char topology = ' ';
-    if (root)
-    {
-        Cigebs2d(context, &scope, &topology, 1, 1, &success, 1);
-        if (!success)
-        {
-            std::fprintf(stderr, "cuSOLVER density matrix unavailable; using CPU dm_from_psi\n");
-        }
-    }
-    else
-    {
-        Cigebr2d(context, &scope, &topology, 1, 1, &success, 1, 0, 0);
-    }
-    if (success)
-    {
-        const int leading_dimension = layout.irproc() == 0 ? n : 1;
-        int full_desc[9] = {1, context, n, n, n, n, 0, 0, leading_dimension};
-        int distributed_desc[9];
-        const int* descriptor = layout.desc();
-        const int* descriptor_end = descriptor + 9;
-        std::copy(descriptor, descriptor_end, distributed_desc);
-        double* full_density = density.data();
-        double* local_density = dm.get_dmk_ptr(0);
-        Cpdgemr2d(n, n, full_density, 1, 1, full_desc,
-                  local_density, 1, 1, distributed_desc, context);
-    }
-    ModuleBase::timer::end("HSolverLCAO", "build_cusolver_dm");
-    return success != 0;
-}
-} // namespace
 #endif
 
 template <typename TK>
 void HSolverLCAO<TK>::solve(HSMatrix<TK>& hs,
-                                   psi::Psi<TK>& psi,
-								   elecstate::ElecState* pes,
-								   module_dm::DensityMatrix<TK, double>& dm, // mohan add 2025-11-03
-								   Charge &chr,
-                                   const int nspin,
-                                   const double omega,
-                                   const bool skip_charge)
+                            psi::Psi<TK>& psi,
+                            elecstate::ElecState* pes,
+                            module_dm::DensityMatrix<TK, double>& dm,
+                            Charge& chr,
+                            const int nspin,
+                            const double omega,
+                            const bool skip_charge)
 {
     ModuleBase::TITLE("HSolverLCAO", "solve");
     ModuleBase::timer::start("HSolverLCAO", "solve");
 
     if (this->method != "pexsi")
     {
-    #if defined(__MPI) && defined(__CUDA)
-        bool device_dm = false;
+#if defined(__MPI) && defined(__CUDA)
+        const int nks = psi.get_nk();
+        const bool device_dm = this->can_use_cusolver_dm(nspin, nks, skip_charge);
         std::unique_ptr<DiagoCusolver<TK>> retained_solver;
-        if (std::is_same<TK, double>::value && this->method == "cusolver"
-            && this->world_nproc > 1 && this->kpar_lcao == 1
-            && nspin == 1 && psi.get_nk() == 1 && !skip_charge)
+        if (device_dm && this->world_rank == 0)
         {
-            device_dm = single_gpu_grid(this->ParaV->para_2d(), this->world_rank);
-            if (device_dm && this->world_rank == 0)
-            {
-                retained_solver.reset(new DiagoCusolver<TK>(this->nlocal, this->nbands));
-            }
+            retained_solver.reset(new DiagoCusolver<TK>(this->nlocal, this->nbands));
         }
-    #endif
-    #ifdef __MPI
-    #ifdef __CUDA
+#endif
+#ifdef __MPI
+#ifdef __CUDA
         if (this->method == "cusolver" && this->world_nproc > 1)
         {
             DiagoCusolver<TK>* solver = retained_solver.get();
             this->parakSolve_cusolver(hs, psi, pes, solver);
         }else 
-    #endif
+#endif
         if (this->kpar_lcao > 1
             && (this->method == "genelpa" || this->method == "elpa" || this->method == "scalapack_gvx" || this->method == "lapack"))
         {
             this->parakSolve(hs, psi, pes, this->kpar_lcao, nspin);
         } else
-    #endif
+#endif
         if (this->kpar_lcao == 1)
         {
             /// Loop over k points for solve Hamiltonian to eigenpairs(eigenvalues and eigenvectors).
@@ -205,14 +126,14 @@ void HSolverLCAO<TK>::solve(HSMatrix<TK>& hs,
 
         elecstate::calEBand(pes->ekb, pes->wg, pes->f_en);
         bool dm_ready = false;
-    #if defined(__MPI) && defined(__CUDA)
+#if defined(__MPI) && defined(__CUDA)
         if (device_dm)
         {
             DiagoCusolver<TK>* solver = retained_solver.get();
             dm_ready = build_cusolver_dm(solver, pes->wg, this->ParaV->para_2d(), dm);
         }
         retained_solver.reset();
-    #endif
+#endif
         if (!dm_ready)
         {
             module_dm::dm_from_psi(this->ParaV, pes->wg, psi, dm);

@@ -544,6 +544,7 @@ OBJS_HSOLVER=diago_cg.o\
     linear_op.o\
 
 OBJS_HSOLVER_LCAO=hsolver_lcao.o\
+      dm_cusolver.o\
       diago_scalapack.o\
       diago_lapack.o\
       diago_elpa.o\

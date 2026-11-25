@@ -17,7 +17,7 @@ list(
 
 if(ENABLE_LCAO)
   if(ENABLE_MPI)
-    list(APPEND objects hsolver_lcao.cpp diago_scalapack.cpp parallel_k2d.cpp
+    list(APPEND objects hsolver_lcao.cpp dm_cusolver.cpp diago_scalapack.cpp parallel_k2d.cpp
          diago_lapack.cpp)
   else()
     list(APPEND objects hsolver_lcao.cpp diago_lapack.cpp)
