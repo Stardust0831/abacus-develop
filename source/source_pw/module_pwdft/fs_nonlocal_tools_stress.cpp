@@ -171,6 +171,11 @@ void FS_Nonlocal_tools<FPTYPE, Device>::cal_stress(const int& ik,
                                                    FPTYPE* stress,
                                                    const int& nbd0)
 {
+    if (npm == 0)
+    {
+        return;
+    }
+
     const int npol = this->ucell_->get_npol();
     const int index0 = nbd0 * npol * this->nkb;
     // calculate stress for target (ipol, jpol)
