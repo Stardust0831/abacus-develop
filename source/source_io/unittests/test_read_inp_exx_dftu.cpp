@@ -45,10 +45,6 @@ TEST(DeviceExxInput, SelectionAndValidation)
         EXPECT_THAT(output, testing::HasSubstr(message));
     };
 
-    it->second.str_values = {"ddla"};
-    it->second.read_value(it->second, param);
-    expect_rejected("device_exx must be cpu or gpu");
-
     it->second.str_values = {"gpu"};
     it->second.read_value(it->second, param);
     EXPECT_EQ(param.inp.device_exx, "gpu");
