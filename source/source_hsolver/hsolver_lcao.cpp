@@ -20,6 +20,9 @@
 
 #ifdef __CUDA
 #include "diago_cusolver.h"
+#ifdef __MPI
+#include "dm_cusolver.h"
+#endif
 #endif
 
 #ifdef __PEXSI
@@ -35,37 +38,61 @@
 #include "source_estate/module_dm/density_matrix.h"
 #include "source_hsolver/parallel_k2d.h"
 
+#include <memory>
+#include <type_traits>
+
 namespace hsolver
 {
 
+#if defined(__MPI) && defined(__CUDA)
+template <typename TK>
+bool HSolverLCAO<TK>::can_use_cusolver_dm(const int nspin, const int nks, const bool skip_charge) const
+{
+    return std::is_same<TK, double>::value && this->method == "cusolver"
+           && this->world_nproc > 1 && this->kpar_lcao == 1
+           && nspin == 1 && nks == 1 && !skip_charge
+           && single_gpu_grid(this->ParaV->para_2d(), this->world_rank);
+}
+#endif
+
 template <typename TK>
 void HSolverLCAO<TK>::solve(HSMatrix<TK>& hs,
-                                   psi::Psi<TK>& psi,
-								   elecstate::ElecState* pes,
-								   module_dm::DensityMatrix<TK, double>& dm, // mohan add 2025-11-03
-								   Charge &chr,
-                                   const int nspin,
-                                   const double omega,
-                                   const bool skip_charge)
+                            psi::Psi<TK>& psi,
+                            elecstate::ElecState* pes,
+                            module_dm::DensityMatrix<TK, double>& dm,
+                            Charge& chr,
+                            const int nspin,
+                            const double omega,
+                            const bool skip_charge)
 {
     ModuleBase::TITLE("HSolverLCAO", "solve");
     ModuleBase::timer::start("HSolverLCAO", "solve");
 
     if (this->method != "pexsi")
     {
-    #ifdef __MPI
-    #ifdef __CUDA
+#if defined(__MPI) && defined(__CUDA)
+        const int nks = psi.get_nk();
+        const bool device_dm = this->can_use_cusolver_dm(nspin, nks, skip_charge);
+        std::unique_ptr<DiagoCusolver<TK>> retained_solver;
+        if (device_dm && this->world_rank == 0)
+        {
+            retained_solver.reset(new DiagoCusolver<TK>(this->nlocal, this->nbands));
+        }
+#endif
+#ifdef __MPI
+#ifdef __CUDA
         if (this->method == "cusolver" && this->world_nproc > 1)
         {
-            this->parakSolve_cusolver(hs, psi, pes);
+            DiagoCusolver<TK>* solver = retained_solver.get();
+            this->parakSolve_cusolver(hs, psi, pes, solver);
         }else 
-    #endif
+#endif
         if (this->kpar_lcao > 1
             && (this->method == "genelpa" || this->method == "elpa" || this->method == "scalapack_gvx" || this->method == "lapack"))
         {
             this->parakSolve(hs, psi, pes, this->kpar_lcao, nspin);
         } else
-    #endif
+#endif
         if (this->kpar_lcao == 1)
         {
             /// Loop over k points for solve Hamiltonian to eigenpairs(eigenvalues and eigenvectors).
@@ -98,7 +125,19 @@ void HSolverLCAO<TK>::solve(HSMatrix<TK>& hs,
                                      pes->skip_weights);
 
         elecstate::calEBand(pes->ekb, pes->wg, pes->f_en);
-        module_dm::dm_from_psi(this->ParaV, pes->wg, psi, dm);
+        bool dm_ready = false;
+#if defined(__MPI) && defined(__CUDA)
+        if (device_dm)
+        {
+            DiagoCusolver<TK>* solver = retained_solver.get();
+            dm_ready = build_cusolver_dm(solver, pes->wg, this->ParaV->para_2d(), dm);
+        }
+        retained_solver.reset();
+#endif
+        if (!dm_ready)
+        {
+            module_dm::dm_from_psi(this->ParaV, pes->wg, psi, dm);
+        }
         dm.cal_dmr(-1);
 
         if (!skip_charge)
@@ -324,11 +363,12 @@ void HSolverLCAO<T>::parakSolve(HSMatrix<T>& hs,
 template <typename T>
 void HSolverLCAO<T>::parakSolve_cusolver(HSMatrix<T>& hs,
                                             psi::Psi<T>& psi,
-                                            elecstate::ElecState* pes)
+                                            elecstate::ElecState* pes,
+                                            DiagoCusolver<T>* retained_solver)
 {
-    ModuleBase::timer::start("HSolverLCAO", "parakSolve");
+    ModuleBase::timer::start("HSolverLCAO", "parakSolve_cusolver");
     // GPU device is already bound by DeviceContext::init() in read_input.cpp
-    auto& dev_ctx = base_device::DeviceContext::instance();
+    const base_device::DeviceContext& dev_ctx = base_device::DeviceContext::instance();
     const int local_rank = dev_ctx.get_local_rank();
     const int device_count = dev_ctx.get_device_count();
 
@@ -438,14 +478,22 @@ void HSolverLCAO<T>::parakSolve_cusolver(HSMatrix<T>& hs,
         if(kpt_assigned != -1)
         {
             psi_local.resize(1, nbands, nrow);
-            DiagoCusolver<T> cu(this->nlocal, this->nbands);
             ModuleBase::MatrixBlock<T> hk_local = ModuleBase::MatrixBlock<T>{
                     hk_mat.data(), (size_t)nrow, (size_t)ncol,
                     mat_para_local.desc()};
             ModuleBase::MatrixBlock<T> sk_local = ModuleBase::MatrixBlock<T>{
                     sk_mat.data(), (size_t)nrow, (size_t)ncol,
                     mat_para_local.desc()};
-            cu.diag(hk_local, sk_local, psi_local, &(pes->ekb(kpt_assigned, 0)));
+            double* eigenvalues = &pes->ekb(kpt_assigned, 0);
+            if (retained_solver != nullptr)
+            {
+                retained_solver->diag(hk_local, sk_local, psi_local, eigenvalues);
+            }
+            else
+            {
+                DiagoCusolver<T> cu(this->nlocal, this->nbands);
+                cu.diag(hk_local, sk_local, psi_local, eigenvalues);
+            }
         }
 
         // transfer the eigenvectors and eigenvalues to all processes
@@ -482,7 +530,7 @@ void HSolverLCAO<T>::parakSolve_cusolver(HSMatrix<T>& hs,
     }
 
     MPI_Comm_free(&self_comm);
-    ModuleBase::timer::end("HSolverLCAO", "parakSolve");
+    ModuleBase::timer::end("HSolverLCAO", "parakSolve_cusolver");
 }
 #endif
 

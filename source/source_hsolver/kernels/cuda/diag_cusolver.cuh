@@ -42,8 +42,19 @@ class Diag_Cusolver_gvd
         double *w,
         std::complex<double> *v);
 
+    /// Form C diag(weights) C^T from the last successful real solve.
+    /// C remains on device; density receives the full column-major matrix.
+    /// Return false if no real eigenvectors are available or allocation fails.
+    bool density_matrix(const double *weights, double *density);
+
   private:
+    void release_eigenvectors();
+
     cusolverDnHandle_t handle_ = nullptr;
+    double *eigenvectors_ = nullptr;
+    double *weighted_vectors_ = nullptr; // Reuses the eigensolver's S allocation.
+    int rows_ = 0;
+    int bands_ = 0;
 };
 
 #endif
