@@ -1,10 +1,15 @@
 #include "nhchain.h"
 
 #include "md_func.h"
+#include "source_base/parallel_cell.h"
 #ifdef __MPI
 #include "mpi.h"
 #endif
 #include "source_base/timer.h"
+
+#include <algorithm>
+#include <cmath>
+#include <string>
 
 Nose_Hoover::Nose_Hoover(
     const MD_para &mdp_in,
@@ -558,6 +563,89 @@ void Nose_Hoover::particle_thermo()
     }
 }
 
+namespace
+{
+bool pressure_endpoint_close(const double coarse, const double fine, const double atol)
+{
+    const double magnitude = std::max(std::abs(coarse), std::abs(fine));
+    return std::abs(fine - coarse) <= atol + 1.0e-6 * magnitude;
+}
+}
+
+void Nose_Hoover::adaptive_baro_thermo(const double ke_omega, const double lkt_press)
+{
+    const int max_subcycles = 4096;
+    const double log_atol = 1.0e-8;
+    const double velocity_atol = log_atol / (md_dt / 2.0);
+    const double mass = mass_peta[0];
+    const double initial_force = (ke_omega - lkt_press) / mass;
+    ModuleBase::CommunicationDomain domain;
+#ifdef __MPI
+    domain.initialize(mdcell.communicator());
+#endif
+    bool previous_valid = false;
+    double previous_log = 0.0;
+    double previous_velocity = 0.0;
+    for (int n = 1; n <= max_subcycles; n *= 2)
+    {
+        // Each resolution starts from the same physical half-step entry.
+        double position = peta[0];
+        double velocity = v_peta[0];
+        double force = initial_force;
+        double scale = 1.0;
+        bool valid = std::isfinite(ke_omega) && std::isfinite(mass) && std::isfinite(force);
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < nys; ++j)
+            {
+                const double delta = w[j] * md_dt / n;
+                // The single link has a zero terminal velocity, so its end factor is one.
+                velocity += force * delta / 4.0;
+                position += velocity * delta / 2.0;
+                const double argument = -velocity * delta / 2.0;
+                const double exponential = std::exp(argument);
+                scale *= exponential;
+                const double ke_times_scale = ke_omega * scale;
+                const double kecurrent = ke_times_scale * scale;
+                force = (kecurrent - lkt_press) / mass;
+                velocity += force * delta / 4.0;
+                valid = valid && std::isfinite(position) && std::isfinite(argument) && std::isfinite(exponential)
+                        && scale > 0.0 && std::isfinite(scale) && std::isfinite(kecurrent)
+                        && std::isfinite(force) && std::isfinite(velocity);
+            }
+        }
+        double scaled_omega[6];
+        for (int axis = 0; axis < 6; ++axis)
+        {
+            scaled_omega[axis] = pflag[axis] ? v_omega[axis] * scale : v_omega[axis];
+            valid = valid && std::isfinite(scaled_omega[axis]);
+        }
+        double log_scale = 0.0;
+        if (valid)
+        {
+            log_scale = std::log(scale);
+        }
+        const bool accept = previous_valid && valid && pressure_endpoint_close(previous_log, log_scale, log_atol)
+                            && pressure_endpoint_close(previous_velocity, velocity, velocity_atol);
+        const int retry = accept ? 0 : 1;
+        if (domain.max(retry) == 0)
+        {
+            peta[0] = position;
+            v_peta[0] = velocity;
+            g_peta[0] = force;
+            std::copy_n(scaled_omega, 6, v_omega);
+            return;
+        }
+        previous_valid = valid;
+        previous_log = log_scale;
+        previous_velocity = velocity;
+    }
+    const int md_step = step_ + step_rst_ + 1;
+    const std::string error = "Pressure thermostat half-step failed at MD step " + std::to_string(md_step)
+                              + " after " + std::to_string(max_subcycles) + " subcycles: no converged endpoint.";
+    ModuleBase::WARNING_QUIT("Nose_Hoover::adaptive_baro_thermo", error);
+}
+
 void Nose_Hoover::baro_thermo()
 {
     /// the freedom of lattice
@@ -578,6 +666,11 @@ void Nose_Hoover::baro_thermo()
     if (mdp.md_pmode != "iso")
     {
         lkt_press *= pdof;
+    }
+    if (mdp.md_pmode == "aniso" && mdp.md_pchain == 1)
+    {
+        adaptive_baro_thermo(ke_omega, lkt_press);
+        return;
     }
     g_peta[0] = (ke_omega - lkt_press) / mass_peta[0];
 

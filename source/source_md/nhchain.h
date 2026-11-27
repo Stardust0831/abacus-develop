@@ -58,6 +58,7 @@ class Nose_Hoover : public MD_base
      *
      */
     void baro_thermo();
+    void adaptive_baro_thermo(double ke_omega, double lkt_press);
 
     /**
      * @brief perform half-step update of barostat velocity
