@@ -51,6 +51,44 @@ In `INPUT` file we need to set the input parameter [device](../input_files/input
 ## Examples
 We provides [examples](https://github.com/deepmodeling/abacus-develop/tree/develop/examples/34_gpu) of gpu calculations.
 
+## Gamma density matrix on GPU
+
+Real FP64 Gamma LCAO calculations automatically construct the density matrix on
+GPU when using `device gpu`, `ks_solver cusolver`, `nspin 1`, `kpar 1` and
+`lcao_sk_cut 0`. This requires a CUDA/MPI/LCAO build and charge updates on one
+node with one visible GPU per rank. No additional INPUT or CMake option is needed:
+
+```text
+basis_type  lcao
+device      gpu
+ks_solver   cusolver
+gamma_only  1
+nspin       1
+kpar        1
+```
+
+Other configurations, including complex wavefunctions and overlap
+regularization, use the existing CPU density-matrix path.
+
+To combine GPU DM with GPU EXX and Libxc, use one MPI rank and one GPU with
+`device_exx gpu` and `device_xc gpu`. The build must also enable the corresponding
+LibRI and Libxc CUDA backends.
+
+A CUDA or cuBLAS error during GPU DM stops the run with a nonzero exit status
+and identifies the failing operation, matrix size and band count. For CPU
+execution, select `device cpu` and a CPU eigensolver such as `scalapack_gvx`.
+
+The full/partial eigensolver selection described below is unchanged. Retained
+eigenvectors and the calculated occupations form `D = C diag(f) C^T` with FP64
+cuBLAS. DM reuses the eigensolver's device buffers; one MPI rank also uses the
+existing host arrays directly. Distributed runs reuse the H gather buffer for
+DM. Host eigenvectors remain available, and DM is downloaded for existing CPU
+consumers.
+
+Faster DM construction may provide little overall speedup when EXX dominates
+the calculation. Distributed runs still incur matrix redistribution costs.
+GPU EXX has separate memory requirements.
+
 ## Known limitations
 PW basis:
 - Only k point parallelization is supported, so the input keyword `kpar` will be set to match the number of MPI tasks automatically.
@@ -58,4 +96,5 @@ PW basis:
 
 LCAO basis:
 - Unless there is a specific reason, avoid using multiple GPUs, as it can be slower than using a single GPU. This is because the generalized eigenvalue solution of the LCAO basis set will incur additional communication overhead when calculated on multiple cards. When the memory limit of a GPU card makes it insufficient to complete the task, it is recommended to use multiple cards for calculation.
+- With `ks_solver cusolver` and CUDA 10.1 or later, real Γ-point calculations with at least 4096 basis functions use a partial eigensolve when the requested band count is at most one quarter of the basis size. The solver requests the lowest eigenpairs and can retry with the full eigensolver if the partial solve fails recoverably.
 - When using elpa on GPUs, some ELPA internal logs will be output.
